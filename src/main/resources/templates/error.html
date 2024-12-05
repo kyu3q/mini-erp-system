@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>Error</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card shadow">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">Error</h5>
+                        </div>
+                        <div class="card-body">
+                            <h3 th:text="${status} ?: 'Error'">500</h3>
+                            <p th:text="${error} ?: 'An error occurred'">Internal Server Error</p>
+                            <p th:text="${message} ?: ''">Detailed error message</p>
+                            <hr>
+                            <a href="/" class="btn btn-primary">
+                                <i class="fas fa-home"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

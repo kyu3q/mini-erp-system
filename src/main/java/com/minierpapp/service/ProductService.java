@@ -6,6 +6,8 @@ import com.minierpapp.model.product.mapper.ProductMapper;
 import com.minierpapp.repository.ProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,11 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<Product> findAll() {
         return productRepository.findByDeletedFalse();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Product> findAll(Pageable pageable) {
+        return productRepository.findByDeletedFalse(pageable);
     }
 
     @Transactional(readOnly = true)

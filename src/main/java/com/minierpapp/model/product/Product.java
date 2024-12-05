@@ -16,10 +16,6 @@ import lombok.Setter;
 @Setter
 public class Product extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @NotBlank
     @Size(max = Constants.CODE_LENGTH)
     @Column(name = "product_code", length = Constants.CODE_LENGTH, nullable = false, unique = true)

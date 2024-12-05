@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/mini_erp_db
+      - SPRING_DATASOURCE_USERNAME=mini_erp_user
+      - SPRING_DATASOURCE_PASSWORD=mini_erp_pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    depends_on:
+      - db
+    networks:
+      - mini-erp-network
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/create_database.sql:/docker-entrypoint-initdb.d/create_database.sql
+    networks:
+      - mini-erp-network
+
+volumes:
+  postgres_data:
+
+networks:
+  mini-erp-network:
+    driver: bridge
