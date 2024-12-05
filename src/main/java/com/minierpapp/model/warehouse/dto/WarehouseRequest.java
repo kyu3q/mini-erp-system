@@ -1,5 +1,6 @@
 package com.minierpapp.model.warehouse.dto;
 
+import com.minierpapp.model.common.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,20 +15,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WarehouseRequest {
     
-    @NotBlank(message = "Warehouse code is required")
-    @Size(max = 50, message = "Warehouse code must not exceed 50 characters")
+    @NotBlank(message = "倉庫コードを入力してください")
+    @Size(max = 50, message = "倉庫コードは50文字以内で入力してください")
     private String warehouseCode;
 
-    @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must not exceed 100 characters")
+    @NotBlank(message = "名称を入力してください")
+    @Size(max = 100, message = "名称は100文字以内で入力してください")
     private String name;
 
-    @Size(max = 200, message = "Address must not exceed 200 characters")
+    @Size(max = 200, message = "住所は200文字以内で入力してください")
     private String address;
 
-    @NotNull(message = "Capacity is required")
     private Integer capacity;
 
-    @Size(max = 500, message = "Description must not exceed 500 characters")
+    @NotNull(message = "ステータスを選択してください")
+    private Status status;
+
+    @Size(max = 500, message = "説明は500文字以内で入力してください")
     private String description;
 }

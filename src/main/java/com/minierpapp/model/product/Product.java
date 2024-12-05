@@ -49,9 +49,6 @@ public class Product extends BaseEntity {
     @Column(name = "reorder_point")
     private Integer reorderPoint;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted = false;
-
     @Version
     @Column(name = "version")
     private Long version;

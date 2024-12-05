@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{layout/default}">
+      layout:decorate="~{layout/layout}">
 <head>
     <title>商品一覧</title>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container mt-4">
+        <div class="container-fluid">
+            <h1 class="mt-4">商品一覧</h1>
             <div class="row mb-4">
                 <div class="col">
-                    <h2>商品一覧</h2>
-                </div>
-                <div class="col text-end">
                     <a th:href="@{/products/new}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> 新規登録
+                        <i class="fas fa-plus"></i> 新規作成
                     </a>
                 </div>
             </div>
 
-            <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+            <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${message}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
                                 <tr>
                                     <th>商品コード</th>
                                     <th>商品名</th>
@@ -43,9 +44,8 @@
                                     <td th:text="${product.productName}"></td>
                                     <td th:text="${product.unit}"></td>
                                     <td>
-                                        <span th:class="${'badge ' + (product.status == 'ACTIVE' ? 'bg-success' : 'bg-danger')}"
-                                              th:text="${product.status}">
-                                        </span>
+                                        <span th:if="${product.status.name() == 'ACTIVE'}" class="badge bg-success">有効</span>
+                                        <span th:if="${product.status.name() == 'INACTIVE'}" class="badge bg-secondary">無効</span>
                                     </td>
                                     <td th:text="${product.minimumStock}"></td>
                                     <td th:text="${product.maximumStock}"></td>
@@ -54,14 +54,17 @@
                                         <div class="btn-group" role="group">
                                             <a th:href="@{/products/{id}/edit(id=${product.id})}"
                                                class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-pencil"></i> 編集
+                                                <i class="fas fa-edit"></i> 編集
                                             </a>
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger"
-                                                    th:data-id="${product.id}"
-                                                    onclick="confirmDelete(this.getAttribute('data-id'))">
-                                                <i class="bi bi-trash"></i> 削除
-                                            </button>
+                                            <form th:action="@{/products/{id}(id=${product.id})}"
+                                                  method="post"
+                                                  style="display: inline;">
+                                                <input type="hidden" name="_method" value="DELETE"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('この商品を削除してもよろしいですか？')">
+                                                    <i class="fas fa-trash"></i> 削除
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
@@ -71,37 +74,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- 削除確認モーダル -->
-        <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">削除確認</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>この商品を削除してもよろしいですか？</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                        <form id="deleteForm" method="POST" style="display: inline;">
-                            <input type="hidden" name="_method" value="DELETE">
-                            <button type="submit" class="btn btn-danger">削除</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script th:inline="javascript">
-            function confirmDelete(id) {
-                const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-                const form = document.getElementById('deleteForm');
-                form.action = /*[[@{/products/}]]*/ '' + id;
-                modal.show();
-            }
-        </script>
     </div>
 </body>
 </html>

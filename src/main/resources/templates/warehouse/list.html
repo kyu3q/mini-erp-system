@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>倉庫一覧</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <h1 class="mt-4">倉庫一覧</h1>
+        <div class="row mb-4">
+            <div class="col">
+                <a th:href="@{/warehouses/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新規作成
+                </a>
+            </div>
+        </div>
+
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead class="table-light">
+                        <tr>
+                            <th>倉庫コード</th>
+                            <th>名称</th>
+                            <th>住所</th>
+                            <th>収容能力</th>
+                            <th>ステータス</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="warehouse : ${warehouses}">
+                            <td th:text="${warehouse.warehouseCode}"></td>
+                            <td th:text="${warehouse.name}"></td>
+                            <td th:text="${warehouse.address}"></td>
+                            <td th:text="${warehouse.capacity}"></td>
+                            <td>
+                                <span th:if="${warehouse.status.name() == 'ACTIVE'}" class="badge bg-success">有効</span>
+                                <span th:if="${warehouse.status.name() == 'INACTIVE'}" class="badge bg-secondary">無効</span>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/warehouses/{id}/edit(id=${warehouse.id})}"
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-edit"></i> 編集
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            th:data-warehouse-id="${warehouse.id}"
+                                            onclick="confirmDelete(this.getAttribute('data-warehouse-id'))">
+                                        <i class="fas fa-trash"></i> 削除
+                                    </button>
+                                </div>
+                                <form th:id="'deleteForm' + ${warehouse.id}"
+                                      th:action="@{/warehouses/{id}(id=${warehouse.id})}"
+                                      method="post"
+                                      style="display: none;">
+                                    <input type="hidden" name="_method" value="DELETE"/>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script>
+        function confirmDelete(warehouseId) {
+            if (confirm('この倉庫を削除してもよろしいですか？')) {
+                document.getElementById('deleteForm' + warehouseId).submit();
+            }
+        }
+    </script>
+</th:block>
+</body>
+</html>
