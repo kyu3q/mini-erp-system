@@ -53,6 +53,7 @@ public class ProductMapper {
             return;
         }
 
+        product.setProductCode(request.getProductCode());
         product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
         product.setUnit(request.getUnit());

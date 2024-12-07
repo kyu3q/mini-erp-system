@@ -36,6 +36,7 @@ public class ProductWebController {
     public String create(@Valid @ModelAttribute("product") ProductRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
+        // バリデーションエラーがある場合は、そのままエラーを表示
         if (result.hasErrors()) {
             return "products/form";
         }
@@ -45,7 +46,19 @@ public class ProductWebController {
             redirectAttributes.addFlashAttribute("message", "商品を登録しました。");
             return "redirect:/products";
         } catch (IllegalArgumentException e) {
-            result.rejectValue("productCode", "error.productCode", e.getMessage());
+            // ビジネスロジックのバリデーションエラーを追加
+            if (e.getMessage().contains("商品コード")) {
+                result.rejectValue("productCode", "error.productCode", e.getMessage());
+            } else if (e.getMessage().contains("最小在庫数")) {
+                result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
+            } else if (e.getMessage().contains("最大在庫数")) {
+                result.rejectValue("maximumStock", "error.maximumStock", e.getMessage());
+            } else if (e.getMessage().contains("発注点")) {
+                result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
+            } else {
+                // その他のエラー
+                result.reject("error.global", e.getMessage());
+            }
             return "products/form";
         }
     }
@@ -54,6 +67,7 @@ public class ProductWebController {
     public String edit(@PathVariable Long id, Model model) {
         Product product = productService.findById(id);
         ProductRequest request = new ProductRequest();
+        request.setId(id);
         request.setProductCode(product.getProductCode());
         request.setProductName(product.getProductName());
         request.setDescription(product.getDescription());
@@ -62,6 +76,7 @@ public class ProductWebController {
         request.setMinimumStock(product.getMinimumStock());
         request.setMaximumStock(product.getMaximumStock());
         request.setReorderPoint(product.getReorderPoint());
+        request.setVersion(product.getVersion());
         model.addAttribute("product", request);
         return "products/form";
     }
@@ -71,6 +86,7 @@ public class ProductWebController {
                         @Valid @ModelAttribute("product") ProductRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
+        // バリデーションエラーがある場合は、そのままエラーを表示
         if (result.hasErrors()) {
             return "products/form";
         }
@@ -80,7 +96,19 @@ public class ProductWebController {
             redirectAttributes.addFlashAttribute("message", "商品を更新しました。");
             return "redirect:/products";
         } catch (IllegalArgumentException e) {
-            result.rejectValue("productCode", "error.productCode", e.getMessage());
+            // ビジネスロジックのバリデーションエラーを追加
+            if (e.getMessage().contains("商品コード")) {
+                result.rejectValue("productCode", "error.productCode", e.getMessage());
+            } else if (e.getMessage().contains("最小在庫数")) {
+                result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
+            } else if (e.getMessage().contains("最大在庫数")) {
+                result.rejectValue("maximumStock", "error.maximumStock", e.getMessage());
+            } else if (e.getMessage().contains("発注点")) {
+                result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
+            } else {
+                // その他のエラー
+                result.reject("error.global", e.getMessage());
+            }
             return "products/form";
         }
     }

@@ -44,9 +44,8 @@ public class ProductService {
 
     @Transactional
     public Product create(ProductRequest request) {
-        if (productRepository.existsByProductCodeAndDeletedFalse(request.getProductCode())) {
-            throw new IllegalArgumentException("Product code already exists: " + request.getProductCode());
-        }
+        validateProductCode(null, request.getProductCode());
+        validateStockLevels(request);
         Product product = productMapper.toEntity(request);
         return productRepository.save(product);
     }
@@ -54,15 +53,45 @@ public class ProductService {
     @Transactional
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
-        
-        // 商品コードが変更されており、かつ新しい商品コードが既に存在する場合はエラー
-        if (!existingProduct.getProductCode().equals(request.getProductCode()) &&
-            productRepository.existsByProductCodeAndDeletedFalse(request.getProductCode())) {
-            throw new IllegalArgumentException("Product code already exists: " + request.getProductCode());
-        }
-
+        validateProductCode(id, request.getProductCode());
+        validateStockLevels(request);
         productMapper.updateEntityFromRequest(request, existingProduct);
         return productRepository.save(existingProduct);
+    }
+
+    private void validateProductCode(Long productId, String productCode) {
+        if (productId == null) {
+            // 新規作成時
+            if (productRepository.existsByProductCodeAndDeletedFalse(productCode)) {
+                throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
+            }
+        } else {
+            // 更新時
+            Product existingProduct = findById(productId);
+            if (!existingProduct.getProductCode().equals(productCode) &&
+                productRepository.existsByProductCodeAndDeletedFalse(productCode)) {
+                throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
+            }
+        }
+    }
+
+    private void validateStockLevels(ProductRequest request) {
+        Integer minimumStock = request.getMinimumStock();
+        Integer maximumStock = request.getMaximumStock();
+        Integer reorderPoint = request.getReorderPoint();
+
+        if (minimumStock != null && maximumStock != null && minimumStock > maximumStock) {
+            throw new IllegalArgumentException("最小在庫数は最大在庫数以下である必要があります");
+        }
+
+        if (reorderPoint != null) {
+            if (minimumStock != null && reorderPoint < minimumStock) {
+                throw new IllegalArgumentException("発注点は最小在庫数以上である必要があります");
+            }
+            if (maximumStock != null && reorderPoint > maximumStock) {
+                throw new IllegalArgumentException("発注点は最大在庫数以下である必要があります");
+            }
+        }
     }
 
     @Transactional

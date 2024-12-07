@@ -16,12 +16,23 @@
                         <div class="card-body">
                             <form th:action="${product.id == null ? '/products' : '/products/' + product.id}"
                                   th:method="${product.id == null ? 'post' : 'put'}"
-                                  th:object="${product}">
+                                  th:object="${product}"
+                                  novalidate>
+                                <input type="hidden" name="_method" th:value="${product.id == null ? 'post' : 'put'}" />
+                                <input type="hidden" th:field="*{id}" />
+                                <input type="hidden" th:field="*{version}" />
+
+                                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+                                    <ul class="mb-0">
+                                        <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+                                    </ul>
+                                </div>
 
                                 <div class="mb-3">
                                     <label for="productCode" class="form-label">商品コード <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="productCode" th:field="*{productCode}"
-                                           th:classappend="${#fields.hasErrors('productCode')} ? 'is-invalid'">
+                                           th:classappend="${#fields.hasErrors('productCode')} ? 'is-invalid'"
+                                           placeholder="半角英数字のみ入力可能です">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('productCode')}"
                                          th:errors="*{productCode}"></div>
                                 </div>
@@ -66,7 +77,8 @@
                                 <div class="mb-3">
                                     <label for="minimumStock" class="form-label">最小在庫数</label>
                                     <input type="number" class="form-control" id="minimumStock" th:field="*{minimumStock}"
-                                           th:classappend="${#fields.hasErrors('minimumStock')} ? 'is-invalid'">
+                                           th:classappend="${#fields.hasErrors('minimumStock')} ? 'is-invalid'"
+                                           min="0" placeholder="0以上の数値を入力してください">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('minimumStock')}"
                                          th:errors="*{minimumStock}"></div>
                                 </div>
@@ -74,7 +86,8 @@
                                 <div class="mb-3">
                                     <label for="maximumStock" class="form-label">最大在庫数</label>
                                     <input type="number" class="form-control" id="maximumStock" th:field="*{maximumStock}"
-                                           th:classappend="${#fields.hasErrors('maximumStock')} ? 'is-invalid'">
+                                           th:classappend="${#fields.hasErrors('maximumStock')} ? 'is-invalid'"
+                                           min="0" placeholder="0以上の数値を入力してください">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('maximumStock')}"
                                          th:errors="*{maximumStock}"></div>
                                 </div>
@@ -82,7 +95,8 @@
                                 <div class="mb-3">
                                     <label for="reorderPoint" class="form-label">発注点</label>
                                     <input type="number" class="form-control" id="reorderPoint" th:field="*{reorderPoint}"
-                                           th:classappend="${#fields.hasErrors('reorderPoint')} ? 'is-invalid'">
+                                           th:classappend="${#fields.hasErrors('reorderPoint')} ? 'is-invalid'"
+                                           min="0" placeholder="0以上の数値を入力してください">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('reorderPoint')}"
                                          th:errors="*{reorderPoint}"></div>
                                 </div>

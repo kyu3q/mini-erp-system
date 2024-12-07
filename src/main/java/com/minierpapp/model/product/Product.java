@@ -11,14 +11,18 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products")
+@Table(name = "products",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_products_product_code_not_deleted",
+                        columnNames = {"product_code", "deleted"})
+        })
 @Getter
 @Setter
 public class Product extends BaseEntity {
 
     @NotBlank
     @Size(max = Constants.CODE_LENGTH)
-    @Column(name = "product_code", length = Constants.CODE_LENGTH, nullable = false, unique = true)
+    @Column(name = "product_code", length = Constants.CODE_LENGTH, nullable = false)
     private String productCode;
 
     @NotBlank
