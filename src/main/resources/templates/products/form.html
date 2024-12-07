@@ -30,9 +30,14 @@
 
                                 <div class="mb-3">
                                     <label for="productCode" class="form-label">商品コード <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="productCode" th:field="*{productCode}"
+                                    <!-- 新規作成時 -->
+                                    <input th:if="${product.id == null}" type="text" class="form-control" id="productCode" 
+                                           th:field="*{productCode}"
                                            th:classappend="${#fields.hasErrors('productCode')} ? 'is-invalid'"
                                            placeholder="半角英数字のみ入力可能です">
+                                    <!-- 編集時 -->
+                                    <div th:if="${product.id != null}" class="form-control-plaintext" th:text="*{productCode}"></div>
+                                    <input th:if="${product.id != null}" type="hidden" th:field="*{productCode}">
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('productCode')}"
                                          th:errors="*{productCode}"></div>
                                 </div>
