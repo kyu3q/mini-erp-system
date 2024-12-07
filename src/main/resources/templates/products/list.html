@@ -52,13 +52,61 @@
                            class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excelエクスポート
                         </a>
+                        <form id="importForm" th:action="@{/products/import}" method="post" enctype="multipart/form-data" style="display: none;">
+                            <input type="file" id="fileInput" name="file" accept=".xlsx">
+                        </form>
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                            <i class="fas fa-file-import"></i> 取込
+                        </button>
+                        <a th:href="@{/products/import/template}" class="btn btn-outline-secondary">
+                            <i class="fas fa-download"></i> 取込テンプレート
+                        </a>
                     </div>
                 </div>
             </div>
 
             <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
-                <span th:text="${message}"></span>
+                <span th:utext="${message}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:utext="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- ファイル選択時の確認モーダル -->
+            <div class="modal fade" id="importConfirmModal" tabindex="-1" aria-labelledby="importConfirmModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="importConfirmModalLabel">取込確認</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>選択されたファイル: <span id="selectedFileName"></span></p>
+                            <p>このファイルを取り込みますか？</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                            <button type="button" class="btn btn-primary" onclick="submitImport()">取込実行</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ファイル処理中のローディングモーダル -->
+            <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body text-center p-4">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mb-0">ファイルを処理中です...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="card mb-4">

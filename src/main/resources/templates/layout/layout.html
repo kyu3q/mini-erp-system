@@ -85,11 +85,39 @@
     <!-- Initialize tooltips -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // ツールチップの初期化
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
+
+            // ファイル選択の処理
+            var fileInput = document.getElementById('fileInput');
+            if (fileInput) {
+                fileInput.addEventListener('change', function(e) {
+                    if (this.files.length > 0) {
+                        var fileName = this.files[0].name;
+                        document.getElementById('selectedFileName').textContent = fileName;
+                        var importConfirmModal = new bootstrap.Modal(document.getElementById('importConfirmModal'));
+                        importConfirmModal.show();
+                    }
+                });
+            }
         });
+
+        // 取込実行の処理
+        function submitImport() {
+            // 確認モーダルを閉じる
+            var importConfirmModal = bootstrap.Modal.getInstance(document.getElementById('importConfirmModal'));
+            importConfirmModal.hide();
+
+            // ローディングモーダルを表示
+            var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+            loadingModal.show();
+
+            // フォームを送信
+            document.getElementById('importForm').submit();
+        }
     </script>
 </body>
 </html>

@@ -4,6 +4,7 @@ import com.minierpapp.model.product.Product;
 import com.minierpapp.model.product.dto.ProductRequest;
 import com.minierpapp.model.product.mapper.ProductMapper;
 import com.minierpapp.service.ExcelExportService;
+import com.minierpapp.service.ExcelImportService;
 import com.minierpapp.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ public class ProductWebController {
     private final ProductService productService;
     private final ProductMapper productMapper;
     private final ExcelExportService excelExportService;
+    private final ExcelImportService excelImportService;
 
     @GetMapping
     public String list(
@@ -56,7 +59,6 @@ public class ProductWebController {
     public String create(@Valid @ModelAttribute("product") ProductRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
-        // バリデーションエラーがある場合は、そのままエラーを表示
         if (result.hasErrors()) {
             return "products/form";
         }
@@ -66,7 +68,6 @@ public class ProductWebController {
             redirectAttributes.addFlashAttribute("message", "商品を登録しました。");
             return "redirect:/products";
         } catch (IllegalArgumentException e) {
-            // ビジネスロジックのバリデーションエラーを追加
             if (e.getMessage().contains("商品コード")) {
                 result.rejectValue("productCode", "error.productCode", e.getMessage());
             } else if (e.getMessage().contains("最小在庫数")) {
@@ -76,7 +77,6 @@ public class ProductWebController {
             } else if (e.getMessage().contains("発注点")) {
                 result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
             } else {
-                // その他のエラー
                 result.reject("error.global", e.getMessage());
             }
             return "products/form";
@@ -106,7 +106,6 @@ public class ProductWebController {
                         @Valid @ModelAttribute("product") ProductRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
-        // バリデーションエラーがある場合は、そのままエラーを表示
         if (result.hasErrors()) {
             return "products/form";
         }
@@ -116,7 +115,6 @@ public class ProductWebController {
             redirectAttributes.addFlashAttribute("message", "商品を更新しました。");
             return "redirect:/products";
         } catch (IllegalArgumentException e) {
-            // ビジネスロジックのバリデーションエラーを追加
             if (e.getMessage().contains("商品コード")) {
                 result.rejectValue("productCode", "error.productCode", e.getMessage());
             } else if (e.getMessage().contains("最小在庫数")) {
@@ -126,7 +124,6 @@ public class ProductWebController {
             } else if (e.getMessage().contains("発注点")) {
                 result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
             } else {
-                // その他のエラー
                 result.reject("error.global", e.getMessage());
             }
             return "products/form";
@@ -164,5 +161,49 @@ public class ProductWebController {
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelBytes);
+    }
+
+    @PostMapping("/import")
+    public String importFromExcel(@RequestParam("file") MultipartFile file,
+                                RedirectAttributes redirectAttributes) {
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "ファイルを選択してください。");
+            return "redirect:/products";
+        }
+
+        if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
+            redirectAttributes.addFlashAttribute("error", "Excelファイル(.xlsx)を選択してください。");
+            return "redirect:/products";
+        }
+
+        try {
+            List<String> errors = excelImportService.importProducts(file);
+            
+            if (errors.isEmpty()) {
+                redirectAttributes.addFlashAttribute("message", "商品データを取り込みました。");
+            } else {
+                StringBuilder errorMessage = new StringBuilder("取り込み時にエラーが発生しました：<br>");
+                errors.forEach(error -> errorMessage.append(error).append("<br>"));
+                redirectAttributes.addFlashAttribute("error", errorMessage.toString());
+            }
+        } catch (IOException e) {
+            redirectAttributes.addFlashAttribute("error", "ファイルの読み込みに失敗しました。");
+        }
+        
+        return "redirect:/products";
+    }
+
+    @GetMapping("/import/template")
+    public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
+        String filename = "product_import_template.xlsx";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", filename);
+
+        byte[] templateBytes = excelImportService.createImportTemplate();
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(templateBytes);
     }
 }
