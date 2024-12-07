@@ -3,14 +3,23 @@ package com.minierpapp.controller;
 import com.minierpapp.model.product.Product;
 import com.minierpapp.model.product.dto.ProductRequest;
 import com.minierpapp.model.product.mapper.ProductMapper;
+import com.minierpapp.service.ExcelExportService;
 import com.minierpapp.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Controller
 @RequestMapping("/products")
@@ -19,10 +28,21 @@ public class ProductWebController {
 
     private final ProductService productService;
     private final ProductMapper productMapper;
+    private final ExcelExportService excelExportService;
 
     @GetMapping
-    public String list(Model model) {
-        model.addAttribute("products", productService.findAll());
+    public String list(
+            @RequestParam(required = false) String productCode,
+            @RequestParam(required = false) String productName,
+            Model model) {
+        if ((productCode != null && !productCode.trim().isEmpty()) ||
+            (productName != null && !productName.trim().isEmpty())) {
+            model.addAttribute("products", productService.search(productCode, productName));
+            model.addAttribute("productCode", productCode);
+            model.addAttribute("productName", productName);
+        } else {
+            model.addAttribute("products", productService.findAll());
+        }
         return "products/list";
     }
 
@@ -118,5 +138,31 @@ public class ProductWebController {
         productService.delete(id);
         redirectAttributes.addFlashAttribute("message", "商品を削除しました。");
         return "redirect:/products";
+    }
+
+    @GetMapping("/export")
+    public ResponseEntity<byte[]> exportToExcel(
+            @RequestParam(required = false) String productCode,
+            @RequestParam(required = false) String productName) throws IOException {
+        
+        List<Product> products;
+        if ((productCode != null && !productCode.trim().isEmpty()) ||
+            (productName != null && !productName.trim().isEmpty())) {
+            products = productService.search(productCode, productName);
+        } else {
+            products = productService.findAll();
+        }
+
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+        String filename = String.format("products_%s.xlsx", timestamp);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+        headers.setContentDispositionFormData("attachment", filename);
+
+        byte[] excelBytes = excelExportService.exportProductsToExcel(products);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(excelBytes);
     }
 }

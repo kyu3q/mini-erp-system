@@ -10,10 +10,49 @@
         <div class="container-fluid">
             <h1 class="mt-4">商品一覧</h1>
             <div class="row mb-4">
-                <div class="col">
-                    <a th:href="@{/products/new}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> 新規作成
-                    </a>
+                <div class="col-12">
+                    <form th:action="@{/products}" method="get" class="card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">商品コード</span>
+                                        <input type="text" name="productCode" th:value="${productCode}" class="form-control" placeholder="商品コード">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">商品名</span>
+                                        <input type="text" name="productName" th:value="${productName}" class="form-control" placeholder="商品名">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-outline-primary flex-grow-1">
+                                            <i class="fas fa-search"></i> 検索
+                                        </button>
+                                        <a th:href="@{/products}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-undo"></i> クリア
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/products/new}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> 新規作成
+                        </a>
+                        <a th:href="@{/products/export(productCode=${productCode},productName=${productName})}"
+                           class="btn btn-outline-success">
+                            <i class="fas fa-file-excel"></i> Excelエクスポート
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -40,7 +79,15 @@
                             </thead>
                             <tbody>
                                 <tr th:each="product : ${products}">
-                                    <td th:text="${product.productCode}"></td>
+                                    <td>
+                                        <a th:href="@{/products/{id}/edit(id=${product.id})}" 
+                                           class="text-decoration-none editable-link" 
+                                           th:text="${product.productCode}"
+                                           data-bs-toggle="tooltip" 
+                                           data-bs-placement="top" 
+                                           title="クリックして編集">
+                                        </a>
+                                    </td>
                                     <td th:text="${product.productName}"></td>
                                     <td th:text="${product.unit}"></td>
                                     <td>
@@ -51,21 +98,15 @@
                                     <td th:text="${product.maximumStock}"></td>
                                     <td th:text="${product.reorderPoint}"></td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            <a th:href="@{/products/{id}/edit(id=${product.id})}"
-                                               class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> 編集
-                                            </a>
-                                            <form th:action="@{/products/{id}(id=${product.id})}"
-                                                  method="post"
-                                                  style="display: inline;">
-                                                <input type="hidden" name="_method" value="DELETE"/>
-                                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('この商品を削除してもよろしいですか？')">
-                                                    <i class="fas fa-trash"></i> 削除
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <form th:action="@{/products/{id}(id=${product.id})}"
+                                              method="post"
+                                              style="display: inline;">
+                                            <input type="hidden" name="_method" value="DELETE"/>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('この商品を削除してもよろしいですか？')">
+                                                <i class="fas fa-trash"></i> 削除
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             </tbody>

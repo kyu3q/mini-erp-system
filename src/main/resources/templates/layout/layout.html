@@ -28,6 +28,15 @@
         .content {
             padding: 20px;
         }
+        .editable-link {
+            color: #0d6efd;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .editable-link:hover {
+            color: #0a58ca;
+            text-decoration: underline !important;
+        }
     </style>
 </head>
 <body>
@@ -72,5 +81,15 @@
     <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    
+    <!-- Initialize tooltips -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
 </body>
 </html>

@@ -19,4 +19,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> findByDeletedFalse(Pageable pageable);
     
     boolean existsByProductCodeAndDeletedFalse(String productCode);
+
+    List<Product> findByProductCodeContainingAndProductNameContainingAndDeletedFalse(String productCode, String productName);
 }

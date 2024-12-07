@@ -26,6 +26,13 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public List<Product> search(String productCode, String productName) {
+        productCode = productCode != null ? productCode.trim() : "";
+        productName = productName != null ? productName.trim() : "";
+        return productRepository.findByProductCodeContainingAndProductNameContainingAndDeletedFalse(productCode, productName);
+    }
+
+    @Transactional(readOnly = true)
     public Page<Product> findAll(Pageable pageable) {
         return productRepository.findByDeletedFalse(pageable);
     }
