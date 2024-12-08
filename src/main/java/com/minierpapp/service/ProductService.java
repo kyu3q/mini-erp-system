@@ -60,6 +60,12 @@ public class ProductService {
     @Transactional
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
+        
+        // バージョンチェック
+        if (!existingProduct.getVersion().equals(request.getVersion())) {
+            throw new IllegalStateException("この商品は他のユーザーによって更新されています。最新の情報を確認してください。");
+        }
+        
         validateProductCode(id, request.getProductCode());
         validateStockLevels(request);
         productMapper.updateEntityFromRequest(request, existingProduct);
