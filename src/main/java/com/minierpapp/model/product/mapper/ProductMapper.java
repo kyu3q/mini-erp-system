@@ -53,6 +53,9 @@ public class ProductMapper {
             return;
         }
 
+        // IDとバージョンは維持
+        Long currentVersion = product.getVersion();
+
         product.setProductCode(request.getProductCode());
         product.setProductName(request.getProductName());
         product.setDescription(request.getDescription());
@@ -61,5 +64,8 @@ public class ProductMapper {
         product.setMinimumStock(request.getMinimumStock());
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
+
+        // バージョンを復元
+        product.setVersion(currentVersion);
     }
 }
