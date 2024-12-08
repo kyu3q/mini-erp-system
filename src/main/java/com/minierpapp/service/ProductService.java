@@ -62,7 +62,17 @@ public class ProductService {
         Product existingProduct = findById(id);
         
         // バージョンチェック
-        if (!existingProduct.getVersion().equals(request.getVersion())) {
+        Long existingVersion = existingProduct.getVersion();
+        Long requestVersion = request.getVersion();
+        
+        if (existingVersion == null) {
+            existingVersion = 0L;
+        }
+        if (requestVersion == null) {
+            requestVersion = 0L;
+        }
+        
+        if (!existingVersion.equals(requestVersion)) {
             throw new IllegalStateException("この商品は他のユーザーによって更新されています。最新の情報を確認してください。");
         }
         

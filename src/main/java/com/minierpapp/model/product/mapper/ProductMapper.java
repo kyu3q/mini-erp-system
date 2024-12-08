@@ -45,6 +45,7 @@ public class ProductMapper {
         product.setMinimumStock(request.getMinimumStock());
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
+        product.setVersion(0L); // 新規作成時のバージョン初期値
         return product;
     }
 
@@ -53,8 +54,11 @@ public class ProductMapper {
             return;
         }
 
-        // IDとバージョンは維持
+        // バージョン情報を保持
         Long currentVersion = product.getVersion();
+        if (currentVersion == null) {
+            currentVersion = 0L;
+        }
 
         product.setProductCode(request.getProductCode());
         product.setProductName(request.getProductName());
@@ -65,7 +69,7 @@ public class ProductMapper {
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
 
-        // バージョンを復元
+        // バージョンを設定
         product.setVersion(currentVersion);
     }
 }
