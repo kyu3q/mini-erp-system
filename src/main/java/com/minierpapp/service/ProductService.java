@@ -61,24 +61,28 @@ public class ProductService {
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         
-        // バージョンチェック
-        Long existingVersion = existingProduct.getVersion();
-        Long requestVersion = request.getVersion();
-        
-        if (existingVersion == null) {
-            existingVersion = 0L;
-        }
-        if (requestVersion == null) {
-            requestVersion = 0L;
-        }
-        
-        if (!existingVersion.equals(requestVersion)) {
-            throw new IllegalStateException("この商品は他のユーザーによって更新されています。最新の情報を確認してください。");
-        }
+        // デバッグログを追加
+        System.out.println("Updating product: " + id);
+        System.out.println("Existing version: " + existingProduct.getVersion());
+        System.out.println("Request version: " + request.getVersion());
         
         validateProductCode(id, request.getProductCode());
         validateStockLevels(request);
+        
+        // 更新前の状態をログ出力
+        System.out.println("Before update - Product state:");
+        System.out.println("Name: " + existingProduct.getProductName());
+        System.out.println("Code: " + existingProduct.getProductCode());
+        System.out.println("Version: " + existingProduct.getVersion());
+        
         productMapper.updateEntityFromRequest(request, existingProduct);
+        
+        // 更新後の状態をログ出力
+        System.out.println("After update - Product state:");
+        System.out.println("Name: " + existingProduct.getProductName());
+        System.out.println("Code: " + existingProduct.getProductCode());
+        System.out.println("Version: " + existingProduct.getVersion());
+        
         return productRepository.save(existingProduct);
     }
 

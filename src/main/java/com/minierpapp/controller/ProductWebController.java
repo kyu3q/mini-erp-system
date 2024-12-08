@@ -86,6 +86,11 @@ public class ProductWebController {
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
         Product product = productService.findById(id);
+        
+        // デバッグログを追加
+        System.out.println("Editing product: " + id);
+        System.out.println("Product version from DB: " + product.getVersion());
+        
         ProductRequest request = new ProductRequest();
         request.setId(id);
         request.setProductCode(product.getProductCode());
@@ -97,6 +102,10 @@ public class ProductWebController {
         request.setMaximumStock(product.getMaximumStock());
         request.setReorderPoint(product.getReorderPoint());
         request.setVersion(product.getVersion());
+        
+        // デバッグログを追加
+        System.out.println("Request version set to: " + request.getVersion());
+        
         model.addAttribute("product", request);
         return "products/form";
     }
@@ -106,6 +115,10 @@ public class ProductWebController {
                         @Valid @ModelAttribute("product") ProductRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
+        // デバッグログを追加
+        System.out.println("Updating product with ID: " + id);
+        System.out.println("Request version: " + request.getVersion());
+        
         if (result.hasErrors()) {
             return "products/form";
         }
@@ -114,7 +127,11 @@ public class ProductWebController {
             productService.update(id, request);
             redirectAttributes.addFlashAttribute("message", "商品を更新しました。");
             return "redirect:/products";
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            // エラーの詳細をログ出力
+            System.out.println("Update failed with error: " + e.getMessage());
+            e.printStackTrace();
+            
             if (e.getMessage().contains("商品コード")) {
                 result.rejectValue("productCode", "error.productCode", e.getMessage());
             } else if (e.getMessage().contains("最小在庫数")) {

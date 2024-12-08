@@ -31,6 +31,10 @@
                                 <input type="hidden" name="_method" th:value="${product.id == null ? 'post' : 'put'}" />
                                 <input type="hidden" th:field="*{id}" />
                                 <input type="hidden" th:field="*{version}" />
+                                <!-- デバッグ用：バージョン情報を表示 -->
+                                <div th:if="${product.id != null}" class="mb-3">
+                                    <small class="text-muted">Version: <span th:text="*{version}"></span></small>
+                                </div>
 
                                 <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-4" role="alert">
                                     <ul class="mb-0">
