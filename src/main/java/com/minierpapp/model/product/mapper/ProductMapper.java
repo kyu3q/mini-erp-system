@@ -27,7 +27,6 @@ public class ProductMapper {
         response.setCreatedBy(product.getCreatedBy());
         response.setUpdatedAt(product.getUpdatedAt());
         response.setUpdatedBy(product.getUpdatedBy());
-        response.setVersion(product.getVersion());
         return response;
     }
 
@@ -45,19 +44,12 @@ public class ProductMapper {
         product.setMinimumStock(request.getMinimumStock());
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
-        product.setVersion(0L); // 新規作成時のバージョン初期値
         return product;
     }
 
     public void updateEntityFromRequest(ProductRequest request, Product product) {
         if (request == null || product == null) {
             return;
-        }
-
-        // バージョン情報を保持
-        Long currentVersion = product.getVersion();
-        if (currentVersion == null) {
-            currentVersion = 0L;
         }
 
         product.setProductCode(request.getProductCode());
@@ -68,8 +60,5 @@ public class ProductMapper {
         product.setMinimumStock(request.getMinimumStock());
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
-
-        // バージョンを設定
-        product.setVersion(currentVersion);
     }
 }

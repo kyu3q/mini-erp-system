@@ -41,6 +41,4 @@ public class ProductRequest {
 
     @Min(value = 0, message = "発注点は0以上の数値を入力してください")
     private Integer reorderPoint;
-
-    private Long version;
 }
