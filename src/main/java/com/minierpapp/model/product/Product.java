@@ -52,8 +52,4 @@ public class Product extends BaseEntity {
 
     @Column(name = "reorder_point")
     private Integer reorderPoint;
-
-    @Version
-    @Column(name = "version")
-    private Long version;
 }
