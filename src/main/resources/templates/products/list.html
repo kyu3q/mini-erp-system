@@ -50,7 +50,7 @@
                         </a>
                         <a th:href="@{/products/export(productCode=${productCode},productName=${productName})}"
                            class="btn btn-outline-success">
-                            <i class="fas fa-file-excel"></i> Excelエクスポート
+                            <i class="fas fa-file-excel"></i> Excel出力
                         </a>
                         <form id="importForm" th:action="@{/products/import}" method="post" enctype="multipart/form-data" style="display: none;">
                             <input type="file" id="fileInput" name="file" accept=".xlsx">

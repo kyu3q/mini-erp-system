@@ -1,6 +1,9 @@
 package com.minierpapp.service;
 
 import com.minierpapp.model.product.Product;
+import com.minierpapp.model.warehouse.Warehouse;
+import com.minierpapp.repository.WarehouseRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
@@ -10,7 +13,91 @@ import java.io.IOException;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ExcelExportService {
+
+    private final WarehouseRepository warehouseRepository;
+
+    public byte[] exportWarehouses() throws IOException {
+        List<Warehouse> warehouses = warehouseRepository.findAll();
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("倉庫一覧");
+
+            // ヘッダースタイルの設定
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            // データセルのスタイル設定
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            // 数値セルのスタイル設定
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+
+            // ヘッダー行の作成
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {"倉庫コード", "倉庫名", "住所", "収容能力", "ステータス", "説明"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 15 * 256); // 15文字分の幅
+            }
+
+            // データ行の作成
+            int rowNum = 1;
+            for (Warehouse warehouse : warehouses) {
+                Row row = sheet.createRow(rowNum++);
+                
+                Cell cell0 = row.createCell(0);
+                cell0.setCellValue(warehouse.getWarehouseCode());
+                cell0.setCellStyle(dataStyle);
+
+                Cell cell1 = row.createCell(1);
+                cell1.setCellValue(warehouse.getName());
+                cell1.setCellStyle(dataStyle);
+
+                Cell cell2 = row.createCell(2);
+                cell2.setCellValue(warehouse.getAddress() != null ? warehouse.getAddress() : "");
+                cell2.setCellStyle(dataStyle);
+
+                Cell cell3 = row.createCell(3);
+                if (warehouse.getCapacity() != null) {
+                    cell3.setCellValue(warehouse.getCapacity());
+                    cell3.setCellStyle(numberStyle);
+                } else {
+                    cell3.setCellValue("");
+                    cell3.setCellStyle(dataStyle);
+                }
+
+                Cell cell4 = row.createCell(4);
+                cell4.setCellValue(warehouse.getStatus().name().equals("ACTIVE") ? "有効" : "無効");
+                cell4.setCellStyle(dataStyle);
+
+                Cell cell5 = row.createCell(5);
+                cell5.setCellValue(warehouse.getDescription() != null ? warehouse.getDescription() : "");
+                cell5.setCellStyle(dataStyle);
+            }
+
+            // Excelファイルをバイト配列に変換
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        }
+    }
 
     public byte[] exportProductsToExcel(List<Product> products) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {

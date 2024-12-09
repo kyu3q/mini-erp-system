@@ -1,8 +1,11 @@
 package com.minierpapp.service;
 
-import com.minierpapp.model.product.Product;
+import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.common.Status;
+import com.minierpapp.model.product.Product;
 import com.minierpapp.model.product.dto.ProductRequest;
+import com.minierpapp.model.warehouse.dto.WarehouseDto;
+import com.minierpapp.model.warehouse.dto.WarehouseRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -34,7 +37,19 @@ public class ExcelImportService {
                 try {
                     ProductRequest request = readProductFromRow(row);
                     if (request != null) {
-                        productService.create(request);
+                        // 商品コードで既存の商品を検索
+                        try {
+                            Product existingProduct = productService.findByProductCode(request.getProductCode());
+                            // 既存の商品が見つかった場合は更新、見つからない場合は新規作成
+                            if (existingProduct != null) {
+                                productService.update(existingProduct.getId(), request);
+                            } else {
+                                productService.create(request);
+                            }
+                        } catch (jakarta.persistence.EntityNotFoundException e) {
+                            // 商品が見つからない場合は新規作成
+                            productService.create(request);
+                        }
                     }
                 } catch (Exception e) {
                     errors.add(String.format("%d行目: %s", rowNum, e.getMessage()));

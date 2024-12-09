@@ -15,6 +15,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WarehouseRequest {
     
+    private Long id;
+    
     @NotBlank(message = "倉庫コードを入力してください")
     @Size(max = 50, message = "倉庫コードは50文字以内で入力してください")
     private String warehouseCode;

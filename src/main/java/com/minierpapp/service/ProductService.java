@@ -61,27 +61,9 @@ public class ProductService {
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         
-        // デバッグログを追加
-        System.out.println("Updating product: " + id);
-        System.out.println("Existing version: " + existingProduct.getVersion());
-        System.out.println("Request version: " + request.getVersion());
-        
         validateProductCode(id, request.getProductCode());
         validateStockLevels(request);
-        
-        // 更新前の状態をログ出力
-        System.out.println("Before update - Product state:");
-        System.out.println("Name: " + existingProduct.getProductName());
-        System.out.println("Code: " + existingProduct.getProductCode());
-        System.out.println("Version: " + existingProduct.getVersion());
-        
         productMapper.updateEntityFromRequest(request, existingProduct);
-        
-        // 更新後の状態をログ出力
-        System.out.println("After update - Product state:");
-        System.out.println("Name: " + existingProduct.getProductName());
-        System.out.println("Code: " + existingProduct.getProductCode());
-        System.out.println("Version: " + existingProduct.getVersion());
         
         return productRepository.save(existingProduct);
     }
@@ -94,11 +76,13 @@ public class ProductService {
             }
         } else {
             // 更新時
-            Product existingProduct = findById(productId);
-            if (!existingProduct.getProductCode().equals(productCode) &&
-                productRepository.existsByProductCodeAndDeletedFalse(productCode)) {
-                throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
-            }
+            productRepository.findByProductCodeAndDeletedFalse(productCode)
+                    .ifPresent(existingProduct -> {
+                        // 異なるIDの商品で同じ商品コードが使用されている場合はエラー
+                        if (!existingProduct.getId().equals(productId)) {
+                            throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
+                        }
+                    });
         }
     }
 

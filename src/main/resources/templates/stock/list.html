@@ -10,58 +10,70 @@
     <div class="container-fluid">
         <h1 class="mt-4">在庫一覧</h1>
 
-        <!-- 検索フォーム -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <form th:action="@{/stocks}" method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="warehouseId" class="form-label">倉庫</label>
-                        <select class="form-select" id="warehouseId" name="warehouseId">
-                            <option value="">すべての倉庫</option>
-                            <option th:each="warehouse : ${warehouses}"
-                                    th:value="${warehouse.id}"
-                                    th:text="${warehouse.name + ' (' + warehouse.warehouseCode + ')'}"
-                                    th:selected="${param.warehouseId != null and param.warehouseId[0] == warehouse.id.toString()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="productId" class="form-label">商品</label>
-                        <select class="form-select" id="productId" name="productId">
-                            <option value="">すべての商品</option>
-                            <option th:each="product : ${products}"
-                                    th:value="${product.id}"
-                                    th:text="${product.productName + ' (' + product.productCode + ')'}"
-                                    th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> 検索
-                        </button>
-                        <a th:href="@{/stocks}" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> クリア
-                        </a>
-                    </div>
-                </form>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <form th:action="@{/stocks}" method="get" class="card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">倉庫</span>
+                                        <select class="form-select" name="warehouseId">
+                                            <option value="">すべての倉庫</option>
+                                            <option th:each="warehouse : ${warehouses}"
+                                                    th:value="${warehouse.id}"
+                                                    th:text="${warehouse.name + ' (' + warehouse.warehouseCode + ')'}"
+                                                    th:selected="${param.warehouseId != null and param.warehouseId[0] == warehouse.id.toString()}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">商品</span>
+                                        <select class="form-select" name="productId">
+                                            <option value="">すべての商品</option>
+                                            <option th:each="product : ${products}"
+                                                    th:value="${product.id}"
+                                                    th:text="${product.productName + ' (' + product.productCode + ')'}"
+                                                    th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-outline-primary flex-grow-1">
+                                            <i class="fas fa-search"></i> 検索
+                                        </button>
+                                        <a th:href="@{/stocks}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-undo"></i> クリア
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </div>
 
         <!-- 操作ボタン -->
         <div class="row mb-4">
             <div class="col">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stockModal">
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#stockModal">
                         <i class="fas fa-plus"></i> 新規作成
                     </button>
-                    <a th:href="@{/stocks/export}" class="btn btn-success">
-                        <i class="fas fa-file-export"></i> エクスポート
+                    <a th:href="@{/stocks/export}" class="btn btn-outline-success">
+                        <i class="fas fa-file-excel"></i> Excel出力
                     </a>
-                    <button type="button" class="btn btn-info text-white" data-bs-toggle="modal"
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
                             data-bs-target="#importModal">
-                        <i class="fas fa-file-import"></i> インポート
+                        <i class="fas fa-file-import"></i> 取込
                     </button>
+                    <a th:href="@{/stocks/import/template}" class="btn btn-outline-secondary">
+                        <i class="fas fa-download"></i> 取込テンプレート
+                    </a>
                 </div>
             </div>
         </div>
@@ -91,15 +103,21 @@
                         <tbody>
                         <tr th:each="stock : ${stocks}">
                             <td>
-                                <a th:href="@{/warehouses/{id}/edit(id=${stock.warehouseId})}"
-                                   class="text-decoration-none editable-link"
-                                   th:text="${stock.warehouseName + ' (' + stock.warehouseCode + ')'}">
+                                <a href="#" class="text-decoration-none editable-link"
+                                   th:text="${stock.warehouseName + ' (' + stock.warehouseCode + ')'}"
+                                   th:onclick="'editStock(' + ${stock.id} + '); return false;'"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   title="クリックして編集">
                                 </a>
                             </td>
                             <td>
-                                <a th:href="@{/products/{id}/edit(id=${stock.productId})}"
-                                   class="text-decoration-none editable-link"
-                                   th:text="${stock.productName + ' (' + stock.productCode + ')'}">
+                                <a href="#" class="text-decoration-none editable-link"
+                                   th:text="${stock.productName + ' (' + stock.productCode + ')'}"
+                                   th:onclick="'editStock(' + ${stock.id} + '); return false;'"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="top"
+                                   title="クリックして編集">
                                 </a>
                             </td>
                             <td th:text="${stock.quantity}"></td>
@@ -108,14 +126,6 @@
                             <td th:text="${stock.location}"></td>
                             <td>
                                 <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-sm btn-outline-primary"
-                                            th:onclick="'editStock(' + ${stock.id} + ')'">
-                                        <i class="fas fa-edit"></i> 編集
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-outline-warning"
-                                            th:onclick="'adjustStock(' + ${stock.id} + ')'">
-                                        <i class="fas fa-balance-scale"></i> 数量調整
-                                    </button>
                                     <button type="button" class="btn btn-sm btn-outline-danger"
                                             th:onclick="'deleteStock(' + ${stock.id} + ')'">
                                         <i class="fas fa-trash"></i> 削除
@@ -193,56 +203,25 @@
         </div>
     </div>
 
-    <!-- 数量調整モーダル -->
-    <div class="modal fade" id="adjustStockModal" tabindex="-1" aria-labelledby="adjustStockModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="adjustStockModalLabel">在庫数量調整</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="adjustStockForm">
-                        <input type="hidden" id="adjustStockId">
-                        <div class="mb-3">
-                            <label for="adjustment" class="form-label fw-bold">調整数量 <span class="badge bg-danger">必須</span></label>
-                            <input type="number" class="form-control" id="adjustment" name="adjustment" required>
-                            <div class="form-text">
-                                正の数値で在庫を増やし、負の数値で在庫を減らします。
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-primary" onclick="saveAdjustment()">
-                        <i class="fas fa-save"></i> 保存
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- インポートモーダル -->
     <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="importModalLabel">在庫データインポート</h5>
+                    <h5 class="modal-title" id="importModalLabel">在庫データ取込</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="importForm" th:action="@{/stocks/import}" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
-                            <label for="fileInput" class="form-label">インポートファイル（Excel）</label>
+                            <label for="fileInput" class="form-label">取込ファイル（Excel）</label>
                             <input type="file" class="form-control" id="fileInput" name="file" accept=".xlsx">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-primary" onclick="submitImport()">
-                        <i class="fas fa-file-import"></i> インポート実行
+                    <button type="button" class="btn btn-primary" onclick="submitImport()">取込実行</button>
                     </button>
                 </div>
             </div>

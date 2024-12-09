@@ -13,6 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class WarehouseService {
@@ -24,6 +27,13 @@ public class WarehouseService {
     public Page<WarehouseDto> findAll(Pageable pageable) {
         return warehouseRepository.findAll(pageable)
                 .map(warehouseMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<WarehouseDto> findAll() {
+        return warehouseRepository.findAll().stream()
+                .map(warehouseMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

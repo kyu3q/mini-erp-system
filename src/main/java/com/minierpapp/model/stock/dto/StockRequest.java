@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class StockRequest {
     
+    private Long id;
+    
     @NotNull(message = "Warehouse ID is required")
     private Long warehouseId;
 
