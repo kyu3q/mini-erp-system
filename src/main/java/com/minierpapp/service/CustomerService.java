@@ -17,17 +17,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CustomerService {
     private final CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
 
     public List<CustomerDto> findAll(String customerCode, String name) {
         return customerRepository.findByCustomerCodeAndName(customerCode, name)
                 .stream()
-                .map(CustomerMapper.INSTANCE::toDto)
+                .map(customerMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public CustomerDto findById(Long id) {
         return customerRepository.findById(id)
-                .map(CustomerMapper.INSTANCE::toDto)
+                .map(customerMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
 
@@ -37,8 +38,8 @@ public class CustomerService {
             throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
         }
 
-        Customer customer = CustomerMapper.INSTANCE.toEntity(request);
-        return CustomerMapper.INSTANCE.toDto(customerRepository.save(customer));
+        Customer customer = customerMapper.toEntity(request);
+        return customerMapper.toDto(customerRepository.save(customer));
     }
 
     @Transactional
@@ -53,8 +54,8 @@ public class CustomerService {
                     }
                 });
 
-        CustomerMapper.INSTANCE.updateEntity(request, customer);
-        return CustomerMapper.INSTANCE.toDto(customerRepository.save(customer));
+        customerMapper.updateEntity(request, customer);
+        return customerMapper.toDto(customerRepository.save(customer));
     }
 
     @Transactional

@@ -17,17 +17,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SupplierService {
     private final SupplierRepository supplierRepository;
+    private final SupplierMapper supplierMapper;
 
     public List<SupplierDto> findAll(String supplierCode, String name) {
         return supplierRepository.findBySupplierCodeAndName(supplierCode, name)
                 .stream()
-                .map(SupplierMapper.INSTANCE::toDto)
+                .map(supplierMapper::toDto)
                 .collect(Collectors.toList());
     }
 
     public SupplierDto findById(Long id) {
         return supplierRepository.findById(id)
-                .map(SupplierMapper.INSTANCE::toDto)
+                .map(supplierMapper::toDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
     }
 
@@ -37,8 +38,8 @@ public class SupplierService {
             throw new IllegalArgumentException("仕入先コード " + request.getSupplierCode() + " は既に使用されています");
         }
 
-        Supplier supplier = SupplierMapper.INSTANCE.toEntity(request);
-        return SupplierMapper.INSTANCE.toDto(supplierRepository.save(supplier));
+        Supplier supplier = supplierMapper.toEntity(request);
+        return supplierMapper.toDto(supplierRepository.save(supplier));
     }
 
     @Transactional
@@ -53,8 +54,8 @@ public class SupplierService {
                     }
                 });
 
-        SupplierMapper.INSTANCE.updateEntity(request, supplier);
-        return SupplierMapper.INSTANCE.toDto(supplierRepository.save(supplier));
+        supplierMapper.updateEntity(request, supplier);
+        return supplierMapper.toDto(supplierRepository.save(supplier));
     }
 
     @Transactional
