@@ -7,7 +7,7 @@
 </head>
 <body>
 <div layout:fragment="content">
-    <div class="container-fluid" style="max-width: 1400px;">
+    <div class="container-fluid" style="max-width: 1200px;">
         <!-- ヘッダー -->
         <div class="row mb-3">
             <div class="col">
@@ -44,62 +44,78 @@
                 <i class="fas fa-search"></i> 検索条件
             </div>
             <div class="card-body">
-                <form th:action="@{/orders}" method="get" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="orderNumber" class="form-label">受注番号</label>
-                        <input type="text" class="form-control" id="orderNumber" name="orderNumber" 
-                               th:value="${param.orderNumber}">
+                <form th:action="@{/orders}" method="get">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-md-2">
+                            <label for="orderNumber" class="col-form-label">受注番号</label>
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control form-control-sm" id="orderNumber" name="orderNumber" 
+                                   th:value="${param.orderNumber}">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="customerId" class="col-form-label">得意先</label>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="customerId" name="customerId">
+                                <option value="">選択してください</option>
+                                <option th:each="customer : ${customers}"
+                                        th:value="${customer.id}"
+                                        th:text="${customer.name}"
+                                        th:selected="${param.customerId != null and param.customerId[0] == customer.id.toString()}">
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label for="orderDateFrom" class="form-label">受注日（開始）</label>
-                        <input type="date" class="form-control" id="orderDateFrom" name="orderDateFrom"
-                               th:value="${param.orderDateFrom}">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-md-2">
+                            <label for="orderDateFrom" class="col-form-label">受注日</label>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group input-group-sm">
+                                <input type="date" class="form-control form-control-sm" id="orderDateFrom" name="orderDateFrom"
+                                       th:value="${param.orderDateFrom}">
+                                <span class="input-group-text">～</span>
+                                <input type="date" class="form-control form-control-sm" id="orderDateTo" name="orderDateTo"
+                                       th:value="${param.orderDateTo}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="productId" class="col-form-label">品目</label>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="productId" name="productId">
+                                <option value="">選択してください</option>
+                                <option th:each="product : ${products}"
+                                        th:value="${product.id}"
+                                        th:text="${product.itemName}"
+                                        th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
+                                </option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label for="orderDateTo" class="form-label">受注日（終了）</label>
-                        <input type="date" class="form-control" id="orderDateTo" name="orderDateTo"
-                               th:value="${param.orderDateTo}">
-                    </div>
-                    <div class="col-md-4">
-                        <label for="customerId" class="form-label">得意先</label>
-                        <select class="form-select" id="customerId" name="customerId">
-                            <option value="">選択してください</option>
-                            <option th:each="customer : ${customers}"
-                                    th:value="${customer.id}"
-                                    th:text="${customer.name}"
-                                    th:selected="${param.customerId != null and param.customerId[0] == customer.id.toString()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="productId" class="form-label">品目</label>
-                        <select class="form-select" id="productId" name="productId">
-                            <option value="">選択してください</option>
-                            <option th:each="product : ${products}"
-                                    th:value="${product.id}"
-                                    th:text="${product.itemName}"
-                                    th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label for="status" class="form-label">ステータス</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="">選択してください</option>
-                            <option th:each="status : ${statuses}"
-                                    th:value="${status}"
-                                    th:text="${status.displayName}"
-                                    th:selected="${param.status != null and param.status[0] == status.name()}">
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-12 text-end">
-                        <button type="button" class="btn btn-secondary" onclick="clearForm(this.form)">
-                            <i class="fas fa-eraser"></i> クリア
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-search"></i> 検索
-                        </button>
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-md-2">
+                            <label for="status" class="col-form-label">ステータス</label>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select form-select-sm" id="status" name="status">
+                                <option value="">選択してください</option>
+                                <option th:each="status : ${statuses}"
+                                        th:value="${status}"
+                                        th:text="${status.displayName}"
+                                        th:selected="${param.status != null and param.status[0] == status.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="clearForm(this.form)">
+                                <i class="fas fa-eraser"></i> クリア
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i> 検索
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -229,8 +245,12 @@
                     url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Japanese.json"
                 },
                 order: [[1, 'desc']], // 受注日の降順でソート
-                pageLength: 25,
-                stateSave: true
+                pageLength: 50, // 1ページあたりの表示件数を50件に増やす
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "全件"]],
+                stateSave: true,
+                dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
+                     "<'row'<'col-sm-12'tr>>" +
+                     "<'row'<'col-sm-5'i><'col-sm-7'p>>"
             });
         });
 
