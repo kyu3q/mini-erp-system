@@ -213,7 +213,12 @@
 
         function confirmDelete(warehouseId) {
             if (confirm('この倉庫を削除してもよろしいですか？')) {
-                document.getElementById('deleteForm' + warehouseId).submit();
+                const form = document.getElementById('deleteForm' + warehouseId);
+                if (form) {
+                    form.submit();
+                } else {
+                    console.error('Delete form not found for warehouse ID:', warehouseId);
+                }
             }
         }
 
