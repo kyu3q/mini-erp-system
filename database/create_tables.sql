@@ -12,15 +12,15 @@ CREATE TABLE products (
     updated_by VARCHAR(100),
     deleted BOOLEAN DEFAULT FALSE,
     version BIGINT,
-    product_code VARCHAR(50) NOT NULL,
-    product_name VARCHAR(100) NOT NULL,
+    item_code VARCHAR(50) NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
     description TEXT,
     unit VARCHAR(20) NOT NULL,
     status VARCHAR(20) NOT NULL,
     minimum_stock INTEGER,
     maximum_stock INTEGER,
     reorder_point INTEGER,
-    CONSTRAINT uk_products_product_code_not_deleted UNIQUE (product_code, deleted)
+    CONSTRAINT uk_products_item_code_not_deleted UNIQUE (item_code, deleted)
 );
 
 -- 倉庫テーブル
@@ -110,7 +110,7 @@ CREATE TABLE suppliers (
 
 -- 製品の初期データ
 INSERT INTO products (
-    created_at, created_by, product_code, product_name, description, unit, status, 
+    created_at, created_by, item_code, item_name, description, unit, status, 
     minimum_stock, maximum_stock, reorder_point
 ) VALUES
     (CURRENT_TIMESTAMP, 'system', 'P001', 'ノートパソコン', '高性能ビジネスノートPC', '台', 'ACTIVE', 10, 100, 20),
