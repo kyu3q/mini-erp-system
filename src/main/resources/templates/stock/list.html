@@ -167,7 +167,7 @@
                                 <option value="">商品を選択してください</option>
                                 <option th:each="product : ${products}"
                                         th:value="${product.id}"
-                                        th:text="${product.productName + ' (' + product.productCode + ')'}">
+                                        th:text="${product.ItemName + ' (' + product.ItemCode + ')'}">
                                 </option>
                             </select>
                         </div>

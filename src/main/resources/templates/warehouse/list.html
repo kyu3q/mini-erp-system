@@ -3,12 +3,12 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
-    <title>倉庫一覧</title>
+    <title>倉庫マスタ</title>
 </head>
 <body>
 <div layout:fragment="content">
     <div class="container-fluid">
-        <h1 class="mt-4">倉庫一覧</h1>
+        <h1 class="mt-4">倉庫マスタ</h1>
 
             <div class="row mb-4">
                 <div class="col-12">
@@ -55,8 +55,10 @@
                     <a th:href="@{/warehouses/export}" class="btn btn-outline-success">
                         <i class="fas fa-file-excel"></i> Excel出力
                     </a>
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#importModal">
+                    <form id="importForm" th:action="@{/warehouses/import}" method="post" enctype="multipart/form-data" style="display: inline;">
+                        <input type="file" id="fileInput" name="file" accept=".xlsx" style="display: none;">
+                    </form>
+                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
                         <i class="fas fa-file-import"></i> 取込
                     </button>
                     <a th:href="@{/warehouses/import/template}" class="btn btn-outline-secondary">
@@ -121,30 +123,6 @@
                         </tr>
                         </tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- インポートモーダル -->
-    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="importModalLabel">倉庫データ取込</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="importForm" th:action="@{/warehouses/import}" method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="fileInput" class="form-label">取込ファイル（Excel）</label>
-                            <input type="file" class="form-control" id="fileInput" name="file" accept=".xlsx">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-primary" onclick="submitImport()">取込実行</button>
                 </div>
             </div>
         </div>
