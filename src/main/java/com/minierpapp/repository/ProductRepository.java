@@ -12,13 +12,13 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
     
-    Optional<Product> findByProductCodeAndDeletedFalse(String productCode);
+    Optional<Product> findByItemCodeAndDeletedFalse(String itemCode);
     
     List<Product> findByDeletedFalse();
     
     Page<Product> findByDeletedFalse(Pageable pageable);
     
-    boolean existsByProductCodeAndDeletedFalse(String productCode);
+    boolean existsByItemCodeAndDeletedFalse(String itemCode);
 
-    List<Product> findByProductCodeContainingAndProductNameContainingAndDeletedFalse(String productCode, String productName);
+    List<Product> findByItemCodeContainingAndItemNameContainingAndDeletedFalse(String itemCode, String itemName);
 }

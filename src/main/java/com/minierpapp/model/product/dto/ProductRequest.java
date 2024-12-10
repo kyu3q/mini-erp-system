@@ -14,14 +14,14 @@ public class ProductRequest {
 
     private Long id;
 
-    @NotBlank(message = "商品コードを入力してください")
-    @Size(max = Constants.CODE_LENGTH, message = "商品コードは{max}文字以内で入力してください")
-    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "商品コードは半角英数字のみ入力可能です")
-    private String productCode;
+    @NotBlank(message = "品目コードを入力してください")
+    @Size(max = Constants.CODE_LENGTH, message = "品目コードは{max}文字以内で入力してください")
+    @Pattern(regexp = "^[A-Za-z0-9]+$", message = "品目コードは半角英数字のみ入力可能です")
+    private String itemCode;
 
-    @NotBlank(message = "商品名を入力してください")
-    @Size(max = Constants.NAME_LENGTH, message = "商品名は{max}文字以内で入力してください")
-    private String productName;
+    @NotBlank(message = "品目名を入力してください")
+    @Size(max = Constants.NAME_LENGTH, message = "品目名は{max}文字以内で入力してください")
+    private String itemName;
 
     @Size(max = Constants.DESCRIPTION_LENGTH, message = "説明は{max}文字以内で入力してください")
     private String description;

@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class ProductResponse {
     private Long id;
-    private String productCode;
-    private String productName;
+    private String itemCode;
+    private String itemName;
     private String description;
     private String unit;
     private Status status;

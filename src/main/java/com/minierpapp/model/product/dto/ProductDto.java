@@ -10,13 +10,13 @@ import lombok.Data;
 public class ProductDto {
     private Long id;
 
-    @NotBlank(message = "商品コードは必須です")
-    @Size(max = 20, message = "商品コードは20文字以内で入力してください")
-    private String productCode;
+    @NotBlank(message = "品目コードは必須です")
+    @Size(max = 20, message = "品目コードは20文字以内で入力してください")
+    private String itemCode;
 
-    @NotBlank(message = "商品名は必須です")
-    @Size(max = 100, message = "商品名は100文字以内で入力してください")
-    private String productName;
+    @NotBlank(message = "品目名は必須です")
+    @Size(max = 100, message = "品目名は100文字以内で入力してください")
+    private String itemName;
 
     @Size(max = 500, message = "説明は500文字以内で入力してください")
     private String description;

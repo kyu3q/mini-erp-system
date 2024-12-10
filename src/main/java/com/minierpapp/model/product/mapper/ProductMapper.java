@@ -17,8 +17,8 @@ public class ProductMapper {
 
         ProductResponse response = new ProductResponse();
         response.setId(product.getId());
-        response.setProductCode(product.getProductCode());
-        response.setProductName(product.getProductName());
+        response.setItemCode(product.getItemCode());
+        response.setItemName(product.getItemName());
         response.setDescription(product.getDescription());
         response.setUnit(product.getUnit());
         response.setStatus(product.getStatus());
@@ -38,8 +38,8 @@ public class ProductMapper {
         }
 
         Product product = new Product();
-        product.setProductCode(request.getProductCode());
-        product.setProductName(request.getProductName());
+        product.setItemCode(request.getItemCode());
+        product.setItemName(request.getItemName());
         product.setDescription(request.getDescription());
         product.setUnit(request.getUnit());
         product.setStatus(request.getStatus());
@@ -56,8 +56,8 @@ public class ProductMapper {
             return;
         }
 
-        product.setProductCode(request.getProductCode());
-        product.setProductName(request.getProductName());
+        product.setItemCode(request.getItemCode());
+        product.setItemName(request.getItemName());
         product.setDescription(request.getDescription());
         product.setUnit(request.getUnit());
         product.setStatus(request.getStatus());
