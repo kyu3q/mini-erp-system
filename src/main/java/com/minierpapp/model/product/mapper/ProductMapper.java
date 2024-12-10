@@ -5,6 +5,8 @@ import com.minierpapp.model.product.dto.ProductRequest;
 import com.minierpapp.model.product.dto.ProductResponse;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class ProductMapper {
 
@@ -44,6 +46,8 @@ public class ProductMapper {
         product.setMinimumStock(request.getMinimumStock());
         product.setMaximumStock(request.getMaximumStock());
         product.setReorderPoint(request.getReorderPoint());
+        product.setDeleted(false);
+        product.setCreatedAt(LocalDateTime.now());
         return product;
     }
 

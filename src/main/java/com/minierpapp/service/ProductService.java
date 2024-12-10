@@ -63,13 +63,16 @@ public class ProductService {
         
         // 商品コードが変更される場合は、既存の商品を論理削除して新しい商品を作成
         if (!existingProduct.getProductCode().equals(request.getProductCode())) {
+            // 既存の商品を論理削除
             existingProduct.setDeleted(true);
             productRepository.save(existingProduct);
             
             // 新しい商品を作成
-            Product newProduct = productMapper.toEntity(request);
             validateProductCode(null, request.getProductCode());
             validateStockLevels(request);
+            
+            Product newProduct = productMapper.toEntity(request);
+            newProduct.setCreatedBy(existingProduct.getCreatedBy()); // 作成者を引き継ぐ
             return productRepository.save(newProduct);
         }
         
