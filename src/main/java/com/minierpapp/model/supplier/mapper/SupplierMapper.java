@@ -6,12 +6,9 @@ import com.minierpapp.model.supplier.dto.SupplierRequest;
 import com.minierpapp.model.supplier.dto.SupplierResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface SupplierMapper {
-    SupplierMapper INSTANCE = Mappers.getMapper(SupplierMapper.class);
-
     SupplierDto toDto(Supplier supplier);
     SupplierResponse toResponse(Supplier supplier);
     Supplier toEntity(SupplierRequest request);
