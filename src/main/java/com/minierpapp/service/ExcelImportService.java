@@ -137,7 +137,7 @@ public class ExcelImportService {
                     if (request != null) {
                         // 商品コードで既存の商品を検索
                         try {
-                            Product existingProduct = productService.findByProductCode(request.getProductCode());
+                            Product existingProduct = productService.findByItemCode(request.getItemCode());
                             // 既存の商品が見つかった場合は更新、見つからない場合は新規作成
                             if (existingProduct != null) {
                                 productService.update(existingProduct.getId(), request);
@@ -167,18 +167,18 @@ public class ExcelImportService {
         ProductRequest request = new ProductRequest();
 
         // 商品コード（必須）
-        String productCode = getStringCellValue(row.getCell(0));
-        if (productCode == null || productCode.trim().isEmpty()) {
+        String itemCode = getStringCellValue(row.getCell(0));
+        if (itemCode == null || itemCode.trim().isEmpty()) {
             throw new IllegalArgumentException("商品コードは必須です");
         }
-        request.setProductCode(productCode.trim());
+        request.setItemCode(itemCode.trim());
 
         // 商品名（必須）
-        String productName = getStringCellValue(row.getCell(1));
-        if (productName == null || productName.trim().isEmpty()) {
+        String itemName = getStringCellValue(row.getCell(1));
+        if (itemName == null || itemName.trim().isEmpty()) {
             throw new IllegalArgumentException("商品名は必須です");
         }
-        request.setProductName(productName.trim());
+        request.setItemName(itemName.trim());
 
         // 単位（必須）
         String unit = getStringCellValue(row.getCell(2));

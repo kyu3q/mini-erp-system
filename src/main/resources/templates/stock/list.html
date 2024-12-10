@@ -35,7 +35,7 @@
                                             <option value="">すべての商品</option>
                                             <option th:each="product : ${products}"
                                                     th:value="${product.id}"
-                                                    th:text="${product.productName + ' (' + product.productCode + ')'}"
+                                                    th:text="${product.itemName + ' (' + product.itemCode + ')'}"
                                                     th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
                                             </option>
                                         </select>
@@ -113,7 +113,7 @@
                             </td>
                             <td>
                                 <a href="#" class="text-decoration-none editable-link"
-                                   th:text="${stock.productName + ' (' + stock.productCode + ')'}"
+                                   th:text="${stock.itemName + ' (' + stock.itemCode + ')'}"
                                    th:onclick="'editStock(' + ${stock.id} + '); return false;'"
                                    data-bs-toggle="tooltip"
                                    data-bs-placement="top"

@@ -15,8 +15,8 @@ public class StockResponse {
     private String warehouseCode;
     private String warehouseName;
     private Long productId;
-    private String productCode;
-    private String productName;
+    private String itemCode;
+    private String itemName;
     private Integer quantity;
     private Integer minimumQuantity;
     private Integer maximumQuantity;
