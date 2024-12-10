@@ -61,10 +61,21 @@ public class ProductService {
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
         
-        validateProductCode(id, request.getProductCode());
+        // 商品コードが変更される場合は、既存の商品を論理削除して新しい商品を作成
+        if (!existingProduct.getProductCode().equals(request.getProductCode())) {
+            existingProduct.setDeleted(true);
+            productRepository.save(existingProduct);
+            
+            // 新しい商品を作成
+            Product newProduct = productMapper.toEntity(request);
+            validateProductCode(null, request.getProductCode());
+            validateStockLevels(request);
+            return productRepository.save(newProduct);
+        }
+        
+        // 商品コードが変更されない場合は通常の更新
         validateStockLevels(request);
         productMapper.updateEntityFromRequest(request, existingProduct);
-        
         return productRepository.save(existingProduct);
     }
 
@@ -75,10 +86,9 @@ public class ProductService {
                 throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
             }
         } else {
-            // 更新時
+            // 更新時：同じ商品コードを持つ非削除の商品が存在し、かつそれが異なる商品の場合はエラー
             productRepository.findByProductCodeAndDeletedFalse(productCode)
                     .ifPresent(existingProduct -> {
-                        // 異なるIDの商品で同じ商品コードが使用されている場合はエラー
                         if (!existingProduct.getId().equals(productId)) {
                             throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
                         }
