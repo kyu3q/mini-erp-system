@@ -1,12 +1,6 @@
 -- データベースの作成（存在しない場合のみ）
-DO
-$$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mini_erp_db') THEN
-        CREATE DATABASE mini_erp_db;
-    END IF;
-END
-$$;
+SELECT 'CREATE DATABASE mini_erp_db'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'mini_erp_db')\gexec
 
 -- ユーザーの作成（存在しない場合のみ）と権限付与
 DO
