@@ -36,8 +36,16 @@ public class WarehouseWebController {
     private final ExcelImportService excelImportService;
 
     @GetMapping
-    public String list(@PageableDefault Pageable pageable, Model model) {
-        Page<WarehouseDto> warehouses = warehouseService.findAll(pageable);
+    public String list(@RequestParam(required = false) String warehouseCode,
+                      @RequestParam(required = false) String name,
+                      @PageableDefault Pageable pageable,
+                      Model model) {
+        Page<WarehouseDto> warehouses;
+        if (warehouseCode != null || name != null) {
+            warehouses = warehouseService.search(warehouseCode, name, pageable);
+        } else {
+            warehouses = warehouseService.findAll(pageable);
+        }
         model.addAttribute("warehouses", warehouses);
         return "warehouse/list";
     }

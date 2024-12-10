@@ -24,6 +24,12 @@ public class WarehouseService {
     private final WarehouseMapper warehouseMapper;
 
     @Transactional(readOnly = true)
+    public Page<WarehouseDto> search(String warehouseCode, String name, Pageable pageable) {
+        return warehouseRepository.search(warehouseCode, name, pageable)
+                .map(warehouseMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
     public Page<WarehouseDto> findAll(Pageable pageable) {
         return warehouseRepository.findAll(pageable)
                 .map(warehouseMapper::toDto);
@@ -84,7 +90,6 @@ public class WarehouseService {
     public void delete(Long id) {
         Warehouse warehouse = warehouseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with id: " + id));
-        warehouse.setStatus(Status.INACTIVE);
-        warehouseRepository.save(warehouse);
+        warehouseRepository.delete(warehouse);
     }
 }
