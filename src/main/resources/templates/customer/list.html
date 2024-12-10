@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>得意先一覧</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h1 class="mt-4">得意先一覧</h1>
+            <div class="row mb-4">
+                <div class="col-12">
+                    <form th:action="@{/customers}" method="get" class="card">
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">得意先コード</span>
+                                        <input type="text" name="customerCode" th:value="${param.customerCode}" 
+                                               class="form-control" placeholder="得意先コード">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group">
+                                        <span class="input-group-text">得意先名</span>
+                                        <input type="text" name="name" th:value="${param.name}" 
+                                               class="form-control" placeholder="得意先名">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-outline-primary flex-grow-1">
+                                            <i class="fas fa-search"></i> 検索
+                                        </button>
+                                        <a th:href="@{/customers}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-undo"></i> クリア
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <a th:href="@{/customers/new}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> 新規作成
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${message}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="customersTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>得意先コード</th>
+                                    <th>得意先名</th>
+                                    <th>電話番号</th>
+                                    <th>メールアドレス</th>
+                                    <th>担当者</th>
+                                    <th>ステータス</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="customer : ${customers}">
+                                    <td>
+                                        <a th:href="@{/customers/{id}/edit(id=${customer.id})}"
+                                           class="text-decoration-none editable-link"
+                                           th:text="${customer.customerCode}"
+                                           data-bs-toggle="tooltip"
+                                           data-bs-placement="top"
+                                           title="クリックして編集">
+                                        </a>
+                                    </td>
+                                    <td th:text="${customer.name}"></td>
+                                    <td th:text="${customer.phone}"></td>
+                                    <td th:text="${customer.email}"></td>
+                                    <td th:text="${customer.contactPerson}"></td>
+                                    <td>
+                                        <span th:if="${customer.status.name() == 'ACTIVE'}" class="badge bg-success">有効</span>
+                                        <span th:if="${customer.status.name() == 'INACTIVE'}" class="badge bg-secondary">無効</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <form th:action="@{/customers/{id}(id=${customer.id})}"
+                                                  method="post"
+                                                  style="display: inline;"
+                                                  onsubmit="return confirm('この得意先を削除してもよろしいですか？');">
+                                                <input type="hidden" name="_method" value="DELETE"/>
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i> 削除
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            $(document).ready(function() {
+                $('#customersTable').DataTable({
+                    language: {
+                        url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Japanese.json"
+                    },
+                    order: [[0, 'asc']],
+                    pageLength: 25
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

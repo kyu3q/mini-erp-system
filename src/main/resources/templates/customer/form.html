@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title th:text="${customerId != null ? '得意先編集' : '得意先登録'}">得意先登録</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="container-fluid">
+            <h1 class="mt-4" th:text="${customerId != null ? '得意先編集' : '得意先登録'}">得意先登録</h1>
+
+            <form th:action="${customerId != null ? '/customers/' + customerId : '/customers'}"
+                  th:object="${customerRequest}"
+                  method="post"
+                  class="needs-validation"
+                  novalidate>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="customerCode" class="form-label">得意先コード <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="customerCode" th:field="*{customerCode}"
+                                               th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('customerCode')}"
+                                             th:errors="*{customerCode}">
+                                            得意先コードは必須です
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">得意先名 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="name" th:field="*{name}"
+                                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required>
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
+                                             th:errors="*{name}">
+                                            得意先名は必須です
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="nameKana" class="form-label">得意先名（カナ）</label>
+                                        <input type="text" class="form-control" id="nameKana" th:field="*{nameKana}"
+                                               th:classappend="${#fields.hasErrors('nameKana')} ? 'is-invalid'">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('nameKana')}"
+                                             th:errors="*{nameKana}">
+                                            得意先名（カナ）は100文字以内で入力してください
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="postalCode" class="form-label">郵便番号</label>
+                                        <input type="text" class="form-control" id="postalCode" th:field="*{postalCode}"
+                                               th:classappend="${#fields.hasErrors('postalCode')} ? 'is-invalid'"
+                                               placeholder="例：123-4567">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('postalCode')}"
+                                             th:errors="*{postalCode}">
+                                            郵便番号の形式が正しくありません
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label for="address" class="form-label">住所</label>
+                                        <input type="text" class="form-control" id="address" th:field="*{address}"
+                                               th:classappend="${#fields.hasErrors('address')} ? 'is-invalid'">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('address')}"
+                                             th:errors="*{address}">
+                                            住所は200文字以内で入力してください
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label">電話番号</label>
+                                        <input type="tel" class="form-control" id="phone" th:field="*{phone}"
+                                               th:classappend="${#fields.hasErrors('phone')} ? 'is-invalid'"
+                                               placeholder="例：03-1234-5678">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('phone')}"
+                                             th:errors="*{phone}">
+                                            電話番号の形式が正しくありません
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="fax" class="form-label">FAX番号</label>
+                                        <input type="tel" class="form-control" id="fax" th:field="*{fax}"
+                                               th:classappend="${#fields.hasErrors('fax')} ? 'is-invalid'"
+                                               placeholder="例：03-1234-5678">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('fax')}"
+                                             th:errors="*{fax}">
+                                            FAX番号の形式が正しくありません
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">メールアドレス</label>
+                                        <input type="email" class="form-control" id="email" th:field="*{email}"
+                                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                                             th:errors="*{email}">
+                                            メールアドレスの形式が正しくありません
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="contactPerson" class="form-label">担当者</label>
+                                        <input type="text" class="form-control" id="contactPerson" th:field="*{contactPerson}"
+                                               th:classappend="${#fields.hasErrors('contactPerson')} ? 'is-invalid'">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('contactPerson')}"
+                                             th:errors="*{contactPerson}">
+                                            担当者名は100文字以内で入力してください
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="paymentTerms" class="form-label">支払条件</label>
+                                        <input type="text" class="form-control" id="paymentTerms" th:field="*{paymentTerms}"
+                                               th:classappend="${#fields.hasErrors('paymentTerms')} ? 'is-invalid'">
+                                        <div class="invalid-feedback" th:if="${#fields.hasErrors('paymentTerms')}"
+                                             th:errors="*{paymentTerms}">
+                                            支払条件は100文字以内で入力してください
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="status" class="form-label">ステータス <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="status" th:field="*{status}" required>
+                                            <option value="ACTIVE">有効</option>
+                                            <option value="INACTIVE">無効</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label for="notes" class="form-label">備考</label>
+                                        <textarea class="form-control" id="notes" th:field="*{notes}" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存
+                            </button>
+                            <a th:href="@{/customers}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> キャンセル
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
