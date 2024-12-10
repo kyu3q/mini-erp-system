@@ -1,11 +1,10 @@
 package com.minierpapp.controller;
 
-import com.minierpapp.model.product.Product;
-import com.minierpapp.model.product.dto.ProductRequest;
-import com.minierpapp.model.product.mapper.ProductMapper;
+import com.minierpapp.model.item.Item;
+import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.service.ExcelExportService;
 import com.minierpapp.service.ExcelImportService;
-import com.minierpapp.service.ProductService;
+import com.minierpapp.service.ItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -24,12 +23,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-@RequestMapping("/products")
+@RequestMapping("/items")
 @RequiredArgsConstructor
-public class ProductWebController {
+public class ItemWebController {
 
-    private final ProductService productService;
-    private final ProductMapper productMapper;
+    private final ItemService itemService;
     private final ExcelExportService excelExportService;
     private final ExcelImportService excelImportService;
 
@@ -40,33 +38,33 @@ public class ProductWebController {
             Model model) {
         if ((itemCode != null && !itemCode.trim().isEmpty()) ||
             (itemName != null && !itemName.trim().isEmpty())) {
-            model.addAttribute("products", productService.search(itemCode, itemName));
+            model.addAttribute("items", itemService.search(itemCode, itemName));
             model.addAttribute("itemCode", itemCode);
             model.addAttribute("itemName", itemName);
         } else {
-            model.addAttribute("products", productService.findAll());
+            model.addAttribute("items", itemService.findAll());
         }
-        return "products/list";
+        return "items/list";
     }
 
     @GetMapping("/new")
-    public String newProduct(Model model) {
-        model.addAttribute("product", new ProductRequest());
-        return "products/form";
+    public String newItem(Model model) {
+        model.addAttribute("item", new ItemRequest());
+        return "items/form";
     }
 
     @PostMapping
-    public String create(@Valid @ModelAttribute("product") ProductRequest request,
+    public String create(@Valid @ModelAttribute("item") ItemRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            return "products/form";
+            return "items/form";
         }
 
         try {
-            productService.create(request);
+            itemService.create(request);
             redirectAttributes.addFlashAttribute("message", "商品を登録しました。");
-            return "redirect:/products";
+            return "redirect:/items";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("商品コード")) {
                 result.rejectValue("itemCode", "error.itemCode", e.getMessage());
@@ -79,40 +77,40 @@ public class ProductWebController {
             } else {
                 result.reject("error.global", e.getMessage());
             }
-            return "products/form";
+            return "items/form";
         }
     }
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        Product product = productService.findById(id);
-        ProductRequest request = new ProductRequest();
+        Item item = itemService.findById(id);
+        ItemRequest request = new ItemRequest();
         request.setId(id);
-        request.setItemCode(product.getItemCode());
-        request.setItemName(product.getItemName());
-        request.setDescription(product.getDescription());
-        request.setUnit(product.getUnit());
-        request.setStatus(product.getStatus());
-        request.setMinimumStock(product.getMinimumStock());
-        request.setMaximumStock(product.getMaximumStock());
-        request.setReorderPoint(product.getReorderPoint());
-        model.addAttribute("product", request);
-        return "products/form";
+        request.setItemCode(item.getItemCode());
+        request.setItemName(item.getItemName());
+        request.setDescription(item.getDescription());
+        request.setUnit(item.getUnit());
+        request.setStatus(item.getStatus());
+        request.setMinimumStock(item.getMinimumStock());
+        request.setMaximumStock(item.getMaximumStock());
+        request.setReorderPoint(item.getReorderPoint());
+        model.addAttribute("item", request);
+        return "items/form";
     }
 
     @PutMapping("/{id}")
     public String update(@PathVariable Long id,
-                        @Valid @ModelAttribute("product") ProductRequest request,
+                        @Valid @ModelAttribute("item") ItemRequest request,
                         BindingResult result,
                         RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            return "products/form";
+            return "items/form";
         }
 
         try {
-            productService.update(id, request);
+            itemService.update(id, request);
             redirectAttributes.addFlashAttribute("message", "商品を更新しました。");
-            return "redirect:/products";
+            return "redirect:/items";
         } catch (IllegalArgumentException | IllegalStateException e) {
             if (e.getMessage().contains("商品コード")) {
                 result.rejectValue("itemCode", "error.itemCode", e.getMessage());
@@ -125,15 +123,15 @@ public class ProductWebController {
             } else {
                 result.reject("error.global", e.getMessage());
             }
-            return "products/form";
+            return "items/form";
         }
     }
 
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        productService.delete(id);
+        itemService.delete(id);
         redirectAttributes.addFlashAttribute("message", "商品を削除しました。");
-        return "redirect:/products";
+        return "redirect:/items";
     }
 
     @GetMapping("/export")
@@ -141,22 +139,22 @@ public class ProductWebController {
             @RequestParam(required = false) String itemCode,
             @RequestParam(required = false) String itemName) throws IOException {
         
-        List<Product> products;
+        List<Item> items;
         if ((itemCode != null && !itemCode.trim().isEmpty()) ||
             (itemName != null && !itemName.trim().isEmpty())) {
-            products = productService.search(itemCode, itemName);
+            items = itemService.search(itemCode, itemName);
         } else {
-            products = productService.findAll();
+            items = itemService.findAll();
         }
 
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String filename = String.format("products_%s.xlsx", timestamp);
+        String filename = String.format("items_%s.xlsx", timestamp);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
         headers.setContentDispositionFormData("attachment", filename);
 
-        byte[] excelBytes = excelExportService.exportProductsToExcel(products);
+        byte[] excelBytes = excelExportService.exportItemsToExcel(items);
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(excelBytes);
@@ -167,16 +165,16 @@ public class ProductWebController {
                                 RedirectAttributes redirectAttributes) {
         if (file.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "ファイルを選択してください。");
-            return "redirect:/products";
+            return "redirect:/items";
         }
 
         if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
             redirectAttributes.addFlashAttribute("error", "Excelファイル(.xlsx)を選択してください。");
-            return "redirect:/products";
+            return "redirect:/items";
         }
 
         try {
-            List<String> errors = excelImportService.importProducts(file);
+            List<String> errors = excelImportService.importItems(file);
             
             if (errors.isEmpty()) {
                 redirectAttributes.addFlashAttribute("message", "商品データを取り込みました。");
@@ -189,12 +187,12 @@ public class ProductWebController {
             redirectAttributes.addFlashAttribute("error", "ファイルの読み込みに失敗しました。");
         }
         
-        return "redirect:/products";
+        return "redirect:/items";
     }
 
     @GetMapping("/import/template")
     public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
-        String filename = "product_import_template.xlsx";
+        String filename = "item_import_template.xlsx";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));

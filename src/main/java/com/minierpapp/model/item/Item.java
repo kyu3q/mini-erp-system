@@ -1,4 +1,4 @@
-package com.minierpapp.model.product;
+package com.minierpapp.model.item;
 
 import com.minierpapp.model.common.BaseEntity;
 import com.minierpapp.model.common.Constants;
@@ -11,14 +11,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "products",
+@Table(name = "items",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_products_item_code_not_deleted",
+                @UniqueConstraint(name = "uk_items_item_code_not_deleted",
                         columnNames = {"item_code", "deleted"})
         })
 @Getter
 @Setter
-public class Product extends BaseEntity {
+public class Item extends BaseEntity {
 
     @NotBlank
     @Size(max = Constants.CODE_LENGTH)

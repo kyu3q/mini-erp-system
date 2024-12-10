@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
     Page<Stock> findByWarehouseId(Long warehouseId, Pageable pageable);
-    Page<Stock> findByProductId(Long productId, Pageable pageable);
-    Optional<Stock> findByWarehouseIdAndProductId(Long warehouseId, Long productId);
-    boolean existsByWarehouseIdAndProductId(Long warehouseId, Long productId);
+    Page<Stock> findByItemId(Long itemId, Pageable pageable);
+    Optional<Stock> findByWarehouseIdAndItemId(Long warehouseId, Long itemId);
+    boolean existsByWarehouseIdAndItemId(Long warehouseId, Long itemId);
 }

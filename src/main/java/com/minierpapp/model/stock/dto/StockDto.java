@@ -14,7 +14,7 @@ public class StockDto {
     private Long warehouseId;
     private String warehouseCode;
     private String warehouseName;
-    private Long productId;
+    private Long itemId;
     private String itemCode;
     private String itemName;
     private Integer quantity;

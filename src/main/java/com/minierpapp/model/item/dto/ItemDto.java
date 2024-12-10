@@ -1,4 +1,4 @@
-package com.minierpapp.model.product.dto;
+package com.minierpapp.model.item.dto;
 
 import com.minierpapp.model.common.Status;
 import jakarta.validation.constraints.NotBlank;
@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ProductDto {
+public class ItemDto {
     private Long id;
 
     @NotBlank(message = "品目コードは必須です")

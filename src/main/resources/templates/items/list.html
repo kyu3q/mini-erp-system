@@ -11,7 +11,7 @@
             <h1 class="mt-4">品目マスタ</h1>
             <div class="row mb-4">
                 <div class="col-12">
-                    <form th:action="@{/products}" method="get" class="card">
+                    <form th:action="@{/items}" method="get" class="card">
                         <div class="card-body">
                             <div class="row g-3">
                                 <div class="col-md-4">
@@ -31,7 +31,7 @@
                                         <button type="submit" class="btn btn-outline-primary flex-grow-1">
                                             <i class="fas fa-search"></i> 検索
                                         </button>
-                                        <a th:href="@{/products}" class="btn btn-outline-secondary">
+                                        <a th:href="@{/items}" class="btn btn-outline-secondary">
                                             <i class="fas fa-undo"></i> クリア
                                         </a>
                                     </div>
@@ -45,20 +45,20 @@
             <div class="row mb-4">
                 <div class="col-12">
                     <div class="d-flex gap-2">
-                        <a th:href="@{/products/new}" class="btn btn-outline-primary">
+                        <a th:href="@{/items/new}" class="btn btn-outline-primary">
                             <i class="fas fa-plus"></i> 新規作成
                         </a>
-                        <a th:href="@{/products/export(itemCode=${itemCode},itemName=${itemName})}"
+                        <a th:href="@{/items/export(itemCode=${itemCode},itemName=${itemName})}"
                            class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excel出力
                         </a>
-                        <form id="importForm" th:action="@{/products/import}" method="post" enctype="multipart/form-data" style="display: none;">
+                        <form id="importForm" th:action="@{/items/import}" method="post" enctype="multipart/form-data" style="display: none;">
                             <input type="file" id="fileInput" name="file" accept=".xlsx">
                         </form>
                         <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
                             <i class="fas fa-file-import"></i> 取込
                         </button>
-                        <a th:href="@{/products/import/template}" class="btn btn-outline-secondary">
+                        <a th:href="@{/items/import/template}" class="btn btn-outline-secondary">
                             <i class="fas fa-download"></i> 取込テンプレート
                         </a>
                     </div>
@@ -126,27 +126,27 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="product : ${products}">
+                                <tr th:each="item : ${items}">
                                     <td>
-                                        <a th:href="@{/products/{id}/edit(id=${product.id})}" 
+                                        <a th:href="@{/items/{id}/edit(id=${item.id})}" 
                                            class="text-decoration-none editable-link" 
-                                           th:text="${product.itemCode}"
+                                           th:text="${item.itemCode}"
                                            data-bs-toggle="tooltip" 
                                            data-bs-placement="top" 
                                            title="クリックして編集">
                                         </a>
                                     </td>
-                                    <td th:text="${product.itemName}"></td>
-                                    <td th:text="${product.unit}"></td>
+                                    <td th:text="${item.itemName}"></td>
+                                    <td th:text="${item.unit}"></td>
                                     <td>
-                                        <span th:if="${product.status.name() == 'ACTIVE'}" class="badge bg-success">有効</span>
-                                        <span th:if="${product.status.name() == 'INACTIVE'}" class="badge bg-secondary">無効</span>
+                                        <span th:if="${item.status.name() == 'ACTIVE'}" class="badge bg-success">有効</span>
+                                        <span th:if="${item.status.name() == 'INACTIVE'}" class="badge bg-secondary">無効</span>
                                     </td>
-                                    <td th:text="${product.minimumStock}"></td>
-                                    <td th:text="${product.maximumStock}"></td>
-                                    <td th:text="${product.reorderPoint}"></td>
+                                    <td th:text="${item.minimumStock}"></td>
+                                    <td th:text="${item.maximumStock}"></td>
+                                    <td th:text="${item.reorderPoint}"></td>
                                     <td>
-                                        <form th:action="@{/products/{id}(id=${product.id})}"
+                                        <form th:action="@{/items/{id}(id=${item.id})}"
                                               method="post"
                                               style="display: inline;">
                                             <input type="hidden" name="_method" value="DELETE"/>

@@ -2,7 +2,7 @@ package com.minierpapp.controller;
 
 import com.minierpapp.model.stock.dto.StockDto;
 import com.minierpapp.model.stock.dto.StockRequest;
-import com.minierpapp.service.ProductService;
+import com.minierpapp.service.ItemService;
 import com.minierpapp.service.StockService;
 import com.minierpapp.service.WarehouseService;
 import jakarta.validation.Valid;
@@ -22,13 +22,13 @@ public class StockWebController {
 
     private final StockService stockService;
     private final WarehouseService warehouseService;
-    private final ProductService productService;
+    private final ItemService itemService;
 
     @GetMapping
     public String list(@PageableDefault(size = 10) Pageable pageable, Model model) {
         model.addAttribute("stocks", stockService.findAll(pageable));
         model.addAttribute("warehouses", warehouseService.findAll());
-        model.addAttribute("products", productService.findAll());
+        model.addAttribute("items", itemService.findAll());
         return "stock/list";
     }
 
@@ -36,7 +36,7 @@ public class StockWebController {
     public String newStock(Model model) {
         model.addAttribute("stock", new StockRequest());
         model.addAttribute("warehouses", warehouseService.findAll());
-        model.addAttribute("products", productService.findAll());
+        model.addAttribute("items", itemService.findAll());
         return "stock/form";
     }
 
@@ -47,7 +47,7 @@ public class StockWebController {
                         RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             model.addAttribute("warehouses", warehouseService.findAll());
-            model.addAttribute("products", productService.findAll());
+            model.addAttribute("items", itemService.findAll());
             return "stock/form";
         }
 
@@ -58,7 +58,7 @@ public class StockWebController {
         } catch (IllegalArgumentException e) {
             result.rejectValue("", "error.stock", e.getMessage());
             model.addAttribute("warehouses", warehouseService.findAll());
-            model.addAttribute("products", productService.findAll());
+            model.addAttribute("items", itemService.findAll());
             return "stock/form";
         }
     }
@@ -69,7 +69,7 @@ public class StockWebController {
         StockRequest request = new StockRequest();
         request.setId(id);
         request.setWarehouseId(stock.getWarehouseId());
-        request.setProductId(stock.getProductId());
+        request.setItemId(stock.getItemId());
         request.setQuantity(stock.getQuantity());
         request.setMinimumQuantity(stock.getMinimumQuantity());
         request.setMaximumQuantity(stock.getMaximumQuantity());
@@ -78,7 +78,7 @@ public class StockWebController {
         
         model.addAttribute("stock", request);
         model.addAttribute("warehouses", warehouseService.findAll());
-        model.addAttribute("products", productService.findAll());
+        model.addAttribute("items", itemService.findAll());
         return "stock/form";
     }
 
@@ -90,7 +90,7 @@ public class StockWebController {
                         RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
             model.addAttribute("warehouses", warehouseService.findAll());
-            model.addAttribute("products", productService.findAll());
+            model.addAttribute("items", itemService.findAll());
             return "stock/form";
         }
 
@@ -101,7 +101,7 @@ public class StockWebController {
         } catch (IllegalArgumentException e) {
             result.rejectValue("", "error.stock", e.getMessage());
             model.addAttribute("warehouses", warehouseService.findAll());
-            model.addAttribute("products", productService.findAll());
+            model.addAttribute("items", itemService.findAll());
             return "stock/form";
         }
     }

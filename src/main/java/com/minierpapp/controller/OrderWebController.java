@@ -4,11 +4,11 @@ import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.order.OrderStatus;
 import com.minierpapp.model.order.dto.OrderDto;
 import com.minierpapp.model.order.dto.OrderRequest;
-import com.minierpapp.model.product.Product;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.OrderService;
-import com.minierpapp.service.ProductService;
+import com.minierpapp.service.ItemService;
 import com.minierpapp.service.WarehouseService;
 import com.minierpapp.util.ExcelHelper;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,7 +28,7 @@ import java.util.List;
 public class OrderWebController {
     private final OrderService orderService;
     private final CustomerService customerService;
-    private final ProductService productService;
+    private final ItemService itemService;
     private final WarehouseService warehouseService;
     private final ExcelHelper excelHelper;
 
@@ -37,17 +37,17 @@ public class OrderWebController {
                       @RequestParam(required = false) String orderDateFrom,
                       @RequestParam(required = false) String orderDateTo,
                       @RequestParam(required = false) Long customerId,
-                      @RequestParam(required = false) Long productId,
+                      @RequestParam(required = false) Long itemId,
                       @RequestParam(required = false) OrderStatus status,
                       Model model) {
         List<OrderDto> orders = orderService.search(orderNumber, orderDateFrom, orderDateTo,
-                customerId, productId, status);
+                customerId, itemId, status);
         List<Customer> customers = customerService.findAllActive();
-        List<Product> products = productService.findAllActive();
+        List<Item> items = itemService.findAllActive();
 
         model.addAttribute("orders", orders);
         model.addAttribute("customers", customers);
-        model.addAttribute("products", products);
+        model.addAttribute("items", items);
         model.addAttribute("statuses", OrderStatus.values());
         return "order/list";
     }
@@ -55,10 +55,10 @@ public class OrderWebController {
     @GetMapping("/create")
     public String create(Model model) {
         List<Customer> customers = customerService.findAllActive();
-        List<Product> products = productService.findAllActive();
+        List<Item> items = itemService.findAllActive();
         List<Warehouse> warehouses = warehouseService.findAllActive();
         model.addAttribute("customers", customers);
-        model.addAttribute("products", products);
+        model.addAttribute("items", items);
         model.addAttribute("warehouses", warehouses);
         model.addAttribute("statuses", OrderStatus.values());
         return "order/edit";
@@ -68,11 +68,11 @@ public class OrderWebController {
     public String edit(@PathVariable Long id, Model model) {
         OrderDto order = orderService.findById(id);
         List<Customer> customers = customerService.findAllActive();
-        List<Product> products = productService.findAllActive();
+        List<Item> items = itemService.findAllActive();
         List<Warehouse> warehouses = warehouseService.findAllActive();
         model.addAttribute("order", order);
         model.addAttribute("customers", customers);
-        model.addAttribute("products", products);
+        model.addAttribute("items", items);
         model.addAttribute("warehouses", warehouses);
         model.addAttribute("statuses", OrderStatus.values());
         return "order/edit";

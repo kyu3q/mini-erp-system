@@ -36,11 +36,11 @@ public class StockController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/product/{productId}")
-    public ResponseEntity<Page<StockResponse>> findByProduct(
-            @PathVariable Long productId,
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<Page<StockResponse>> findByItem(
+            @PathVariable Long itemId,
             Pageable pageable) {
-        Page<StockResponse> response = stockService.findByProduct(productId, pageable)
+        Page<StockResponse> response = stockService.findByItem(itemId, pageable)
                 .map(stockMapper::toResponse);
         return ResponseEntity.ok(response);
     }

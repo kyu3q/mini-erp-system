@@ -64,7 +64,7 @@ public class ExcelHelper {
             Sheet detailSheet = workbook.createSheet("OrderDetails");
             Row detailHeaderRow = detailSheet.createRow(0);
             String[] detailHeaders = {
-                "受注番号", "行番号", "商品コード", "商品名", "数量", "単価",
+                "受注番号", "行番号", "品目コード", "品目名", "数量", "単価",
                 "金額", "倉庫コード", "倉庫名", "配送予定日", "備考"
             };
             for (int i = 0; i < detailHeaders.length; i++) {
@@ -78,8 +78,8 @@ public class ExcelHelper {
                     Row row = detailSheet.createRow(rowNum++);
                     row.createCell(0).setCellValue(order.getOrderNumber());
                     row.createCell(1).setCellValue(detail.getLineNumber());
-                    row.createCell(2).setCellValue(detail.getProductCode());
-                    row.createCell(3).setCellValue(detail.getProductName());
+                    row.createCell(2).setCellValue(detail.getItemCode());
+                    row.createCell(3).setCellValue(detail.getItemName());
                     row.createCell(4).setCellValue(detail.getQuantity());
                     row.createCell(5).setCellValue(detail.getUnitPrice().doubleValue());
                     row.createCell(6).setCellValue(detail.getAmount().doubleValue());
@@ -149,7 +149,7 @@ public class ExcelHelper {
 
                     OrderRequest.OrderDetailRequest detail = new OrderRequest.OrderDetailRequest();
                     detail.setLineNumber(getIntegerValue(detailRow.getCell(1)));
-                    detail.setProductId(getLongValue(detailRow.getCell(2)));
+                    detail.setItemId(getLongValue(detailRow.getCell(2)));
                     detail.setQuantity(getIntegerValue(detailRow.getCell(4)));
                     detail.setUnitPrice(getBigDecimalValue(detailRow.getCell(5)));
                     detail.setAmount(getBigDecimalValue(detailRow.getCell(6)));

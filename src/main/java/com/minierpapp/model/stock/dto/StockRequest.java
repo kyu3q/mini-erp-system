@@ -19,8 +19,8 @@ public class StockRequest {
     @NotNull(message = "Warehouse ID is required")
     private Long warehouseId;
 
-    @NotNull(message = "Product ID is required")
-    private Long productId;
+    @NotNull(message = "Item ID is required")
+    private Long itemId;
 
     @NotNull(message = "Quantity is required")
     @Min(value = 0, message = "Quantity must be greater than or equal to 0")

@@ -1,4 +1,4 @@
-package com.minierpapp.model.product.dto;
+package com.minierpapp.model.item.dto;
 
 import com.minierpapp.model.common.Constants;
 import com.minierpapp.model.common.Status;
@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class ProductRequest {
+public class ItemRequest {
 
     private Long id;
 

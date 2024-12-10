@@ -1,7 +1,7 @@
 package com.minierpapp.model.stock;
 
 import com.minierpapp.model.common.BaseEntity;
-import com.minierpapp.model.product.Product;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "stocks",
        uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"warehouse_id", "product_id"})
+           @UniqueConstraint(columnNames = {"warehouse_id", "item_id"})
        })
 @Getter
 @Setter
@@ -31,8 +31,8 @@ public class Stock extends BaseEntity {
     private Warehouse warehouse;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;

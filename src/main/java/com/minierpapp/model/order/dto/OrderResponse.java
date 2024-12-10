@@ -34,9 +34,9 @@ public class OrderResponse {
     public static class OrderDetailResponse {
         private Long id;
         private Integer lineNumber;
-        private Long productId;
-        private String productName;
-        private String productCode;
+        private Long itemId;
+        private String itemName;
+        private String itemCode;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal amount;

@@ -3,11 +3,11 @@
 -- スキーマの権限付与
 GRANT ALL ON SCHEMA public TO mini_erp_user;
 
--- 製品テーブル
+-- 品目テーブル
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'products') THEN
-        CREATE TABLE products (
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'items') THEN
+        CREATE TABLE items (
             id BIGSERIAL PRIMARY KEY,
             created_at TIMESTAMP NOT NULL,
             updated_at TIMESTAMP,
@@ -22,7 +22,7 @@ BEGIN
             minimum_stock INTEGER,
             maximum_stock INTEGER,
             reorder_point INTEGER,
-            CONSTRAINT uk_products_item_code_not_deleted UNIQUE (item_code, deleted)
+            CONSTRAINT uk_items_item_code_not_deleted UNIQUE (item_code, deleted)
         );
     END IF;
 END $$;
@@ -61,13 +61,13 @@ BEGIN
             updated_by VARCHAR(100),
             deleted BOOLEAN DEFAULT FALSE,
             warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
-            product_id BIGINT NOT NULL REFERENCES products(id),
+            item_id BIGINT NOT NULL REFERENCES items(id),
             quantity INTEGER NOT NULL,
             minimum_quantity INTEGER,
             maximum_quantity INTEGER,
             location VARCHAR(100),
             notes TEXT,
-            CONSTRAINT uk_stocks_warehouse_product UNIQUE(warehouse_id, product_id, deleted)
+            CONSTRAINT uk_stocks_warehouse_item UNIQUE(warehouse_id, item_id, deleted)
         );
     END IF;
 END $$;
@@ -131,9 +131,9 @@ END $$;
 -- 初期データの挿入（テーブルが空の場合のみ）
 DO $$
 BEGIN
-    -- 製品の初期データ
-    IF NOT EXISTS (SELECT 1 FROM products) THEN
-        INSERT INTO products (
+    -- 品目の初期データ
+    IF NOT EXISTS (SELECT 1 FROM items) THEN
+        INSERT INTO items (
             created_at, created_by, item_code, item_name, description, unit, status, 
             minimum_stock, maximum_stock, reorder_point
         ) VALUES
@@ -157,7 +157,7 @@ BEGIN
     -- 在庫の初期データ
     IF NOT EXISTS (SELECT 1 FROM stocks) THEN
         INSERT INTO stocks (
-            created_at, created_by, warehouse_id, product_id, quantity, minimum_quantity, maximum_quantity, location, notes
+            created_at, created_by, warehouse_id, item_id, quantity, minimum_quantity, maximum_quantity, location, notes
         ) VALUES
             (CURRENT_TIMESTAMP, 'system', 1, 1, 50, 10, 100, 'A-1-1', 'ノートPC保管エリア'),
             (CURRENT_TIMESTAMP, 'system', 1, 2, 30, 5, 50, 'A-1-2', 'デスクトップPC保管エリア'),
@@ -233,7 +233,7 @@ BEGIN
             deleted BOOLEAN DEFAULT FALSE,
             order_id BIGINT NOT NULL REFERENCES orders(id),
             line_number INTEGER NOT NULL,
-            product_id BIGINT NOT NULL REFERENCES products(id),
+            item_id BIGINT NOT NULL REFERENCES items(id),
             quantity INTEGER NOT NULL,
             unit_price DECIMAL(12,2) NOT NULL,
             amount DECIMAL(12,2) NOT NULL,

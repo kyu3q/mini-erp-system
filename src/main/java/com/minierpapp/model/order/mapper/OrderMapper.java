@@ -1,12 +1,12 @@
 package com.minierpapp.model.order.mapper;
 
 import com.minierpapp.model.customer.Customer;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.order.Order;
 import com.minierpapp.model.order.OrderDetail;
 import com.minierpapp.model.order.dto.OrderDto;
 import com.minierpapp.model.order.dto.OrderRequest;
 import com.minierpapp.model.order.dto.OrderResponse;
-import com.minierpapp.model.product.Product;
 import com.minierpapp.model.warehouse.Warehouse;
 import org.mapstruct.*;
 
@@ -31,7 +31,7 @@ public interface OrderMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "order", ignore = true)
-    @Mapping(target = "product", source = "productId")
+    @Mapping(target = "item", source = "itemId")
     @Mapping(target = "warehouse", source = "warehouseId")
     OrderDetail toEntity(OrderRequest.OrderDetailRequest request);
 
@@ -39,9 +39,9 @@ public interface OrderMapper {
     @Mapping(target = "customerName", source = "customer.name")
     OrderDto toDto(Order order);
 
-    @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "productName", source = "product.itemName")
-    @Mapping(target = "productCode", source = "product.itemCode")
+    @Mapping(target = "itemId", source = "item.id")
+    @Mapping(target = "itemName", source = "item.itemName")
+    @Mapping(target = "itemCode", source = "item.itemCode")
     @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "warehouseName", source = "warehouse.name")
     OrderDto.OrderDetailDto toDto(OrderDetail orderDetail);
@@ -50,9 +50,9 @@ public interface OrderMapper {
     @Mapping(target = "customerName", source = "customer.name")
     OrderResponse toResponse(Order order);
 
-    @Mapping(target = "productId", source = "product.id")
-    @Mapping(target = "productName", source = "product.itemName")
-    @Mapping(target = "productCode", source = "product.itemCode")
+    @Mapping(target = "itemId", source = "item.id")
+    @Mapping(target = "itemName", source = "item.itemName")
+    @Mapping(target = "itemCode", source = "item.itemCode")
     @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "warehouseName", source = "warehouse.name")
     OrderResponse.OrderDetailResponse toResponse(OrderDetail orderDetail);
@@ -69,13 +69,13 @@ public interface OrderMapper {
         return customer;
     }
 
-    default Product productFromId(Long id) {
+    default Item itemFromId(Long id) {
         if (id == null) {
             return null;
         }
-        Product product = new Product();
-        product.setId(id);
-        return product;
+        Item item = new Item();
+        item.setId(id);
+        return item;
     }
 
     default Warehouse warehouseFromId(Long id) {

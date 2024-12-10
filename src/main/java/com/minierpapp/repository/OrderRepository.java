@@ -31,12 +31,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "AND (:fromDate IS NULL OR o.orderDate >= :fromDate) " +
            "AND (:toDate IS NULL OR o.orderDate <= :toDate) " +
            "AND (:customerId IS NULL OR o.customer.id = :customerId) " +
-           "AND (:productId IS NULL OR d.product.id = :productId) " +
+           "AND (:itemId IS NULL OR d.item.id = :itemId) " +
            "AND (:status IS NULL OR o.status = :status)")
     List<Order> search(@Param("orderNumber") String orderNumber,
                       @Param("fromDate") LocalDate fromDate,
                       @Param("toDate") LocalDate toDate,
                       @Param("customerId") Long customerId,
-                      @Param("productId") Long productId,
+                      @Param("itemId") Long itemId,
                       @Param("status") OrderStatus status);
 }

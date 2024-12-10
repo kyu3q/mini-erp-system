@@ -1,6 +1,6 @@
 package com.minierpapp.service;
 
-import com.minierpapp.model.product.Product;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
 import com.minierpapp.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
@@ -99,7 +99,7 @@ public class ExcelExportService {
         }
     }
 
-    public byte[] exportProductsToExcel(List<Product> products) throws IOException {
+    public byte[] exportItemsToExcel(List<Item> items) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("商品一覧");
 
@@ -139,44 +139,44 @@ public class ExcelExportService {
 
             // データ行の作成
             int rowNum = 1;
-            for (Product product : products) {
+            for (Item item : items) {
                 Row row = sheet.createRow(rowNum++);
                 
                 Cell cell0 = row.createCell(0);
-                cell0.setCellValue(product.getItemCode());
+                cell0.setCellValue(item.getItemCode());
                 cell0.setCellStyle(dataStyle);
 
                 Cell cell1 = row.createCell(1);
-                cell1.setCellValue(product.getItemName());
+                cell1.setCellValue(item.getItemName());
                 cell1.setCellStyle(dataStyle);
 
                 Cell cell2 = row.createCell(2);
-                cell2.setCellValue(product.getUnit());
+                cell2.setCellValue(item.getUnit());
                 cell2.setCellStyle(dataStyle);
 
                 Cell cell3 = row.createCell(3);
-                cell3.setCellValue(product.getStatus().name().equals("ACTIVE") ? "有効" : "無効");
+                cell3.setCellValue(item.getStatus().name().equals("ACTIVE") ? "有効" : "無効");
                 cell3.setCellStyle(dataStyle);
 
                 Cell cell4 = row.createCell(4);
-                if (product.getMinimumStock() != null) {
-                    cell4.setCellValue(product.getMinimumStock());
+                if (item.getMinimumStock() != null) {
+                    cell4.setCellValue(item.getMinimumStock());
                 } else {
                     cell4.setCellValue("");
                 }
                 cell4.setCellStyle(numberStyle);
 
                 Cell cell5 = row.createCell(5);
-                if (product.getMaximumStock() != null) {
-                    cell5.setCellValue(product.getMaximumStock());
+                if (item.getMaximumStock() != null) {
+                    cell5.setCellValue(item.getMaximumStock());
                 } else {
                     cell5.setCellValue("");
                 }
                 cell5.setCellStyle(numberStyle);
 
                 Cell cell6 = row.createCell(6);
-                if (product.getReorderPoint() != null) {
-                    cell6.setCellValue(product.getReorderPoint());
+                if (item.getReorderPoint() != null) {
+                    cell6.setCellValue(item.getReorderPoint());
                 } else {
                     cell6.setCellValue("");
                 }

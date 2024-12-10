@@ -1,13 +1,13 @@
 package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
-import com.minierpapp.model.product.Product;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.stock.Stock;
 import com.minierpapp.model.stock.dto.StockDto;
 import com.minierpapp.model.stock.dto.StockRequest;
 import com.minierpapp.model.stock.mapper.StockMapper;
 import com.minierpapp.model.warehouse.Warehouse;
-import com.minierpapp.repository.ProductRepository;
+import com.minierpapp.repository.ItemRepository;
 import com.minierpapp.repository.StockRepository;
 import com.minierpapp.repository.WarehouseRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class StockService {
 
     private final StockRepository stockRepository;
     private final WarehouseRepository warehouseRepository;
-    private final ProductRepository productRepository;
+    private final ItemRepository itemRepository;
     private final StockMapper stockMapper;
 
     @Transactional(readOnly = true)
@@ -38,8 +38,8 @@ public class StockService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StockDto> findByProduct(Long productId, Pageable pageable) {
-        return stockRepository.findByProductId(productId, pageable)
+    public Page<StockDto> findByItem(Long itemId, Pageable pageable) {
+        return stockRepository.findByItemId(itemId, pageable)
                 .map(stockMapper::toDto);
     }
 
@@ -52,19 +52,19 @@ public class StockService {
 
     @Transactional
     public StockDto create(StockRequest request) {
-        if (stockRepository.existsByWarehouseIdAndProductId(request.getWarehouseId(), request.getProductId())) {
-            throw new IllegalArgumentException("Stock already exists for this warehouse and product combination");
+        if (stockRepository.existsByWarehouseIdAndItemId(request.getWarehouseId(), request.getItemId())) {
+            throw new IllegalArgumentException("Stock already exists for this warehouse and item combination");
         }
 
         Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
                 .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with id: " + request.getWarehouseId()));
 
-        Product product = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + request.getProductId()));
+        Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + request.getItemId()));
 
         Stock stock = stockMapper.toEntity(request);
         stock.setWarehouse(warehouse);
-        stock.setProduct(product);
+        stock.setItem(item);
 
         return stockMapper.toDto(stockRepository.save(stock));
     }
@@ -75,20 +75,20 @@ public class StockService {
                 .orElseThrow(() -> new ResourceNotFoundException("Stock not found with id: " + id));
 
         if (!stock.getWarehouse().getId().equals(request.getWarehouseId()) ||
-            !stock.getProduct().getId().equals(request.getProductId())) {
+            !stock.getItem().getId().equals(request.getItemId())) {
             
-            if (stockRepository.existsByWarehouseIdAndProductId(request.getWarehouseId(), request.getProductId())) {
-                throw new IllegalArgumentException("Stock already exists for this warehouse and product combination");
+            if (stockRepository.existsByWarehouseIdAndItemId(request.getWarehouseId(), request.getItemId())) {
+                throw new IllegalArgumentException("Stock already exists for this warehouse and item combination");
             }
 
             Warehouse warehouse = warehouseRepository.findById(request.getWarehouseId())
                     .orElseThrow(() -> new ResourceNotFoundException("Warehouse not found with id: " + request.getWarehouseId()));
 
-            Product product = productRepository.findById(request.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + request.getProductId()));
+            Item item = itemRepository.findById(request.getItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + request.getItemId()));
 
             stock.setWarehouse(warehouse);
-            stock.setProduct(product);
+            stock.setItem(item);
         }
 
         stock.setQuantity(request.getQuantity());

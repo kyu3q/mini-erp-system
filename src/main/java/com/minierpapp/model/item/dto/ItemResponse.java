@@ -1,4 +1,4 @@
-package com.minierpapp.model.product.dto;
+package com.minierpapp.model.item.dto;
 
 import com.minierpapp.model.common.Status;
 import lombok.Data;
@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class ProductResponse {
+public class ItemResponse {
     private Long id;
     private String itemCode;
     private String itemName;

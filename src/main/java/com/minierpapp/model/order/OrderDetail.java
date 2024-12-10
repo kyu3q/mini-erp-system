@@ -1,7 +1,7 @@
 package com.minierpapp.model.order;
 
 import com.minierpapp.model.common.BaseEntity;
-import com.minierpapp.model.product.Product;
+import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,8 +24,8 @@ public class OrderDetail extends BaseEntity {
     private Integer lineNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "item_id", nullable = false)
+    private Item item;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
