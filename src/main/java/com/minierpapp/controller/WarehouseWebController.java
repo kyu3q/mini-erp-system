@@ -124,7 +124,7 @@ public class WarehouseWebController {
 
     @GetMapping("/import/template")
     public ResponseEntity<ByteArrayResource> downloadTemplate() throws IOException {
-        byte[] data = excelImportService.createImportTemplate();
+        byte[] data = excelImportService.createWarehouseImportTemplate();
         ByteArrayResource resource = new ByteArrayResource(data);
 
         return ResponseEntity.ok()

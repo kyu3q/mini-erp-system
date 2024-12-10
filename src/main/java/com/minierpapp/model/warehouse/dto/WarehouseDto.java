@@ -2,8 +2,10 @@ package com.minierpapp.model.warehouse.dto;
 
 import com.minierpapp.model.common.Status;
 import lombok.Data;
+import lombok.Builder;
 
 @Data
+@Builder
 public class WarehouseDto {
     private Long id;
     private String warehouseCode;
