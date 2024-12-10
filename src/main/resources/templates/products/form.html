@@ -3,13 +3,13 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
-    <title th:text="${product.id == null ? '商品登録' : '商品編集'}"></title>
+    <title th:text="${product.id == null ? '品目登録' : '品目編集'}"></title>
 </head>
 <body>
     <div layout:fragment="content">
         <div class="container-fluid">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="mt-4" th:text="${product.id == null ? '商品登録' : '商品編集'}"></h1>
+                <h1 class="mt-4" th:text="${product.id == null ? '品目登録' : '品目編集'}"></h1>
                 <div>
                     <a th:href="@{/products}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> 一覧に戻る
@@ -21,7 +21,7 @@
                 <div class="col-lg-10">
                     <div class="card shadow-sm mb-4">
                         <div class="card-header py-3">
-                            <h6 class="m-0 font-weight-bold text-primary">商品情報</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">品目情報</h6>
                         </div>
                         <div class="card-body">
                             <form th:action="${product.id == null ? '/products' : '/products/' + product.id}"
@@ -41,26 +41,26 @@
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="productCode" class="form-label fw-bold">商品コード <span class="badge bg-danger">必須</span></label>
+                                            <label for="itemCode" class="form-label fw-bold">品目コード <span class="badge bg-danger">必須</span></label>
                                             <!-- 新規作成時 -->
-                                            <input th:if="${product.id == null}" type="text" class="form-control" id="productCode" 
-                                                   th:field="*{productCode}"
-                                                   th:classappend="${#fields.hasErrors('productCode')} ? 'is-invalid'"
+                                            <input th:if="${product.id == null}" type="text" class="form-control" id="itemCode" 
+                                                   th:field="*{itemCode}"
+                                                   th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'"
                                                    placeholder="半角英数字のみ入力可能です">
                                             <!-- 編集時 -->
-                                            <div th:if="${product.id != null}" class="form-control-plaintext border rounded bg-light px-2 py-2" th:text="*{productCode}"></div>
-                                            <input th:if="${product.id != null}" type="hidden" th:field="*{productCode}">
-                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('productCode')}"
-                                                 th:errors="*{productCode}"></div>
+                                            <div th:if="${product.id != null}" class="form-control-plaintext border rounded bg-light px-2 py-2" th:text="*{itemCode}"></div>
+                                            <input th:if="${product.id != null}" type="hidden" th:field="*{itemCode}">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('itemCode')}"
+                                                 th:errors="*{itemCode}"></div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="productName" class="form-label fw-bold">商品名 <span class="badge bg-danger">必須</span></label>
-                                            <input type="text" class="form-control" id="productName" th:field="*{productName}"
-                                                   th:classappend="${#fields.hasErrors('productName')} ? 'is-invalid'">
-                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('productName')}"
-                                                 th:errors="*{productName}"></div>
+                                            <label for="itemName" class="form-label fw-bold">品目名 <span class="badge bg-danger">必須</span></label>
+                                            <input type="text" class="form-control" id="itemName" th:field="*{itemName}"
+                                                   th:classappend="${#fields.hasErrors('itemName')} ? 'is-invalid'">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('itemName')}"
+                                                 th:errors="*{itemName}"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@
                                     <label for="description" class="form-label fw-bold">説明</label>
                                     <textarea class="form-control" id="description" rows="3" th:field="*{description}"
                                               th:classappend="${#fields.hasErrors('description')} ? 'is-invalid'"
-                                              placeholder="商品の説明を入力してください"></textarea>
+                                              placeholder="品目の説明を入力してください"></textarea>
                                     <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}"
                                          th:errors="*{description}"></div>
                                 </div>
