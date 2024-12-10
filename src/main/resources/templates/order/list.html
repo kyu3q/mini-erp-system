@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>受注一覧</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h2>受注一覧</h2>
+
+    <div class="mb-3">
+        <a th:href="@{/orders/create}" class="btn btn-primary">新規登録</a>
+        <a th:href="@{/orders/export}" class="btn btn-success">Excel出力</a>
+        <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
+            Excel取込
+        </button>
+    </div>
+
+    <div th:if="${successMessage}" class="alert alert-success" role="alert">
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+        <span th:text="${errorMessage}"></span>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>受注番号</th>
+            <th>受注日</th>
+            <th>得意先名</th>
+            <th>配送予定日</th>
+            <th>ステータス</th>
+            <th>合計金額</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.orderNumber}"></td>
+            <td th:text="${#temporals.format(order.orderDate, 'yyyy/MM/dd')}"></td>
+            <td th:text="${order.customerName}"></td>
+            <td th:text="${order.deliveryDate != null ? #temporals.format(order.deliveryDate, 'yyyy/MM/dd') : ''}"></td>
+            <td th:text="${order.status.displayName}"></td>
+            <td th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+            <td>
+                <a th:href="@{/orders/edit/{id}(id=${order.id})}" class="btn btn-sm btn-primary">編集</a>
+                <button type="button" class="btn btn-sm btn-danger"
+                        th:data-order-id="${order.id}"
+                        onclick="confirmDelete(this.getAttribute('data-order-id'))">削除</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Excel取込モーダル -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/orders/import}" method="post" enctype="multipart/form-data">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Excel取込</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Excelファイル</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-primary">取込</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">削除確認</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>この受注を削除してもよろしいですか？</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">削除</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        function confirmDelete(orderId) {
+            const modal = document.getElementById('deleteModal');
+            const form = modal.querySelector('#deleteForm');
+            form.action = `/orders/delete/${orderId}`;
+            new bootstrap.Modal(modal).show();
+        }
+    </script>
+</div>
+</body>
+</html>

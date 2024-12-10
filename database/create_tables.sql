@@ -192,6 +192,59 @@ BEGIN
     END IF;
 END $$;
 
+-- 受注テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'orders') THEN
+        CREATE TABLE orders (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            deleted BOOLEAN DEFAULT FALSE,
+            order_number VARCHAR(50) NOT NULL,
+            order_date DATE NOT NULL,
+            customer_id BIGINT NOT NULL REFERENCES customers(id),
+            delivery_date DATE,
+            shipping_address VARCHAR(200),
+            shipping_postal_code VARCHAR(8),
+            shipping_phone VARCHAR(20),
+            shipping_contact_person VARCHAR(100),
+            status VARCHAR(20) NOT NULL,
+            notes TEXT,
+            total_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+            tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+            CONSTRAINT uk_orders_order_number_not_deleted UNIQUE (order_number, deleted)
+        );
+    END IF;
+END $$;
+
+-- 受注明細テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'order_details') THEN
+        CREATE TABLE order_details (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            deleted BOOLEAN DEFAULT FALSE,
+            order_id BIGINT NOT NULL REFERENCES orders(id),
+            line_number INTEGER NOT NULL,
+            product_id BIGINT NOT NULL REFERENCES products(id),
+            quantity INTEGER NOT NULL,
+            unit_price DECIMAL(12,2) NOT NULL,
+            amount DECIMAL(12,2) NOT NULL,
+            warehouse_id BIGINT REFERENCES warehouses(id),
+            delivery_date DATE,
+            notes TEXT,
+            CONSTRAINT uk_order_details_order_line UNIQUE(order_id, line_number, deleted)
+        );
+    END IF;
+END $$;
+
 -- mini_erp_userに必要な権限を付与
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mini_erp_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO mini_erp_user;
