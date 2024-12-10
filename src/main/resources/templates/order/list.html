@@ -9,111 +9,142 @@
 <div layout:fragment="content">
     <div class="container-fluid" style="max-width: 1200px;">
         <!-- ヘッダー -->
-        <div class="row mb-3">
+        <div class="row mb-4">
             <div class="col">
-                <h2>受注一覧</h2>
+                <h2 class="text-primary">
+                    <i class="fas fa-shopping-cart me-2"></i>受注一覧
+                </h2>
             </div>
             <div class="col text-end">
-                <a th:href="@{/orders/create}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> 新規登録
-                </a>
-                <a th:href="@{/orders/export}" class="btn btn-success">
-                    <i class="fas fa-file-excel"></i> Excel出力
-                </a>
-                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#importModal">
-                    <i class="fas fa-file-import"></i> Excel取込
-                </button>
+                <div class="btn-group">
+                    <a th:href="@{/orders/create}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> 新規登録
+                    </a>
+                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+                        <span class="visually-hidden">Toggle Dropdown</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" th:href="@{/orders/export}">
+                                <i class="fas fa-file-excel me-2"></i> Excel出力
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importModal">
+                                <i class="fas fa-file-import me-2"></i> Excel取込
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
 
         <!-- メッセージ表示エリア -->
         <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle"></i>
+            <i class="fas fa-check-circle me-2"></i>
             <span th:text="${successMessage}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-exclamation-circle me-2"></i>
             <span th:text="${errorMessage}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
         <!-- 検索エリア -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <i class="fas fa-search"></i> 検索条件
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-search me-2"></i>検索条件
+                </h5>
             </div>
             <div class="card-body">
-                <form th:action="@{/orders}" method="get">
-                    <div class="row g-2 align-items-center mb-2">
-                        <div class="col-md-2">
-                            <label for="orderNumber" class="col-form-label">受注番号</label>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="text" class="form-control form-control-sm" id="orderNumber" name="orderNumber" 
-                                   th:value="${param.orderNumber}">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="customerId" class="col-form-label">得意先</label>
-                        </div>
-                        <div class="col-md-4">
-                            <select class="form-select form-select-sm" id="customerId" name="customerId">
-                                <option value="">選択してください</option>
-                                <option th:each="customer : ${customers}"
-                                        th:value="${customer.id}"
-                                        th:text="${customer.name}"
-                                        th:selected="${param.customerId != null and param.customerId[0] == customer.id.toString()}">
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row g-2 align-items-center mb-2">
-                        <div class="col-md-2">
-                            <label for="orderDateFrom" class="col-form-label">受注日</label>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="input-group input-group-sm">
-                                <input type="date" class="form-control form-control-sm" id="orderDateFrom" name="orderDateFrom"
-                                       th:value="${param.orderDateFrom}">
-                                <span class="input-group-text">～</span>
-                                <input type="date" class="form-control form-control-sm" id="orderDateTo" name="orderDateTo"
-                                       th:value="${param.orderDateTo}">
+                <form th:action="@{/orders}" method="get" class="search-form">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="orderNumber" class="form-label">受注番号</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" id="orderNumber" name="orderNumber" 
+                                           th:value="${param.orderNumber}">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <label for="productId" class="col-form-label">品目</label>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="customerId" class="form-label">得意先</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <select class="form-select" id="customerId" name="customerId">
+                                        <option value="">選択してください</option>
+                                        <option th:each="customer : ${customers}"
+                                                th:value="${customer.id}"
+                                                th:text="${customer.name}"
+                                                th:selected="${param.customerId != null and param.customerId[0] == customer.id.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <select class="form-select form-select-sm" id="productId" name="productId">
-                                <option value="">選択してください</option>
-                                <option th:each="product : ${products}"
-                                        th:value="${product.id}"
-                                        th:text="${product.itemName}"
-                                        th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
-                                </option>
-                            </select>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="orderDateFrom" class="form-label">受注日</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="date" class="form-control" id="orderDateFrom" name="orderDateFrom"
+                                               th:value="${param.orderDateFrom}">
+                                        <span class="input-group-text">～</span>
+                                        <input type="date" class="form-control" id="orderDateTo" name="orderDateTo"
+                                               th:value="${param.orderDateTo}">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row g-2 align-items-center mb-2">
-                        <div class="col-md-2">
-                            <label for="status" class="col-form-label">ステータス</label>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="productId" class="form-label">品目</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <select class="form-select" id="productId" name="productId">
+                                        <option value="">選択してください</option>
+                                        <option th:each="product : ${products}"
+                                                th:value="${product.id}"
+                                                th:text="${product.itemName}"
+                                                th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <select class="form-select form-select-sm" id="status" name="status">
-                                <option value="">選択してください</option>
-                                <option th:each="status : ${statuses}"
-                                        th:value="${status}"
-                                        th:text="${status.displayName}"
-                                        th:selected="${param.status != null and param.status[0] == status.name()}">
-                                </option>
-                            </select>
+                        <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <label for="status" class="form-label">ステータス</label>
+                                </div>
+                                <div class="col-md-8">
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="">選択してください</option>
+                                        <option th:each="status : ${statuses}"
+                                                th:value="${status}"
+                                                th:text="${status.displayName}"
+                                                th:selected="${param.status != null and param.status[0] == status.name()}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="clearForm(this.form)">
-                                <i class="fas fa-eraser"></i> クリア
+                        <div class="col-12 text-end">
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearForm(this.form)">
+                                <i class="fas fa-eraser me-1"></i> クリア
                             </button>
-                            <button type="submit" class="btn btn-primary btn-sm">
-                                <i class="fas fa-search"></i> 検索
+                            <button type="submit" class="btn btn-primary ms-2">
+                                <i class="fas fa-search me-1"></i> 検索
                             </button>
                         </div>
                     </div>
@@ -122,33 +153,41 @@
         </div>
 
         <!-- データ一覧 -->
-        <div class="card">
-            <div class="card-header">
-                <i class="fas fa-table"></i> 検索結果
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>検索結果
+                </h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped table-hover" id="orderTable">
-                        <thead class="table-light">
+                    <table class="table table-hover" id="orderTable">
+                        <thead>
                         <tr>
                             <th>受注番号</th>
                             <th>受注日</th>
                             <th>得意先名</th>
                             <th>配送予定日</th>
                             <th>ステータス</th>
-                            <th>合計金額</th>
-                            <th>操作</th>
+                            <th class="text-end">合計金額</th>
+                            <th class="text-center">操作</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="order : ${orders}">
-                            <td th:text="${order.orderNumber}"></td>
+                            <td>
+                                <a th:href="@{/orders/edit/{id}(id=${order.id})}" 
+                                   class="text-primary text-decoration-none">
+                                    <i class="fas fa-file-alt me-1"></i>
+                                    <span th:text="${order.orderNumber}"></span>
+                                </a>
+                            </td>
                             <td th:text="${#temporals.format(order.orderDate, 'yyyy/MM/dd')}"></td>
                             <td th:text="${order.customerName}"></td>
                             <td th:text="${order.deliveryDate != null ? #temporals.format(order.deliveryDate, 'yyyy/MM/dd') : ''}"></td>
                             <td>
                                 <span th:text="${order.status.displayName}"
-                                      th:class="${'badge ' + 
+                                      th:class="${'badge rounded-pill ' + 
                                       (order.status.name() == 'DRAFT' ? 'bg-secondary' :
                                        order.status.name() == 'CONFIRMED' ? 'bg-primary' :
                                        order.status.name() == 'PROCESSING' ? 'bg-info' :
@@ -157,9 +196,12 @@
                                        order.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-secondary')}">
                                 </span>
                             </td>
-                            <td class="text-end" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></td>
+                            <td class="text-end">
+                                <span class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span>
+                                <small class="text-muted">円</small>
+                            </td>
                             <td class="text-center">
-                                <div class="btn-group" role="group">
+                                <div class="btn-group">
                                     <a th:href="@{/orders/edit/{id}(id=${order.id})}" 
                                        class="btn btn-sm btn-outline-primary"
                                        data-bs-toggle="tooltip"
@@ -190,7 +232,9 @@
             <div class="modal-content">
                 <form th:action="@{/orders/import}" method="post" enctype="multipart/form-data">
                     <div class="modal-header">
-                        <h5 class="modal-title">Excel取込</h5>
+                        <h5 class="modal-title">
+                            <i class="fas fa-file-import me-2"></i>Excel取込
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
@@ -198,13 +242,17 @@
                             <label for="file" class="form-label">Excelファイル</label>
                             <input type="file" class="form-control" id="file" name="file" accept=".xlsx" required>
                         </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            取り込み可能なファイル形式は.xlsxのみです。
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="fas fa-times"></i> キャンセル
+                            <i class="fas fa-times me-1"></i> キャンセル
                         </button>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-file-import"></i> 取込
+                            <i class="fas fa-file-import me-1"></i> 取込
                         </button>
                     </div>
                 </form>
@@ -217,19 +265,22 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">削除確認</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>削除確認
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p>この受注を削除してもよろしいですか？</p>
+                    <p class="mb-0">この受注を削除してもよろしいですか？</p>
+                    <p class="text-danger mb-0"><small>※この操作は取り消せません。</small></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times"></i> キャンセル
+                        <i class="fas fa-times me-1"></i> キャンセル
                     </button>
                     <form id="deleteForm" method="post" style="display: inline;">
                         <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash-alt"></i> 削除
+                            <i class="fas fa-trash-alt me-1"></i> 削除
                         </button>
                     </form>
                 </div>
@@ -250,7 +301,18 @@
                 stateSave: true,
                 dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
                      "<'row'<'col-sm-12'tr>>" +
-                     "<'row'<'col-sm-5'i><'col-sm-7'p>>"
+                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                // スタイルのカスタマイズ
+                initComplete: function() {
+                    $('.dataTables_length select').addClass('form-select form-select-sm');
+                    $('.dataTables_filter input').addClass('form-control form-control-sm');
+                }
+            });
+
+            // ツールチップの初期化
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
         });
 
