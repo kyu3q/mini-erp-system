@@ -20,4 +20,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByCustomerCodeAndDeletedFalse(String customerCode);
 
     boolean existsByCustomerCodeAndDeletedFalse(String customerCode);
+
+    List<Customer> findByDeletedFalse();
 }

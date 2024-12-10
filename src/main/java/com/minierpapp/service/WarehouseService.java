@@ -43,6 +43,11 @@ public class WarehouseService {
     }
 
     @Transactional(readOnly = true)
+    public List<Warehouse> findAllActive() {
+        return warehouseRepository.findByDeletedFalse();
+    }
+
+    @Transactional(readOnly = true)
     public WarehouseDto findById(Long id) {
         return warehouseRepository.findById(id)
                 .map(warehouseMapper::toDto)

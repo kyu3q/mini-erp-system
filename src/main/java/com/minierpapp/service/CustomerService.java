@@ -26,6 +26,11 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<Customer> findAllActive() {
+        return customerRepository.findByDeletedFalse();
+    }
+
     public CustomerDto findById(Long id) {
         return customerRepository.findById(id)
                 .map(customerMapper::toDto)

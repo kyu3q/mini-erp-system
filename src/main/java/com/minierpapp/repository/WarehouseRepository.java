@@ -21,4 +21,6 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
     Page<Warehouse> search(@Param("warehouseCode") String warehouseCode,
                          @Param("name") String name,
                          Pageable pageable);
+
+    List<Warehouse> findByDeletedFalse();
 }

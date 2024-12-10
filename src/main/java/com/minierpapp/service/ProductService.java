@@ -27,6 +27,11 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
+    public List<Product> findAllActive() {
+        return productRepository.findByDeletedFalse();
+    }
+
+    @Transactional(readOnly = true)
     public List<Product> search(String itemCode, String itemName) {
         itemCode = itemCode != null ? itemCode.trim() : "";
         itemName = itemName != null ? itemName.trim() : "";
