@@ -143,11 +143,11 @@ public class ExcelExportService {
                 Row row = sheet.createRow(rowNum++);
                 
                 Cell cell0 = row.createCell(0);
-                cell0.setCellValue(product.getProductCode());
+                cell0.setCellValue(product.getItemCode());
                 cell0.setCellStyle(dataStyle);
 
                 Cell cell1 = row.createCell(1);
-                cell1.setCellValue(product.getProductName());
+                cell1.setCellValue(product.getItemName());
                 cell1.setCellStyle(dataStyle);
 
                 Cell cell2 = row.createCell(2);

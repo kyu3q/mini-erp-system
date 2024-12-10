@@ -37,10 +37,10 @@ public class ProductController {
         );
     }
 
-    @GetMapping("/code/{productCode}")
-    public ResponseEntity<ProductResponse> findByProductCode(@PathVariable String productCode) {
+    @GetMapping("/code/{itemCode}")
+    public ResponseEntity<ProductResponse> findByItemCode(@PathVariable String itemCode) {
         return ResponseEntity.ok(
-                productMapper.toResponse(productService.findByProductCode(productCode))
+                productMapper.toResponse(productService.findByItemCode(itemCode))
         );
     }
 

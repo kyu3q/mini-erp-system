@@ -35,14 +35,14 @@ public class ProductWebController {
 
     @GetMapping
     public String list(
-            @RequestParam(required = false) String productCode,
-            @RequestParam(required = false) String productName,
+            @RequestParam(required = false) String itemCode,
+            @RequestParam(required = false) String itemName,
             Model model) {
-        if ((productCode != null && !productCode.trim().isEmpty()) ||
-            (productName != null && !productName.trim().isEmpty())) {
-            model.addAttribute("products", productService.search(productCode, productName));
-            model.addAttribute("productCode", productCode);
-            model.addAttribute("productName", productName);
+        if ((itemCode != null && !itemCode.trim().isEmpty()) ||
+            (itemName != null && !itemName.trim().isEmpty())) {
+            model.addAttribute("products", productService.search(itemCode, itemName));
+            model.addAttribute("itemCode", itemCode);
+            model.addAttribute("itemName", itemName);
         } else {
             model.addAttribute("products", productService.findAll());
         }
@@ -69,7 +69,7 @@ public class ProductWebController {
             return "redirect:/products";
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("商品コード")) {
-                result.rejectValue("productCode", "error.productCode", e.getMessage());
+                result.rejectValue("itemCode", "error.itemCode", e.getMessage());
             } else if (e.getMessage().contains("最小在庫数")) {
                 result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
             } else if (e.getMessage().contains("最大在庫数")) {
@@ -88,8 +88,8 @@ public class ProductWebController {
         Product product = productService.findById(id);
         ProductRequest request = new ProductRequest();
         request.setId(id);
-        request.setProductCode(product.getProductCode());
-        request.setProductName(product.getProductName());
+        request.setItemCode(product.getItemCode());
+        request.setItemName(product.getItemName());
         request.setDescription(product.getDescription());
         request.setUnit(product.getUnit());
         request.setStatus(product.getStatus());
@@ -115,7 +115,7 @@ public class ProductWebController {
             return "redirect:/products";
         } catch (IllegalArgumentException | IllegalStateException e) {
             if (e.getMessage().contains("商品コード")) {
-                result.rejectValue("productCode", "error.productCode", e.getMessage());
+                result.rejectValue("itemCode", "error.itemCode", e.getMessage());
             } else if (e.getMessage().contains("最小在庫数")) {
                 result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
             } else if (e.getMessage().contains("最大在庫数")) {
@@ -138,13 +138,13 @@ public class ProductWebController {
 
     @GetMapping("/export")
     public ResponseEntity<byte[]> exportToExcel(
-            @RequestParam(required = false) String productCode,
-            @RequestParam(required = false) String productName) throws IOException {
+            @RequestParam(required = false) String itemCode,
+            @RequestParam(required = false) String itemName) throws IOException {
         
         List<Product> products;
-        if ((productCode != null && !productCode.trim().isEmpty()) ||
-            (productName != null && !productName.trim().isEmpty())) {
-            products = productService.search(productCode, productName);
+        if ((itemCode != null && !itemCode.trim().isEmpty()) ||
+            (itemName != null && !itemName.trim().isEmpty())) {
+            products = productService.search(itemCode, itemName);
         } else {
             products = productService.findAll();
         }
