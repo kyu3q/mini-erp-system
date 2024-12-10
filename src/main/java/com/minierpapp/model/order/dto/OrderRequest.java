@@ -9,6 +9,7 @@ import java.util.List;
 
 @Data
 public class OrderRequest {
+    private Long id;
     private String orderNumber;
     private LocalDate orderDate;
     private Long customerId;
