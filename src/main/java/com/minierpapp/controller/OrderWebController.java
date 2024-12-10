@@ -33,9 +33,22 @@ public class OrderWebController {
     private final ExcelHelper excelHelper;
 
     @GetMapping
-    public String list(Model model) {
-        List<OrderDto> orders = orderService.findAll();
+    public String list(@RequestParam(required = false) String orderNumber,
+                      @RequestParam(required = false) String orderDateFrom,
+                      @RequestParam(required = false) String orderDateTo,
+                      @RequestParam(required = false) Long customerId,
+                      @RequestParam(required = false) Long productId,
+                      @RequestParam(required = false) OrderStatus status,
+                      Model model) {
+        List<OrderDto> orders = orderService.search(orderNumber, orderDateFrom, orderDateTo,
+                customerId, productId, status);
+        List<Customer> customers = customerService.findAllActive();
+        List<Product> products = productService.findAllActive();
+
         model.addAttribute("orders", orders);
+        model.addAttribute("customers", customers);
+        model.addAttribute("products", products);
+        model.addAttribute("statuses", OrderStatus.values());
         return "order/list";
     }
 

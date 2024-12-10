@@ -21,4 +21,19 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(o.orderNumber, 9) AS int)), 0) FROM Order o WHERE o.orderNumber LIKE CONCAT(:prefix, '%')")
     Integer findMaxOrderNumberByPrefix(String prefix);
+
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN o.orderDetails d " +
+           "WHERE o.deleted = false " +
+           "AND (:orderNumber IS NULL OR o.orderNumber LIKE %:orderNumber%) " +
+           "AND (:fromDate IS NULL OR o.orderDate >= :fromDate) " +
+           "AND (:toDate IS NULL OR o.orderDate <= :toDate) " +
+           "AND (:customerId IS NULL OR o.customer.id = :customerId) " +
+           "AND (:productId IS NULL OR d.product.id = :productId) " +
+           "AND (:status IS NULL OR o.status = :status)")
+    List<Order> search(@Param("orderNumber") String orderNumber,
+                      @Param("fromDate") LocalDate fromDate,
+                      @Param("toDate") LocalDate toDate,
+                      @Param("customerId") Long customerId,
+                      @Param("productId") Long productId,
+                      @Param("status") OrderStatus status);
 }
