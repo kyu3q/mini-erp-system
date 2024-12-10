@@ -27,10 +27,10 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public List<Product> search(String productCode, String productName) {
-        productCode = productCode != null ? productCode.trim() : "";
-        productName = productName != null ? productName.trim() : "";
-        return productRepository.findByProductCodeContainingAndProductNameContainingAndDeletedFalse(productCode, productName);
+    public List<Product> search(String itemCode, String itemName) {
+        itemCode = itemCode != null ? itemCode.trim() : "";
+        itemName = itemName != null ? itemName.trim() : "";
+        return productRepository.findByItemCodeContainingAndItemNameContainingAndDeletedFalse(itemCode, itemName);
     }
 
     @Transactional(readOnly = true)
@@ -45,22 +45,22 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Product findByProductCode(String productCode) {
-        return productRepository.findByProductCodeAndDeletedFalse(productCode)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found with code: " + productCode));
+    public Product findByItemCode(String itemCode) {
+        return productRepository.findByItemCodeAndDeletedFalse(itemCode)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with code: " + itemCode));
     }
 
     @Transactional
     public Product create(ProductRequest request) {
-        // 商品コードの重複チェック
-        if (productRepository.existsByProductCodeAndDeletedFalse(request.getProductCode())) {
-            throw new IllegalArgumentException("商品コード「" + request.getProductCode() + "」は既に使用されています");
+        // 品目コードの重複チェック
+        if (productRepository.existsByItemCodeAndDeletedFalse(request.getItemCode())) {
+            throw new IllegalArgumentException("品目コード「" + request.getItemCode() + "」は既に使用されています");
         }
 
         // 在庫レベルのバリデーション
         validateStockLevels(request);
 
-        // 新規商品の作成
+        // 新規品目の作成
         Product product = productMapper.toEntity(request);
         product.setCreatedAt(LocalDateTime.now());
         return productRepository.save(product);
@@ -70,16 +70,16 @@ public class ProductService {
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
 
-        // 商品コードの変更は不可
-        if (!existingProduct.getProductCode().equals(request.getProductCode())) {
-            throw new IllegalArgumentException("商品コードは変更できません");
+        // 品目コードの変更は不可
+        if (!existingProduct.getItemCode().equals(request.getItemCode())) {
+            throw new IllegalArgumentException("品目コードは変更できません");
         }
 
         // 在庫レベルのバリデーション
         validateStockLevels(request);
 
-        // 商品情報の更新
-        existingProduct.setProductName(request.getProductName());
+        // 品目情報の更新
+        existingProduct.setItemName(request.getItemName());
         existingProduct.setDescription(request.getDescription());
         existingProduct.setUnit(request.getUnit());
         existingProduct.setStatus(request.getStatus());
