@@ -52,8 +52,15 @@ public class ProductService {
 
     @Transactional
     public Product create(ProductRequest request) {
-        validateProductCode(null, request.getProductCode());
+        // 商品コードの重複チェック
+        if (productRepository.existsByProductCodeAndDeletedFalse(request.getProductCode())) {
+            throw new IllegalArgumentException("商品コード「" + request.getProductCode() + "」は既に使用されています");
+        }
+
+        // 在庫レベルのバリデーション
         validateStockLevels(request);
+
+        // 新規商品の作成
         Product product = productMapper.toEntity(request);
         product.setCreatedAt(LocalDateTime.now());
         return productRepository.save(product);
@@ -62,43 +69,16 @@ public class ProductService {
     @Transactional
     public Product update(Long id, ProductRequest request) {
         Product existingProduct = findById(id);
-        String oldProductCode = existingProduct.getProductCode();
-        String newProductCode = request.getProductCode();
 
-        // 商品コードが変更される場合
-        if (!oldProductCode.equals(newProductCode)) {
-            // 新しい商品コードが使用可能か確認
-            if (productRepository.existsByProductCodeAndDeletedFalse(newProductCode)) {
-                throw new IllegalArgumentException("商品コード「" + newProductCode + "」は既に使用されています");
-            }
-
-            // 在庫レベルのバリデーション
-            validateStockLevels(request);
-
-            // 既存の商品を論理削除
-            existingProduct.setDeleted(true);
-            existingProduct.setUpdatedAt(LocalDateTime.now());
-            productRepository.save(existingProduct);
-
-            // 新しい商品を作成
-            Product newProduct = new Product();
-            newProduct.setProductCode(newProductCode);
-            newProduct.setProductName(request.getProductName());
-            newProduct.setDescription(request.getDescription());
-            newProduct.setUnit(request.getUnit());
-            newProduct.setStatus(request.getStatus());
-            newProduct.setMinimumStock(request.getMinimumStock());
-            newProduct.setMaximumStock(request.getMaximumStock());
-            newProduct.setReorderPoint(request.getReorderPoint());
-            newProduct.setDeleted(false);
-            newProduct.setCreatedAt(LocalDateTime.now());
-            newProduct.setCreatedBy(existingProduct.getCreatedBy());
-
-            return productRepository.save(newProduct);
+        // 商品コードの変更は不可
+        if (!existingProduct.getProductCode().equals(request.getProductCode())) {
+            throw new IllegalArgumentException("商品コードは変更できません");
         }
 
-        // 商品コードが変更されない場合は通常の更新
+        // 在庫レベルのバリデーション
         validateStockLevels(request);
+
+        // 商品情報の更新
         existingProduct.setProductName(request.getProductName());
         existingProduct.setDescription(request.getDescription());
         existingProduct.setUnit(request.getUnit());
@@ -109,12 +89,6 @@ public class ProductService {
         existingProduct.setUpdatedAt(LocalDateTime.now());
 
         return productRepository.save(existingProduct);
-    }
-
-    private void validateProductCode(Long productId, String productCode) {
-        if (productRepository.existsByProductCodeAndDeletedFalse(productCode)) {
-            throw new IllegalArgumentException("商品コード「" + productCode + "」は既に使用されています");
-        }
     }
 
     private void validateStockLevels(ProductRequest request) {
