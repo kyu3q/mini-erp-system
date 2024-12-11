@@ -126,7 +126,7 @@
                     <tr>
                         <th style="width: 40px;"></th>
                         <th style="width: 80px;">行番号</th>
-                        <th>商品</th>
+                        <th>品目</th>
                         <th style="width: 100px;">数量</th>
                         <th style="width: 150px;">単価</th>
                         <th style="width: 150px;">金額</th>
@@ -146,16 +146,16 @@
                             <span th:text="${detail.lineNumber}"></span>
                         </td>
                         <td>
-                            <select class="form-select product-select" th:name="|orderDetails[${stat.index}].productId|" required>
+                            <select class="form-select item-select" th:name="|orderDetails[${stat.index}].itemId|" required>
                                 <option value="">選択してください</option>
-                                <option th:each="product : ${products}"
-                                        th:value="${product.id}"
-                                        th:text="${product.itemName}"
-                                        th:data-unit-price="${product.standardPrice}"
-                                        th:selected="${detail.productId == product.id}">
+                                <option th:each="item : ${products}"
+                                        th:value="${item.id}"
+                                        th:text="${item.itemName}"
+                                        th:data-unit-price="${item.standardPrice}"
+                                        th:selected="${detail.itemId == item.id}">
                                 </option>
                             </select>
-                            <div class="invalid-feedback">商品を選択してください。</div>
+                            <div class="invalid-feedback">品目を選択してください。</div>
                         </td>
                         <td>
                             <input type="number" class="form-control quantity" th:name="|orderDetails[${stat.index}].quantity|"
@@ -240,15 +240,10 @@
                     <span>LINE_NUMBER</span>
                 </td>
                 <td>
-                    <select class="form-select product-select" name="orderDetails[INDEX].productId" required>
+                    <select class="form-select item-select" name="orderDetails[INDEX].itemId" required>
                         <option value="">選択してください</option>
-                        <option th:each="product : ${products}"
-                                th:value="${product.id}"
-                                th:text="${product.itemName}"
-                                th:data-unit-price="${product.standardPrice}">
-                        </option>
                     </select>
-                    <div class="invalid-feedback">商品を選択してください。</div>
+                    <div class="invalid-feedback">品目を選択してください。</div>
                 </td>
                 <td>
                     <input type="number" class="form-control quantity" name="orderDetails[INDEX].quantity"
@@ -267,10 +262,6 @@
                 <td>
                     <select class="form-select warehouse-select" name="orderDetails[INDEX].warehouseId" required>
                         <option value="">選択してください</option>
-                        <option th:each="warehouse : ${warehouses}"
-                                th:value="${warehouse.id}"
-                                th:text="${warehouse.name}">
-                        </option>
                     </select>
                     <div class="invalid-feedback">倉庫を選択してください。</div>
                 </td>
@@ -291,7 +282,7 @@
 
         <script th:inline="javascript">
             // グローバル変数の定義
-            const products = /*[[${products}]]*/ [];
+            const items = /*[[${products}]]*/ [];
             const warehouses = /*[[${warehouses}]]*/ [];
 
             // DOMContentLoadedイベントを待つ
@@ -301,7 +292,7 @@
                     if (window.jQuery && window.jQuery.fn.select2) {
                         // 既存のSelect2を破棄
                         try {
-                            $('.product-select, .warehouse-select').select2('destroy');
+                            $('.item-select, .warehouse-select').select2('destroy');
                         } catch (e) {
                             console.log('Select2 not initialized yet');
                         }
@@ -375,11 +366,30 @@
             });
 
             function initializeDetailSelects() {
-                // 商品選択のSelect2初期化
-                $('.product-select').each(function() {
-                    $(this).select2({
+                // 品目選択のSelect2初期化
+                $('.item-select').each(function() {
+                    const select = $(this);
+                    // 既存のオプションを保持
+                    const selectedValue = select.val();
+                    const existingOptions = select.find('option').not(':first').remove();
+
+                    // 品目オプションを追加
+                    items.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        option.textContent = item.itemName;
+                        option.dataset.unitPrice = item.standardPrice || 0;
+                        select.append(option);
+                    });
+
+                    // 選択状態を復元
+                    if (selectedValue) {
+                        select.val(selectedValue);
+                    }
+
+                    select.select2({
                         theme: 'bootstrap-5',
-                        placeholder: '商品を選択してください',
+                        placeholder: '品目を選択してください',
                         width: '100%'
                     }).on('change', function() {
                         const selectedOption = $(this).find('option:selected');
@@ -392,7 +402,25 @@
 
                 // 倉庫選択のSelect2初期化
                 $('.warehouse-select').each(function() {
-                    $(this).select2({
+                    const select = $(this);
+                    // 既存のオプションを保持
+                    const selectedValue = select.val();
+                    const existingOptions = select.find('option').not(':first').remove();
+
+                    // 倉庫オプションを追加
+                    warehouses.forEach(warehouse => {
+                        const option = document.createElement('option');
+                        option.value = warehouse.id;
+                        option.textContent = warehouse.name;
+                        select.append(option);
+                    });
+
+                    // 選択状態を復元
+                    if (selectedValue) {
+                        select.val(selectedValue);
+                    }
+
+                    select.select2({
                         theme: 'bootstrap-5',
                         placeholder: '倉庫を選択してください',
                         width: '100%'
@@ -401,6 +429,7 @@
             }
 
             function addDetail() {
+                console.log('addDetail called');
                 const template = document.getElementById('detailRowTemplate');
                 if (!template) {
                     console.error('Template not found');
@@ -415,6 +444,7 @@
 
                 const index = tbody.children.length;
                 const lineNumber = index + 1;
+                console.log('Adding new row with index:', index, 'lineNumber:', lineNumber);
 
                 // テンプレートのクローンを作成
                 const clone = template.content.cloneNode(true);
@@ -422,8 +452,11 @@
 
                 // インデックスと行番号の更新
                 const inputs = row.querySelectorAll('[name*="INDEX"]');
+                console.log('Found inputs to update:', inputs.length);
                 inputs.forEach(input => {
-                    input.name = input.name.replace('INDEX', index);
+                    const newName = input.name.replace('INDEX', index);
+                    console.log('Updating input name from', input.name, 'to', newName);
+                    input.name = newName;
                 });
 
                 const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
@@ -431,24 +464,29 @@
                     input.value = lineNumber;
                 });
                 const lineNumberSpan = row.querySelector('span');
-                lineNumberSpan.textContent = lineNumber;
+                if (lineNumberSpan) {
+                    lineNumberSpan.textContent = lineNumber;
+                }
 
                 // 配送予定日のデフォルト値を設定
                 const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
-                const defaultDeliveryDate = document.getElementById('deliveryDate')?.value || new Date().toISOString().split('T')[0];
-                deliveryDateInput.value = defaultDeliveryDate;
+                if (deliveryDateInput) {
+                    const defaultDeliveryDate = document.getElementById('deliveryDate')?.value || new Date().toISOString().split('T')[0];
+                    deliveryDateInput.value = defaultDeliveryDate;
+                    console.log('Set delivery date to:', defaultDeliveryDate);
+                }
 
-                // 商品と倉庫のオプションを設定
-                const productSelect = row.querySelector('.product-select');
+                // 品目と倉庫のオプションを設定
+                const itemSelect = row.querySelector('.item-select');
                 const warehouseSelect = row.querySelector('.warehouse-select');
 
-                // 商品オプションを追加
-                products.forEach(product => {
+                // 品目オプションを追加
+                items.forEach(item => {
                     const option = document.createElement('option');
-                    option.value = product.id;
-                    option.textContent = product.itemName;
-                    option.dataset.unitPrice = product.standardPrice;
-                    productSelect.appendChild(option);
+                    option.value = item.id;
+                    option.textContent = item.itemName;
+                    option.dataset.unitPrice = item.standardPrice || 0;
+                    itemSelect.appendChild(option);
                 });
 
                 // 倉庫オプションを追加
@@ -461,35 +499,44 @@
 
                 // 行を追加
                 tbody.appendChild(row);
+                console.log('Row added to tbody');
 
                 // 新しい行のSelect2を初期化
                 const newRow = tbody.lastElementChild;
-                $(newRow).find('.product-select').select2({
-                    theme: 'bootstrap-5',
-                    placeholder: '商品を選択してください',
-                    width: '100%'
-                }).on('change', function() {
-                    const selectedOption = $(this).find('option:selected');
-                    if (selectedOption.val()) {
-                        const unitPrice = selectedOption.data('unit-price') || 0;
-                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                    }
-                });
+                console.log('Initializing Select2 for new row');
 
-                $(newRow).find('.warehouse-select').select2({
-                    theme: 'bootstrap-5',
-                    placeholder: '倉庫を選択してください',
-                    width: '100%'
-                });
+                try {
+                    $(newRow).find('.item-select').select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '品目を選択してください',
+                        width: '100%'
+                    }).on('change', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        if (selectedOption.val()) {
+                            const unitPrice = selectedOption.data('unit-price') || 0;
+                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                        }
+                    });
+
+                    $(newRow).find('.warehouse-select').select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '倉庫を選択してください',
+                        width: '100%'
+                    });
+                    console.log('Select2 initialization completed');
+                } catch (error) {
+                    console.error('Error initializing Select2:', error);
+                }
 
                 updateAmounts();
+                console.log('Detail row initialization completed');
             }
 
             function removeDetail(button) {
                 if (confirm('この明細行を削除してよろしいですか？')) {
                     const row = button.closest('tr');
                     // Select2インスタンスを破棄
-                    $(row).find('.product-select, .warehouse-select').select2('destroy');
+                    $(row).find('.item-select, .warehouse-select').select2('destroy');
                     row.remove();
                     updateLineNumbers();
                     updateAmounts();
@@ -555,311 +602,6 @@
                     form.appendChild(taxAmountHidden);
                 }
             }
-
-            function initializeDetailSelects() {
-                // 商品選択のSelect2初期化
-                $('.product-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '商品を選択してください',
-                        width: '100%'
-                    }).on('change', function() {
-                        const selectedOption = $(this).find('option:selected');
-                        if (selectedOption.val()) {
-                            const unitPrice = selectedOption.data('unit-price') || 0;
-                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                        }
-                    });
-                });
-
-                // 倉庫選択のSelect2初期化
-                $('.warehouse-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '倉庫を選択してください',
-                        width: '100%'
-                    });
-                });
-            }
-
-            function addDetail() {
-                const table = document.getElementById('detailsTable');
-                const template = document.getElementById('detailRowTemplate');
-                const tbody = table.querySelector('tbody');
-                const index = tbody.children.length;
-                const lineNumber = index + 1;
-
-                const clone = template.content.cloneNode(true);
-                const row = clone.querySelector('tr');
-
-                // インデックスと行番号の更新
-                const inputs = row.querySelectorAll('[name*="INDEX"]');
-                inputs.forEach(input => {
-                    input.name = input.name.replace('INDEX', index);
-                });
-
-                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
-                lineNumberInputs.forEach(input => {
-                    input.value = lineNumber;
-                });
-                const lineNumberSpan = row.querySelector('span');
-                lineNumberSpan.textContent = lineNumber;
-
-                // 配送予定日のデフォルト値を設定
-                const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
-                deliveryDateInput.value = document.getElementById('deliveryDate').value;
-
-                tbody.appendChild(row);
-
-                // 新しい行のSelect2を初期化
-                const newRow = tbody.lastElementChild;
-                $(newRow).find('.product-select, .warehouse-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: $(this).hasClass('product-select') ? '商品を選択してください' : '倉庫を選択してください',
-                        width: '100%'
-                    });
-                });
-
-                // 商品選択時のイベントハンドラを設定
-                $(newRow).find('.product-select').on('change', function() {
-                    const selectedOption = $(this).find('option:selected');
-                    if (selectedOption.val()) {
-                        const unitPrice = selectedOption.data('unit-price') || 0;
-                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                    }
-                });
-
-                updateAmounts();
-            }
-
-            function removeDetail(button) {
-                if (confirm('この明細行を削除してよろしいですか？')) {
-                    const row = button.closest('tr');
-                    // Select2インスタンスを破棄
-                    $(row).find('.product-select, .warehouse-select').select2('destroy');
-                    row.remove();
-                    updateLineNumbers();
-                    updateAmounts();
-                }
-            }
-
-            function updateLineNumbers() {
-                const tbody = document.getElementById('detailsTable').querySelector('tbody');
-                const rows = tbody.querySelectorAll('tr');
-                rows.forEach((row, index) => {
-                    const lineNumber = index + 1;
-                    const input = row.querySelector('[name*="].lineNumber"]');
-                    input.value = lineNumber;
-                    const span = row.querySelector('td:first-child + td span');
-                    span.textContent = lineNumber;
-
-                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
-                    inputs.forEach(input => {
-                        input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
-                    });
-                });
-            }
-
-            function updateAmounts() {
-                const rows = document.querySelectorAll('.detail-row');
-                let total = 0;
-
-                rows.forEach(row => {
-                    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
-                    const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
-                    const amount = quantity * unitPrice;
-                    row.querySelector('.amount').value = amount.toFixed(0);
-                    total += amount;
-                });
-
-                const taxRate = 0.1; // 10%
-                const taxAmount = Math.floor(total * taxRate);
-                document.getElementById('totalAmount').value = total.toLocaleString();
-                document.getElementById('taxAmount').value = taxAmount.toLocaleString();
-
-                // hidden inputsの更新
-                const form = document.getElementById('orderForm');
-                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
-                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
-
-                if (existingTotal) {
-                    existingTotal.value = total;
-                } else {
-                    const totalAmountHidden = document.createElement('input');
-                    totalAmountHidden.type = 'hidden';
-                    totalAmountHidden.name = 'totalAmount';
-                    totalAmountHidden.value = total;
-                    form.appendChild(totalAmountHidden);
-                }
-
-                if (existingTax) {
-                    existingTax.value = taxAmount;
-                } else {
-                    const taxAmountHidden = document.createElement('input');
-                    taxAmountHidden.type = 'hidden';
-                    taxAmountHidden.name = 'taxAmount';
-                    taxAmountHidden.value = taxAmount;
-                    form.appendChild(taxAmountHidden);
-                }
-            }
-
-            function initializeDetailSelects() {
-                // 商品選択のSelect2初期化
-                $('.product-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '商品を選択してください',
-                        width: '100%'
-                    }).on('change', function() {
-                        const selectedOption = $(this).find('option:selected');
-                        if (selectedOption.val()) {
-                            const unitPrice = selectedOption.data('unit-price') || 0;
-                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                        }
-                    });
-                });
-
-                // 倉庫選択のSelect2初期化
-                $('.warehouse-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '倉庫を選択してください',
-                        width: '100%'
-                    });
-                });
-            }
-
-            function addDetail() {
-                const table = document.getElementById('detailsTable');
-                const template = document.getElementById('detailRowTemplate');
-                const tbody = table.querySelector('tbody');
-                const index = tbody.children.length;
-                const lineNumber = index + 1;
-
-                const clone = template.content.cloneNode(true);
-                const row = clone.querySelector('tr');
-
-                // インデックスと行番号の更新
-                const inputs = row.querySelectorAll('[name*="INDEX"]');
-                inputs.forEach(input => {
-                    input.name = input.name.replace('INDEX', index);
-                });
-
-                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
-                lineNumberInputs.forEach(input => {
-                    input.value = lineNumber;
-                });
-                const lineNumberSpan = row.querySelector('span');
-                lineNumberSpan.textContent = lineNumber;
-
-                // 配送予定日のデフォルト値を設定
-                const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
-                deliveryDateInput.value = document.getElementById('deliveryDate').value;
-
-                tbody.appendChild(row);
-
-                // 新しい行のSelect2を初期化
-                const newRow = tbody.lastElementChild;
-                $(newRow).find('.product-select, .warehouse-select').each(function() {
-                    $(this).select2({
-                        theme: 'bootstrap-5',
-                        placeholder: $(this).hasClass('product-select') ? '商品を選択してください' : '倉庫を選択してください',
-                        width: '100%'
-                    });
-                });
-
-                // 商品選択時のイベントハンドラを設定
-                $(newRow).find('.product-select').on('change', function() {
-                    const selectedOption = $(this).find('option:selected');
-                    if (selectedOption.val()) {
-                        const unitPrice = selectedOption.data('unit-price') || 0;
-                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                    }
-                });
-
-                updateAmounts();
-            }
-
-            function removeDetail(button) {
-                if (confirm('この明細行を削除してよろしいですか？')) {
-                    const row = button.closest('tr');
-                    // Select2インスタンスを破棄
-                    $(row).find('.product-select, .warehouse-select').select2('destroy');
-                    row.remove();
-                    updateLineNumbers();
-                    updateAmounts();
-                }
-            }
-
-            function updateLineNumbers() {
-                const tbody = document.getElementById('detailsTable').querySelector('tbody');
-                const rows = tbody.querySelectorAll('tr');
-                rows.forEach((row, index) => {
-                    const lineNumber = index + 1;
-                    const input = row.querySelector('[name*="].lineNumber"]');
-                    input.value = lineNumber;
-                    const span = row.querySelector('td:first-child + td span');
-                    span.textContent = lineNumber;
-
-                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
-                    inputs.forEach(input => {
-                        input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
-                    });
-                });
-            }
-
-            function updateAmounts() {
-                const rows = document.querySelectorAll('.detail-row');
-                let total = 0;
-
-                rows.forEach(row => {
-                    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
-                    const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
-                    const amount = quantity * unitPrice;
-                    row.querySelector('.amount').value = amount.toFixed(0);
-                    total += amount;
-                });
-
-                const taxRate = 0.1; // 10%
-                const taxAmount = Math.floor(total * taxRate);
-                document.getElementById('totalAmount').value = total.toLocaleString();
-                document.getElementById('taxAmount').value = taxAmount.toLocaleString();
-
-                // hidden inputsの更新
-                const totalAmountHidden = document.createElement('input');
-                totalAmountHidden.type = 'hidden';
-                totalAmountHidden.name = 'totalAmount';
-                totalAmountHidden.value = total;
-
-                const taxAmountHidden = document.createElement('input');
-                taxAmountHidden.type = 'hidden';
-                taxAmountHidden.name = 'taxAmount';
-                taxAmountHidden.value = taxAmount;
-
-                const form = document.getElementById('orderForm');
-                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
-                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
-
-                if (existingTotal) {
-                    existingTotal.value = total;
-                } else {
-                    form.appendChild(totalAmountHidden);
-                }
-
-                if (existingTax) {
-                    existingTax.value = taxAmount;
-                } else {
-                    form.appendChild(taxAmountHidden);
-                }
-            }
-
-            // 数量・単価の変更時に金額を更新
-            document.addEventListener('input', function(e) {
-                if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
-                    updateAmounts();
-                }
-            });
         </script>
     </div>
 </div>
