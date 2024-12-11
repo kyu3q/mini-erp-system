@@ -22,7 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.orderNumber = :orderNumber")
     Optional<Order> findByOrderNumber(String orderNumber);
 
-    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(o.orderNumber, 9) AS int)), 0) FROM Order o WHERE o.orderNumber LIKE CONCAT(:prefix, '%')")
+    @Query("SELECT COALESCE(MAX(CAST(SUBSTRING(o.orderNumber, LENGTH(:prefix) + 2) AS int)), 0) FROM Order o WHERE o.orderNumber LIKE CONCAT(:prefix, '-%')")
     Integer findMaxOrderNumberByPrefix(String prefix);
 
     @Query("SELECT DISTINCT o FROM Order o LEFT JOIN o.orderDetails d " +

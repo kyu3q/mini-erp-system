@@ -82,8 +82,8 @@ public class OrderService {
     }
 
     private String generateOrderNumber() {
-        String prefix = "ORD" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMM"));
+        String prefix = "ORD-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
         Integer maxNumber = orderRepository.findMaxOrderNumberByPrefix(prefix);
-        return String.format("%s%04d", prefix, maxNumber + 1);
+        return String.format("%s-%03d", prefix, maxNumber + 1);
     }
 }
