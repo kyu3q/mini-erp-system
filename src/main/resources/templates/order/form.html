@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title th:text="${order != null ? '受注編集' : '受注登録'}"></title>
+    <style>
+        .required::after {
+            content: " *";
+            color: red;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+        .amount-text {
+            text-align: right;
+        }
+        .detail-row:hover {
+            background-color: #f8f9fa;
+        }
+        .detail-row .drag-handle {
+            cursor: move;
+            color: #6c757d;
+        }
+        .detail-row.dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid" style="max-width: 1400px;">
+        <h2 th:text="${order != null ? '受注編集' : '受注登録'}"></h2>
+
+        <form th:action="@{/orders/save}" method="post" id="orderForm" class="needs-validation" novalidate>
+            <input type="hidden" name="id" th:value="${order?.id}">
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="orderNumber" class="form-label">受注番号</label>
+                    <input type="text" class="form-control" id="orderNumber" name="orderNumber"
+                           th:value="${order?.orderNumber}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="orderDate" class="form-label required">受注日</label>
+                    <input type="date" class="form-control" id="orderDate" name="orderDate"
+                           th:value="${order?.orderDate}" required>
+                    <div class="invalid-feedback">受注日を入力してください。</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="customerId" class="form-label required">得意先</label>
+                    <select class="form-select" id="customerId" name="customerId" required>
+                        <option value="">選択してください</option>
+                        <option th:each="customer : ${customers}"
+                                th:value="${customer.id}"
+                                th:text="${customer.name}"
+                                th:data-postal-code="${customer.postalCode}"
+                                th:data-address="${customer.address}"
+                                th:data-phone="${customer.phone}"
+                                th:data-contact-person="${customer.contactPerson}"
+                                th:selected="${order?.customerId == customer.id}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">得意先を選択してください。</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="deliveryDate" class="form-label required">配送予定日</label>
+                    <input type="date" class="form-control" id="deliveryDate" name="deliveryDate"
+                           th:value="${order?.deliveryDate}" required>
+                    <div class="invalid-feedback">配送予定日を入力してください。</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label required">ステータス</label>
+                    <select class="form-select" id="status" name="status" required>
+                        <option th:each="status : ${statuses}"
+                                th:value="${status}"
+                                th:text="${status.displayName}"
+                                th:selected="${order?.status == status}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">ステータスを選択してください。</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="shippingAddress" class="form-label required">配送先住所</label>
+                    <input type="text" class="form-control" id="shippingAddress" name="shippingAddress"
+                           th:value="${order?.shippingAddress}" required>
+                    <div class="invalid-feedback">配送先住所を入力してください。</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="shippingPostalCode" class="form-label">配送先郵便番号</label>
+                    <input type="text" class="form-control" id="shippingPostalCode" name="shippingPostalCode"
+                           th:value="${order?.shippingPostalCode}" pattern="\d{3}-?\d{4}">
+                    <div class="invalid-feedback">正しい郵便番号形式で入力してください。</div>
+                </div>
+                <div class="col-md-3">
+                    <label for="shippingPhone" class="form-label required">配送先電話番号</label>
+                    <input type="text" class="form-control" id="shippingPhone" name="shippingPhone"
+                           th:value="${order?.shippingPhone}" required pattern="\d{2,4}-?\d{2,4}-?\d{4}">
+                    <div class="invalid-feedback">正しい電話番号形式で入力してください。</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="shippingContactPerson" class="form-label">配送先担当者</label>
+                    <input type="text" class="form-control" id="shippingContactPerson" name="shippingContactPerson"
+                           th:value="${order?.shippingContactPerson}">
+                </div>
+                <div class="col-md-6">
+                    <label for="notes" class="form-label">備考</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="2"
+                              th:text="${order?.notes}"></textarea>
+                </div>
+            </div>
+
+            <h3>受注明細</h3>
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered" id="detailsTable">
+                    <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th style="width: 80px;">行番号</th>
+                        <th>商品</th>
+                        <th style="width: 100px;">数量</th>
+                        <th style="width: 150px;">単価</th>
+                        <th style="width: 150px;">金額</th>
+                        <th>倉庫</th>
+                        <th style="width: 150px;">配送予定日</th>
+                        <th>備考</th>
+                        <th style="width: 80px;">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="detail, stat : ${order?.orderDetails}" class="detail-row">
+                        <td class="text-center">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
+                        </td>
+                        <td>
+                            <input type="hidden" th:name="|orderDetails[${stat.index}].lineNumber|" th:value="${detail.lineNumber}">
+                            <span th:text="${detail.lineNumber}"></span>
+                        </td>
+                        <td>
+                            <select class="form-select product-select" th:name="|orderDetails[${stat.index}].productId|" required>
+                                <option value="">選択してください</option>
+                                <option th:each="product : ${products}"
+                                        th:value="${product.id}"
+                                        th:text="${product.itemName}"
+                                        th:data-unit-price="${product.standardPrice}"
+                                        th:selected="${detail.productId == product.id}">
+                                </option>
+                            </select>
+                            <div class="invalid-feedback">商品を選択してください。</div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control quantity" th:name="|orderDetails[${stat.index}].quantity|"
+                                   th:value="${detail.quantity}" min="1" required>
+                            <div class="invalid-feedback">数量を入力してください。</div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control unit-price amount-text" th:name="|orderDetails[${stat.index}].unitPrice|"
+                                   th:value="${detail.unitPrice}" min="0" step="0.01" required>
+                            <div class="invalid-feedback">単価を入力してください。</div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control amount amount-text" th:name="|orderDetails[${stat.index}].amount|"
+                                   th:value="${detail.amount}" readonly>
+                        </td>
+                        <td>
+                            <select class="form-select warehouse-select" th:name="|orderDetails[${stat.index}].warehouseId|" required>
+                                <option value="">選択してください</option>
+                                <option th:each="warehouse : ${warehouses}"
+                                        th:value="${warehouse.id}"
+                                        th:text="${warehouse.name}"
+                                        th:selected="${detail.warehouseId == warehouse.id}">
+                                </option>
+                            </select>
+                            <div class="invalid-feedback">倉庫を選択してください。</div>
+                        </td>
+                        <td>
+                            <input type="date" class="form-control" th:name="|orderDetails[${stat.index}].deliveryDate|"
+                                   th:value="${detail.deliveryDate}" required>
+                            <div class="invalid-feedback">配送予定日を入力してください。</div>
+                        </td>
+                        <td>
+                            <input type="text" class="form-control" th:name="|orderDetails[${stat.index}].notes|"
+                                   th:value="${detail.notes}">
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-secondary" onclick="addDetail()">
+                    <i class="fas fa-plus"></i> 明細追加
+                </button>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="totalAmount" class="form-label">合計金額</label>
+                    <input type="text" class="form-control amount-text" id="totalAmount" name="totalAmount"
+                           th:value="${#numbers.formatDecimal(order?.totalAmount ?: 0, 0, 'COMMA', 0, 'POINT')}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label for="taxAmount" class="form-label">消費税額</label>
+                    <input type="text" class="form-control amount-text" id="taxAmount" name="taxAmount"
+                           th:value="${#numbers.formatDecimal(order?.taxAmount ?: 0, 0, 'COMMA', 0, 'POINT')}" readonly>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <a th:href="@{/orders}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> キャンセル
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </form>
+
+        <template id="detailRowTemplate">
+            <tr class="detail-row">
+                <td class="text-center">
+                    <i class="fas fa-grip-vertical drag-handle"></i>
+                </td>
+                <td>
+                    <input type="hidden" name="orderDetails[INDEX].lineNumber" value="LINE_NUMBER">
+                    <span>LINE_NUMBER</span>
+                </td>
+                <td>
+                    <select class="form-select product-select" name="orderDetails[INDEX].productId" required>
+                        <option value="">選択してください</option>
+                        <option th:each="product : ${products}"
+                                th:value="${product.id}"
+                                th:text="${product.itemName}"
+                                th:data-unit-price="${product.standardPrice}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">商品を選択してください。</div>
+                </td>
+                <td>
+                    <input type="number" class="form-control quantity" name="orderDetails[INDEX].quantity"
+                           value="1" min="1" required>
+                    <div class="invalid-feedback">数量を入力してください。</div>
+                </td>
+                <td>
+                    <input type="number" class="form-control unit-price amount-text" name="orderDetails[INDEX].unitPrice"
+                           value="0" min="0" step="0.01" required>
+                    <div class="invalid-feedback">単価を入力してください。</div>
+                </td>
+                <td>
+                    <input type="number" class="form-control amount amount-text" name="orderDetails[INDEX].amount"
+                           value="0" readonly>
+                </td>
+                <td>
+                    <select class="form-select warehouse-select" name="orderDetails[INDEX].warehouseId" required>
+                        <option value="">選択してください</option>
+                        <option th:each="warehouse : ${warehouses}"
+                                th:value="${warehouse.id}"
+                                th:text="${warehouse.name}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">倉庫を選択してください。</div>
+                </td>
+                <td>
+                    <input type="date" class="form-control" name="orderDetails[INDEX].deliveryDate" required>
+                    <div class="invalid-feedback">配送予定日を入力してください。</div>
+                </td>
+                <td>
+                    <input type="text" class="form-control" name="orderDetails[INDEX].notes">
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeDetail(this)">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        </template>
+
+        <script th:inline="javascript">
+            // グローバル変数の定義
+            const products = /*[[${products}]]*/ [];
+            const warehouses = /*[[${warehouses}]]*/ [];
+
+            // DOMContentLoadedイベントを待つ
+            document.addEventListener('DOMContentLoaded', function() {
+                // jQueryとSelect2が利用可能になるまで待つ
+                const initializeApp = function() {
+                    if (window.jQuery && window.jQuery.fn.select2) {
+                        // 既存のSelect2を破棄
+                        try {
+                            $('.product-select, .warehouse-select').select2('destroy');
+                        } catch (e) {
+                            console.log('Select2 not initialized yet');
+                        }
+
+                        // 得意先のSelect2初期化
+                        $('#customerId').select2({
+                            theme: 'bootstrap-5',
+                            placeholder: '得意先を選択してください',
+                            width: '100%'
+                        });
+
+                        // 得意先選択時の処理
+                        $('#customerId').on('change', function() {
+                            const selectedOption = $(this).find('option:selected');
+                            if (selectedOption.val()) {
+                                $('#shippingPostalCode').val(selectedOption.data('postal-code'));
+                                $('#shippingAddress').val(selectedOption.data('address'));
+                                $('#shippingPhone').val(selectedOption.data('phone'));
+                                $('#shippingContactPerson').val(selectedOption.data('contact-person'));
+                            } else {
+                                $('#shippingPostalCode, #shippingAddress, #shippingPhone, #shippingContactPerson').val('');
+                            }
+                        });
+
+                        // 明細行のSelect2初期化
+                        initializeDetailSelects();
+
+                        // 明細行のドラッグ&ドロップ
+                        const tbody = document.querySelector('#detailsTable tbody');
+                        if (tbody) {
+                            new Sortable(tbody, {
+                                handle: '.drag-handle',
+                                animation: 150,
+                                onEnd: function() {
+                                    updateLineNumbers();
+                                }
+                            });
+                        }
+
+                        // フォームのバリデーション
+                        const form = document.getElementById('orderForm');
+                        if (form) {
+                            form.addEventListener('submit', function(event) {
+                                if (!form.checkValidity()) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                } else if (!confirm('受注を保存してよろしいですか？')) {
+                                    event.preventDefault();
+                                }
+                                form.classList.add('was-validated');
+                            });
+                        }
+
+                        // 初期表示時に金額を計算
+                        updateAmounts();
+
+                        // 数量・単価の変更時に金額を更新
+                        document.addEventListener('input', function(e) {
+                            if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
+                                updateAmounts();
+                            }
+                        });
+                    } else {
+                        // jQueryまたはSelect2が読み込まれていない場合は再試行
+                        setTimeout(initializeApp, 100);
+                    }
+                };
+
+                // 初期化処理を開始
+                initializeApp();
+            });
+
+            function initializeDetailSelects() {
+                // 商品選択のSelect2初期化
+                $('.product-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '商品を選択してください',
+                        width: '100%'
+                    }).on('change', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        if (selectedOption.val()) {
+                            const unitPrice = selectedOption.data('unit-price') || 0;
+                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                        }
+                    });
+                });
+
+                // 倉庫選択のSelect2初期化
+                $('.warehouse-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '倉庫を選択してください',
+                        width: '100%'
+                    });
+                });
+            }
+
+            function addDetail() {
+                const template = document.getElementById('detailRowTemplate');
+                if (!template) {
+                    console.error('Template not found');
+                    return;
+                }
+
+                const tbody = document.querySelector('#detailsTable tbody');
+                if (!tbody) {
+                    console.error('Table body not found');
+                    return;
+                }
+
+                const index = tbody.children.length;
+                const lineNumber = index + 1;
+
+                // テンプレートのクローンを作成
+                const clone = template.content.cloneNode(true);
+                const row = clone.querySelector('tr');
+
+                // インデックスと行番号の更新
+                const inputs = row.querySelectorAll('[name*="INDEX"]');
+                inputs.forEach(input => {
+                    input.name = input.name.replace('INDEX', index);
+                });
+
+                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
+                lineNumberInputs.forEach(input => {
+                    input.value = lineNumber;
+                });
+                const lineNumberSpan = row.querySelector('span');
+                lineNumberSpan.textContent = lineNumber;
+
+                // 配送予定日のデフォルト値を設定
+                const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
+                const defaultDeliveryDate = document.getElementById('deliveryDate')?.value || new Date().toISOString().split('T')[0];
+                deliveryDateInput.value = defaultDeliveryDate;
+
+                // 商品と倉庫のオプションを設定
+                const productSelect = row.querySelector('.product-select');
+                const warehouseSelect = row.querySelector('.warehouse-select');
+
+                // 商品オプションを追加
+                products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.itemName;
+                    option.dataset.unitPrice = product.standardPrice;
+                    productSelect.appendChild(option);
+                });
+
+                // 倉庫オプションを追加
+                warehouses.forEach(warehouse => {
+                    const option = document.createElement('option');
+                    option.value = warehouse.id;
+                    option.textContent = warehouse.name;
+                    warehouseSelect.appendChild(option);
+                });
+
+                // 行を追加
+                tbody.appendChild(row);
+
+                // 新しい行のSelect2を初期化
+                const newRow = tbody.lastElementChild;
+                $(newRow).find('.product-select').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '商品を選択してください',
+                    width: '100%'
+                }).on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    if (selectedOption.val()) {
+                        const unitPrice = selectedOption.data('unit-price') || 0;
+                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                    }
+                });
+
+                $(newRow).find('.warehouse-select').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '倉庫を選択してください',
+                    width: '100%'
+                });
+
+                updateAmounts();
+            }
+
+            function removeDetail(button) {
+                if (confirm('この明細行を削除してよろしいですか？')) {
+                    const row = button.closest('tr');
+                    // Select2インスタンスを破棄
+                    $(row).find('.product-select, .warehouse-select').select2('destroy');
+                    row.remove();
+                    updateLineNumbers();
+                    updateAmounts();
+                }
+            }
+
+            function updateLineNumbers() {
+                const tbody = document.getElementById('detailsTable').querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    const lineNumber = index + 1;
+                    const input = row.querySelector('[name*="].lineNumber"]');
+                    input.value = lineNumber;
+                    const span = row.querySelector('td:first-child + td span');
+                    span.textContent = lineNumber;
+
+                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
+                    inputs.forEach(input => {
+                        input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
+                    });
+                });
+            }
+
+            function updateAmounts() {
+                const rows = document.querySelectorAll('.detail-row');
+                let total = 0;
+
+                rows.forEach(row => {
+                    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                    const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
+                    const amount = quantity * unitPrice;
+                    row.querySelector('.amount').value = amount.toFixed(0);
+                    total += amount;
+                });
+
+                const taxRate = 0.1; // 10%
+                const taxAmount = Math.floor(total * taxRate);
+                document.getElementById('totalAmount').value = total.toLocaleString();
+                document.getElementById('taxAmount').value = taxAmount.toLocaleString();
+
+                // hidden inputsの更新
+                const form = document.getElementById('orderForm');
+                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
+                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
+
+                if (existingTotal) {
+                    existingTotal.value = total;
+                } else {
+                    const totalAmountHidden = document.createElement('input');
+                    totalAmountHidden.type = 'hidden';
+                    totalAmountHidden.name = 'totalAmount';
+                    totalAmountHidden.value = total;
+                    form.appendChild(totalAmountHidden);
+                }
+
+                if (existingTax) {
+                    existingTax.value = taxAmount;
+                } else {
+                    const taxAmountHidden = document.createElement('input');
+                    taxAmountHidden.type = 'hidden';
+                    taxAmountHidden.name = 'taxAmount';
+                    taxAmountHidden.value = taxAmount;
+                    form.appendChild(taxAmountHidden);
+                }
+            }
+
+            function initializeDetailSelects() {
+                // 商品選択のSelect2初期化
+                $('.product-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '商品を選択してください',
+                        width: '100%'
+                    }).on('change', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        if (selectedOption.val()) {
+                            const unitPrice = selectedOption.data('unit-price') || 0;
+                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                        }
+                    });
+                });
+
+                // 倉庫選択のSelect2初期化
+                $('.warehouse-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '倉庫を選択してください',
+                        width: '100%'
+                    });
+                });
+            }
+
+            function addDetail() {
+                const table = document.getElementById('detailsTable');
+                const template = document.getElementById('detailRowTemplate');
+                const tbody = table.querySelector('tbody');
+                const index = tbody.children.length;
+                const lineNumber = index + 1;
+
+                const clone = template.content.cloneNode(true);
+                const row = clone.querySelector('tr');
+
+                // インデックスと行番号の更新
+                const inputs = row.querySelectorAll('[name*="INDEX"]');
+                inputs.forEach(input => {
+                    input.name = input.name.replace('INDEX', index);
+                });
+
+                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
+                lineNumberInputs.forEach(input => {
+                    input.value = lineNumber;
+                });
+                const lineNumberSpan = row.querySelector('span');
+                lineNumberSpan.textContent = lineNumber;
+
+                // 配送予定日のデフォルト値を設定
+                const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
+                deliveryDateInput.value = document.getElementById('deliveryDate').value;
+
+                tbody.appendChild(row);
+
+                // 新しい行のSelect2を初期化
+                const newRow = tbody.lastElementChild;
+                $(newRow).find('.product-select, .warehouse-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: $(this).hasClass('product-select') ? '商品を選択してください' : '倉庫を選択してください',
+                        width: '100%'
+                    });
+                });
+
+                // 商品選択時のイベントハンドラを設定
+                $(newRow).find('.product-select').on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    if (selectedOption.val()) {
+                        const unitPrice = selectedOption.data('unit-price') || 0;
+                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                    }
+                });
+
+                updateAmounts();
+            }
+
+            function removeDetail(button) {
+                if (confirm('この明細行を削除してよろしいですか？')) {
+                    const row = button.closest('tr');
+                    // Select2インスタンスを破棄
+                    $(row).find('.product-select, .warehouse-select').select2('destroy');
+                    row.remove();
+                    updateLineNumbers();
+                    updateAmounts();
+                }
+            }
+
+            function updateLineNumbers() {
+                const tbody = document.getElementById('detailsTable').querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    const lineNumber = index + 1;
+                    const input = row.querySelector('[name*="].lineNumber"]');
+                    input.value = lineNumber;
+                    const span = row.querySelector('td:first-child + td span');
+                    span.textContent = lineNumber;
+
+                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
+                    inputs.forEach(input => {
+                        input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
+                    });
+                });
+            }
+
+            function updateAmounts() {
+                const rows = document.querySelectorAll('.detail-row');
+                let total = 0;
+
+                rows.forEach(row => {
+                    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                    const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
+                    const amount = quantity * unitPrice;
+                    row.querySelector('.amount').value = amount.toFixed(0);
+                    total += amount;
+                });
+
+                const taxRate = 0.1; // 10%
+                const taxAmount = Math.floor(total * taxRate);
+                document.getElementById('totalAmount').value = total.toLocaleString();
+                document.getElementById('taxAmount').value = taxAmount.toLocaleString();
+
+                // hidden inputsの更新
+                const form = document.getElementById('orderForm');
+                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
+                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
+
+                if (existingTotal) {
+                    existingTotal.value = total;
+                } else {
+                    const totalAmountHidden = document.createElement('input');
+                    totalAmountHidden.type = 'hidden';
+                    totalAmountHidden.name = 'totalAmount';
+                    totalAmountHidden.value = total;
+                    form.appendChild(totalAmountHidden);
+                }
+
+                if (existingTax) {
+                    existingTax.value = taxAmount;
+                } else {
+                    const taxAmountHidden = document.createElement('input');
+                    taxAmountHidden.type = 'hidden';
+                    taxAmountHidden.name = 'taxAmount';
+                    taxAmountHidden.value = taxAmount;
+                    form.appendChild(taxAmountHidden);
+                }
+            }
+
+            function initializeDetailSelects() {
+                // 商品選択のSelect2初期化
+                $('.product-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '商品を選択してください',
+                        width: '100%'
+                    }).on('change', function() {
+                        const selectedOption = $(this).find('option:selected');
+                        if (selectedOption.val()) {
+                            const unitPrice = selectedOption.data('unit-price') || 0;
+                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                        }
+                    });
+                });
+
+                // 倉庫選択のSelect2初期化
+                $('.warehouse-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: '倉庫を選択してください',
+                        width: '100%'
+                    });
+                });
+            }
+
+            function addDetail() {
+                const table = document.getElementById('detailsTable');
+                const template = document.getElementById('detailRowTemplate');
+                const tbody = table.querySelector('tbody');
+                const index = tbody.children.length;
+                const lineNumber = index + 1;
+
+                const clone = template.content.cloneNode(true);
+                const row = clone.querySelector('tr');
+
+                // インデックスと行番号の更新
+                const inputs = row.querySelectorAll('[name*="INDEX"]');
+                inputs.forEach(input => {
+                    input.name = input.name.replace('INDEX', index);
+                });
+
+                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
+                lineNumberInputs.forEach(input => {
+                    input.value = lineNumber;
+                });
+                const lineNumberSpan = row.querySelector('span');
+                lineNumberSpan.textContent = lineNumber;
+
+                // 配送予定日のデフォルト値を設定
+                const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
+                deliveryDateInput.value = document.getElementById('deliveryDate').value;
+
+                tbody.appendChild(row);
+
+                // 新しい行のSelect2を初期化
+                const newRow = tbody.lastElementChild;
+                $(newRow).find('.product-select, .warehouse-select').each(function() {
+                    $(this).select2({
+                        theme: 'bootstrap-5',
+                        placeholder: $(this).hasClass('product-select') ? '商品を選択してください' : '倉庫を選択してください',
+                        width: '100%'
+                    });
+                });
+
+                // 商品選択時のイベントハンドラを設定
+                $(newRow).find('.product-select').on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    if (selectedOption.val()) {
+                        const unitPrice = selectedOption.data('unit-price') || 0;
+                        $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
+                    }
+                });
+
+                updateAmounts();
+            }
+
+            function removeDetail(button) {
+                if (confirm('この明細行を削除してよろしいですか？')) {
+                    const row = button.closest('tr');
+                    // Select2インスタンスを破棄
+                    $(row).find('.product-select, .warehouse-select').select2('destroy');
+                    row.remove();
+                    updateLineNumbers();
+                    updateAmounts();
+                }
+            }
+
+            function updateLineNumbers() {
+                const tbody = document.getElementById('detailsTable').querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    const lineNumber = index + 1;
+                    const input = row.querySelector('[name*="].lineNumber"]');
+                    input.value = lineNumber;
+                    const span = row.querySelector('td:first-child + td span');
+                    span.textContent = lineNumber;
+
+                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
+                    inputs.forEach(input => {
+                        input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
+                    });
+                });
+            }
+
+            function updateAmounts() {
+                const rows = document.querySelectorAll('.detail-row');
+                let total = 0;
+
+                rows.forEach(row => {
+                    const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                    const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
+                    const amount = quantity * unitPrice;
+                    row.querySelector('.amount').value = amount.toFixed(0);
+                    total += amount;
+                });
+
+                const taxRate = 0.1; // 10%
+                const taxAmount = Math.floor(total * taxRate);
+                document.getElementById('totalAmount').value = total.toLocaleString();
+                document.getElementById('taxAmount').value = taxAmount.toLocaleString();
+
+                // hidden inputsの更新
+                const totalAmountHidden = document.createElement('input');
+                totalAmountHidden.type = 'hidden';
+                totalAmountHidden.name = 'totalAmount';
+                totalAmountHidden.value = total;
+
+                const taxAmountHidden = document.createElement('input');
+                taxAmountHidden.type = 'hidden';
+                taxAmountHidden.name = 'taxAmount';
+                taxAmountHidden.value = taxAmount;
+
+                const form = document.getElementById('orderForm');
+                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
+                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
+
+                if (existingTotal) {
+                    existingTotal.value = total;
+                } else {
+                    form.appendChild(totalAmountHidden);
+                }
+
+                if (existingTax) {
+                    existingTax.value = taxAmount;
+                } else {
+                    form.appendChild(taxAmountHidden);
+                }
+            }
+
+            // 数量・単価の変更時に金額を更新
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
+                    updateAmounts();
+                }
+            });
+        </script>
+    </div>
+</div>
+</body>
+</html>
