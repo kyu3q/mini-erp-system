@@ -1,5 +1,6 @@
 package com.minierpapp.config;
 
+import com.minierpapp.model.common.Status;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.order.Order;
@@ -76,7 +77,7 @@ public class TestDataGenerator {
         customer.setNameKana(name);
         customer.setPostalCode(postalCode);
         customer.setAddress(address);
-        customer.setStatus("ACTIVE");
+        customer.setStatus(Status.ACTIVE);
         customer.setCreatedAt(LocalDateTime.now());
         customer.setCreatedBy("system");
         return customer;
