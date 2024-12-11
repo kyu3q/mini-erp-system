@@ -16,7 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.deleted = false")
     List<Order> findAllActive();
 
-    @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.id = :id")
+    @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.orderDetails WHERE o.deleted = false AND o.id = :id")
     Optional<Order> findActiveById(Long id);
 
     @Query("SELECT o FROM Order o WHERE o.deleted = false AND o.orderNumber = :orderNumber")

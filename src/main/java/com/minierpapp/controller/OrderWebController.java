@@ -52,30 +52,18 @@ public class OrderWebController {
         return "order/list";
     }
 
-    @GetMapping("/create")
-    public String create(Model model) {
-        List<Customer> customers = customerService.findAllActive();
-        List<Item> items = itemService.findAllActive();
-        List<Warehouse> warehouses = warehouseService.findAllActive();
-        model.addAttribute("customers", customers);
-        model.addAttribute("items", items);
-        model.addAttribute("warehouses", warehouses);
-        model.addAttribute("statuses", OrderStatus.values());
-        return "order/edit";
+    @GetMapping("/new")
+    public String showCreateForm(Model model) {
+        prepareFormData(model);
+        return "order/form";
     }
 
-    @GetMapping("/edit/{id}")
-    public String edit(@PathVariable Long id, Model model) {
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model) {
         OrderDto order = orderService.findById(id);
-        List<Customer> customers = customerService.findAllActive();
-        List<Item> items = itemService.findAllActive();
-        List<Warehouse> warehouses = warehouseService.findAllActive();
         model.addAttribute("order", order);
-        model.addAttribute("customers", customers);
-        model.addAttribute("items", items);
-        model.addAttribute("warehouses", warehouses);
-        model.addAttribute("statuses", OrderStatus.values());
-        return "order/edit";
+        prepareFormData(model);
+        return "order/form";
     }
 
     @PostMapping("/save")
@@ -94,13 +82,24 @@ public class OrderWebController {
         return "redirect:/orders";
     }
 
-    @PostMapping("/delete/{id}")
+    @PostMapping("/{id}/delete")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             orderService.delete(id);
             redirectAttributes.addFlashAttribute("successMessage", "受注を削除しました。");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "エラーが発生しました: " + e.getMessage());
+        }
+        return "redirect:/orders";
+    }
+
+    @PostMapping("/{id}/status")
+    public String updateStatus(@PathVariable Long id, @RequestParam OrderStatus status, RedirectAttributes redirectAttributes) {
+        try {
+            orderService.updateStatus(id, status);
+            redirectAttributes.addFlashAttribute("successMessage", "受注ステータスを更新しました。");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "ステータス更新中にエラーが発生しました：" + e.getMessage());
         }
         return "redirect:/orders";
     }
@@ -123,5 +122,15 @@ public class OrderWebController {
             redirectAttributes.addFlashAttribute("errorMessage", "インポートに失敗しました: " + e.getMessage());
         }
         return "redirect:/orders";
+    }
+
+    private void prepareFormData(Model model) {
+        List<Customer> customers = customerService.findAllActive();
+        List<Item> items = itemService.findAllActive();
+        List<Warehouse> warehouses = warehouseService.findAllActive();
+        model.addAttribute("customers", customers);
+        model.addAttribute("products", items);
+        model.addAttribute("warehouses", warehouses);
+        model.addAttribute("statuses", OrderStatus.values());
     }
 }
