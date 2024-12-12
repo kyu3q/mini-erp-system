@@ -7,59 +7,91 @@
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <h1 class="mt-4">得意先マスタ</h1>
+        <div class="container-fluid" style="max-width: 1200px;">
+            <!-- ヘッダー -->
             <div class="row mb-4">
-                <div class="col-12">
-                    <form th:action="@{/customers}" method="get" class="card">
-                        <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text">得意先コード</span>
-                                        <input type="text" name="customerCode" th:value="${param.customerCode}" 
-                                               class="form-control" placeholder="得意先コード">
+                <div class="col">
+                    <h2 class="text-primary">
+                        <i class="fas fa-users me-2"></i>得意先マスタ
+                    </h2>
+                </div>
+                <div class="col text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a th:href="@{/customers/new}" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> 新規作成
+                        </a>
+                        <a th:href="@{/customers/export}" class="btn btn-outline-success">
+                            <i class="fas fa-file-excel"></i> Excel出力
+                        </a>
+                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                            <i class="fas fa-file-import"></i> 取込
+                        </button>
+                        <a th:href="@{/customers/import/template}" class="btn btn-outline-secondary">
+                            <i class="fas fa-download"></i> 取込テンプレート
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 検索エリア -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-search me-2"></i>検索条件
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/customers}" method="get">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label for="customerCode" class="form-label">得意先コード</label>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="customerCode" name="customerCode" th:value="${param.customerCode}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="input-group">
-                                        <span class="input-group-text">得意先名</span>
-                                        <input type="text" name="name" th:value="${param.name}" 
-                                               class="form-control" placeholder="得意先名">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label for="name" class="form-label">得意先名</label>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <input type="text" class="form-control" id="name" name="name" th:value="${param.name}">
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-outline-primary flex-grow-1">
-                                            <i class="fas fa-search"></i> 検索
-                                        </button>
-                                        <a th:href="@{/customers}" class="btn btn-outline-secondary">
-                                            <i class="fas fa-undo"></i> クリア
-                                        </a>
-                                    </div>
-                                </div>
+                            </div>
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-outline-secondary" onclick="clearForm(this.form)">
+                                    <i class="fas fa-eraser me-1"></i> クリア
+                                </button>
+                                <button type="submit" class="btn btn-primary ms-2">
+                                    <i class="fas fa-search me-1"></i> 検索
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/customers/new}" class="btn btn-outline-primary">
-                            <i class="fas fa-plus"></i> 新規作成
-                        </a>
-                    </div>
-                </div>
-            </div>
+            <form id="importForm" th:action="@{/customers/import}" method="post" enctype="multipart/form-data" style="display: none;">
+                <input type="file" id="fileInput" name="file" accept=".xlsx">
+            </form>
 
             <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
                 <span th:text="${message}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
-            <div class="card mb-4">
+            <!-- データ一覧 -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-table me-2"></i>検索結果
+                    </h5>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="customersTable">
