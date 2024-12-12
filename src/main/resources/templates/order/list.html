@@ -16,25 +16,19 @@
                 </h2>
             </div>
             <div class="col text-end">
-                <div class="btn-group">
-                    <a th:href="@{/orders/new}" class="btn btn-primary">
-                        <i class="fas fa-plus me-1"></i> 新規登録
+                <div class="d-flex gap-2 justify-content-end">
+                    <a th:href="@{/orders/new}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> 新規作成
                     </a>
-                    <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
-                        <span class="visually-hidden">Toggle Dropdown</span>
+                    <a th:href="@{/orders/export}" class="btn btn-outline-success">
+                        <i class="fas fa-file-excel"></i> Excel出力
+                    </a>
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                        <i class="fas fa-file-import"></i> 取込
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <a class="dropdown-item" th:href="@{/orders/export}">
-                                <i class="fas fa-file-excel me-2"></i> Excel出力
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#importModal">
-                                <i class="fas fa-file-import me-2"></i> Excel取込
-                            </a>
-                        </li>
-                    </ul>
+                    <a th:href="@{/orders/import/template}" class="btn btn-outline-secondary">
+                        <i class="fas fa-download"></i> 取込テンプレート
+                    </a>
                 </div>
             </div>
         </div>
