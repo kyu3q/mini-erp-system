@@ -483,18 +483,8 @@
                     console.log('Set delivery date to:', defaultDeliveryDate);
                 }
 
-                // 品目と倉庫のオプションを設定
-                const itemSelect = row.querySelector('.item-select');
+                // 倉庫のオプションを設定
                 const warehouseSelect = row.querySelector('.warehouse-select');
-
-                // 品目オプションを追加
-                items.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = item.itemName;
-                    option.dataset.unitPrice = item.standardPrice || 0;
-                    itemSelect.appendChild(option);
-                });
 
                 // 倉庫オプションを追加
                 warehouses.forEach(warehouse => {
@@ -532,7 +522,7 @@
                 if (confirm('この明細行を削除してよろしいですか？')) {
                     const row = button.closest('tr');
                     // Select2インスタンスを破棄
-                    $(row).find('.item-select, .warehouse-select').select2('destroy');
+                    $(row).find('.warehouse-select').select2('destroy');
                     row.remove();
                     updateLineNumbers();
                     updateAmounts();
