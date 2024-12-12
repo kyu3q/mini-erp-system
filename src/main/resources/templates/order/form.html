@@ -146,16 +146,9 @@
                             <span th:text="${detail.lineNumber}"></span>
                         </td>
                         <td>
-                            <select class="form-select item-select" th:name="|orderDetails[${stat.index}].itemId|" required>
-                                <option value="">選択してください</option>
-                                <option th:each="item : ${items}"
-                                        th:value="${item.id}"
-                                        th:text="${item.itemName}"
-                                        th:data-unit-price="${item.standardPrice}"
-                                        th:selected="${detail.itemId == item.id}">
-                                </option>
-                            </select>
-                            <div class="invalid-feedback">品目を選択してください。</div>
+                            <input type="text" class="form-control" th:name="|orderDetails[${stat.index}].itemName|" 
+                                   th:value="${detail.itemName}" required>
+                            <div class="invalid-feedback">品目を入力してください。</div>
                         </td>
                         <td>
                             <input type="number" class="form-control quantity" th:name="|orderDetails[${stat.index}].quantity|"
@@ -240,10 +233,8 @@
                     <span>LINE_NUMBER</span>
                 </td>
                 <td>
-                    <select class="form-select item-select" name="orderDetails[INDEX].itemId" required>
-                        <option value="">選択してください</option>
-                    </select>
-                    <div class="invalid-feedback">品目を選択してください。</div>
+                    <input type="text" class="form-control" name="orderDetails[INDEX].itemName" required>
+                    <div class="invalid-feedback">品目を入力してください。</div>
                 </td>
                 <td>
                     <input type="number" class="form-control quantity" name="orderDetails[INDEX].quantity"
@@ -292,7 +283,7 @@
                     if (window.jQuery && window.jQuery.fn.select2) {
                         // 既存のSelect2を破棄
                         try {
-                            $('.item-select, .warehouse-select').select2('destroy');
+                            $('.warehouse-select').select2('destroy');
                         } catch (e) {
                             console.log('Select2 not initialized yet');
                         }
@@ -316,6 +307,24 @@
                                 $('#shippingPostalCode, #shippingAddress, #shippingPhone, #shippingContactPerson').val('');
                             }
                         });
+
+                        // 倉庫選択のSelect2初期化
+                        $('.warehouse-select').each(function() {
+                            const select = $(this);
+                            select.select2({
+                                theme: 'bootstrap-5',
+                                placeholder: '倉庫を選択してください',
+                                width: '100%'
+                            });
+                        });
+
+                        // 初期化完了
+                        console.log('Application initialized');
+                    } else {
+                        // Select2が読み込まれるまで待機
+                        setTimeout(initializeApp, 100);
+                    }
+                };
 
                         // 明細行のSelect2初期化
                         initializeDetailSelects();
@@ -375,10 +384,8 @@
 
                     // 品目オプションを追加
                     items.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item.id;
-                        option.textContent = item.itemName;
-                        option.dataset.unitPrice = item.standardPrice || 0;
+                        const option = new Option(item.itemName, item.id);
+                        $(option).data('unit-price', item.standardPrice || 0);
                         select.append(option);
                     });
 
@@ -506,18 +513,7 @@
                 console.log('Initializing Select2 for new row');
 
                 try {
-                    $(newRow).find('.item-select').select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '品目を選択してください',
-                        width: '100%'
-                    }).on('change', function() {
-                        const selectedOption = $(this).find('option:selected');
-                        if (selectedOption.val()) {
-                            const unitPrice = selectedOption.data('unit-price') || 0;
-                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                        }
-                    });
-
+                    // 倉庫選択のSelect2初期化
                     $(newRow).find('.warehouse-select').select2({
                         theme: 'bootstrap-5',
                         placeholder: '倉庫を選択してください',

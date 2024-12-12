@@ -31,7 +31,7 @@ public interface OrderMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "order", ignore = true)
-    @Mapping(target = "item", source = "itemId")
+    @Mapping(target = "item", ignore = true)
     @Mapping(target = "warehouse", source = "warehouseId")
     OrderDetail toEntity(OrderRequest.OrderDetailRequest request);
 

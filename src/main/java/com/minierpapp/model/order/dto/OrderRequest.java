@@ -27,7 +27,7 @@ public class OrderRequest {
     @Data
     public static class OrderDetailRequest {
         private Integer lineNumber;
-        private Long itemId;
+        private String itemName;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal amount;

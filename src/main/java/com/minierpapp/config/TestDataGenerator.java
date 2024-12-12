@@ -101,7 +101,9 @@ public class TestDataGenerator {
         OrderDetail detail = new OrderDetail();
         detail.setOrder(order);
         detail.setLineNumber(lineNumber);
-        detail.setItem(items.get(random.nextInt(items.size())));
+        Item selectedItem = items.get(random.nextInt(items.size()));
+        detail.setItem(selectedItem);
+        detail.setItemName(selectedItem.getItemName());
         detail.setQuantity(random.nextInt(5) + 1);
         detail.setUnitPrice(new BigDecimal(random.nextInt(50000) + 10000));
         detail.setAmount(detail.getUnitPrice().multiply(new BigDecimal(detail.getQuantity())));

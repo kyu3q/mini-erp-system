@@ -149,7 +149,7 @@ public class ExcelHelper {
 
                     OrderRequest.OrderDetailRequest detail = new OrderRequest.OrderDetailRequest();
                     detail.setLineNumber(getIntegerValue(detailRow.getCell(1)));
-                    detail.setItemId(getLongValue(detailRow.getCell(2)));
+                    detail.setItemName(getStringValue(detailRow.getCell(3)));
                     detail.setQuantity(getIntegerValue(detailRow.getCell(4)));
                     detail.setUnitPrice(getBigDecimalValue(detailRow.getCell(5)));
                     detail.setAmount(getBigDecimalValue(detailRow.getCell(6)));

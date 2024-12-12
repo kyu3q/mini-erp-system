@@ -24,8 +24,11 @@ public class OrderDetail extends BaseEntity {
     private Integer lineNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", nullable = false)
+    @JoinColumn(name = "item_id")
     private Item item;
+
+    @Column(name = "item_name", nullable = false)
+    private String itemName;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
