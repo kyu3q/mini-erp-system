@@ -498,13 +498,9 @@
                 tbody.appendChild(row);
                 console.log('Row added to tbody');
 
-                // 新しい行のSelect2を初期化
-                const newRow = tbody.lastElementChild;
-                console.log('Initializing Select2 for new row');
-
                 try {
                     // 倉庫選択のSelect2初期化
-                    $(newRow).find('.warehouse-select').select2({
+                    $(row).find('.warehouse-select').select2({
                         theme: 'bootstrap-5',
                         placeholder: '倉庫を選択してください',
                         width: '100%'
