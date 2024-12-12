@@ -108,15 +108,15 @@
                         <div class="col-md-6">
                             <div class="row g-2">
                                 <div class="col-md-4">
-                                    <label for="productId" class="form-label">品目</label>
+                                    <label for="itemId" class="form-label">品目</label>
                                 </div>
                                 <div class="col-md-8">
-                                    <select class="form-select" id="productId" name="productId">
+                                    <select class="form-select" id="itemId" name="itemId">
                                         <option value="">選択してください</option>
-                                        <option th:each="product : ${products}"
-                                                th:value="${product.id}"
-                                                th:text="${product.itemName}"
-                                                th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
+                                        <option th:each="item : ${items}"
+                                                th:value="${item.id}"
+                                                th:text="${item.itemName}"
+                                                th:selected="${param.itemId != null and param.itemId[0] == item.id.toString()}">
                                         </option>
                                     </select>
                                 </div>

@@ -129,7 +129,7 @@ public class OrderWebController {
         List<Item> items = itemService.findAllActive();
         List<Warehouse> warehouses = warehouseService.findAllActive();
         model.addAttribute("customers", customers);
-        model.addAttribute("products", items);
+        model.addAttribute("items", items);
         model.addAttribute("warehouses", warehouses);
         model.addAttribute("statuses", OrderStatus.values());
     }

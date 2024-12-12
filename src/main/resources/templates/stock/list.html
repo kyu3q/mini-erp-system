@@ -31,12 +31,12 @@
                                 <div class="col-md-4">
                                     <div class="input-group">
                                         <span class="input-group-text">商品</span>
-                                        <select class="form-select" name="productId">
+                                        <select class="form-select" name="itemId">
                                             <option value="">すべての商品</option>
-                                            <option th:each="product : ${products}"
-                                                    th:value="${product.id}"
-                                                    th:text="${product.itemName + ' (' + product.itemCode + ')'}"
-                                                    th:selected="${param.productId != null and param.productId[0] == product.id.toString()}">
+                                            <option th:each="item : ${items}"
+                                                    th:value="${item.id}"
+                                                    th:text="${item.itemName + ' (' + item.itemCode + ')'}"
+                                                    th:selected="${param.itemId != null and param.itemId[0] == item.id.toString()}">
                                             </option>
                                         </select>
                                     </div>
@@ -162,12 +162,12 @@
                             </select>
                         </div>
                         <div class="mb-3">
-                            <label for="modalProductId" class="form-label fw-bold">商品 <span class="badge bg-danger">必須</span></label>
-                            <select class="form-select" id="modalProductId" name="productId" required>
+                            <label for="modalItemId" class="form-label fw-bold">商品 <span class="badge bg-danger">必須</span></label>
+                            <select class="form-select" id="modalItemId" name="itemId" required>
                                 <option value="">商品を選択してください</option>
-                                <option th:each="product : ${products}"
-                                        th:value="${product.id}"
-                                        th:text="${product.ItemName + ' (' + product.ItemCode + ')'}">
+                                <option th:each="item : ${items}"
+                                        th:value="${item.id}"
+                                        th:text="${item.itemName + ' (' + item.itemCode + ')'}">
                                 </option>
                             </select>
                         </div>
@@ -283,7 +283,7 @@
                 .then(data => {
                     document.getElementById('stockId').value = data.id;
                     document.getElementById('modalWarehouseId').value = data.warehouseId;
-                    document.getElementById('modalProductId').value = data.productId;
+                    document.getElementById('modalItemId').value = data.itemId;
                     document.getElementById('quantity').value = data.quantity;
                     document.getElementById('minimumQuantity').value = data.minimumQuantity;
                     document.getElementById('maximumQuantity').value = data.maximumQuantity;
@@ -325,7 +325,7 @@
             const stockId = document.getElementById('stockId').value;
             const formData = {
                 warehouseId: document.getElementById('modalWarehouseId').value,
-                productId: document.getElementById('modalProductId').value,
+                itemId: document.getElementById('modalItemId').value,
                 quantity: parseInt(document.getElementById('quantity').value),
                 minimumQuantity: parseInt(document.getElementById('minimumQuantity').value) || null,
                 maximumQuantity: parseInt(document.getElementById('maximumQuantity').value) || null,

@@ -148,7 +148,7 @@
                         <td>
                             <select class="form-select item-select" th:name="|orderDetails[${stat.index}].itemId|" required>
                                 <option value="">選択してください</option>
-                                <option th:each="item : ${products}"
+                                <option th:each="item : ${items}"
                                         th:value="${item.id}"
                                         th:text="${item.itemName}"
                                         th:data-unit-price="${item.standardPrice}"
@@ -282,7 +282,7 @@
 
         <script th:inline="javascript">
             // グローバル変数の定義
-            const items = /*[[${products}]]*/ [];
+            const items = /*[[${items}]]*/ [];
             const warehouses = /*[[${warehouses}]]*/ [];
 
             // DOMContentLoadedイベントを待つ

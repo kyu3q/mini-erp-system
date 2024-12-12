@@ -29,11 +29,11 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderDto> search(String orderNumber, String orderDateFrom, String orderDateTo,
-                               Long customerId, Long productId, OrderStatus status) {
+                               Long customerId, Long itemId, OrderStatus status) {
         LocalDate fromDate = orderDateFrom != null ? LocalDate.parse(orderDateFrom) : null;
         LocalDate toDate = orderDateTo != null ? LocalDate.parse(orderDateTo) : null;
         return orderMapper.toDtoList(orderRepository.search(orderNumber, fromDate, toDate,
-                customerId, productId, status));
+                customerId, itemId, status));
     }
 
     @Transactional(readOnly = true)
