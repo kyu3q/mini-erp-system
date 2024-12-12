@@ -36,6 +36,9 @@ public class PriceRequest {
     private List<PriceItemRequest> priceItems = new ArrayList<>();
 
     @Valid
+    private List<PriceSupplierItemRequest> priceSupplierItems = new ArrayList<>();
+
+    @Valid
     private List<PriceCustomerItemRequest> priceCustomerItems = new ArrayList<>();
 
     @Valid

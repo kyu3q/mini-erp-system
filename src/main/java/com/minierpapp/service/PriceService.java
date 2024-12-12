@@ -30,7 +30,6 @@ public class PriceService {
 
         switch (request.getConditionType()) {
             case ITEM_ONLY -> setItemPrices(price, request.getPriceItems());
-            case SUPPLIER_ONLY -> setSupplierPrices(price, request.getPriceSuppliers());
             case SUPPLIER_ITEM -> setSupplierItemPrices(price, request.getPriceSupplierItems());
             case CUSTOMER_ITEM -> setCustomerItemPrices(price, request.getPriceCustomerItems());
             case SUPPLIER_CUSTOMER_ITEM -> setSupplierCustomerItemPrices(price, request.getPriceSupplierCustomerItems());
@@ -52,7 +51,6 @@ public class PriceService {
 
         switch (request.getConditionType()) {
             case ITEM_ONLY -> setItemPrices(price, request.getPriceItems());
-            case SUPPLIER_ONLY -> setSupplierPrices(price, request.getPriceSuppliers());
             case SUPPLIER_ITEM -> setSupplierItemPrices(price, request.getPriceSupplierItems());
             case CUSTOMER_ITEM -> setCustomerItemPrices(price, request.getPriceCustomerItems());
             case SUPPLIER_CUSTOMER_ITEM -> setSupplierCustomerItemPrices(price, request.getPriceSupplierCustomerItems());
@@ -126,7 +124,7 @@ public class PriceService {
             throw new ResourceNotFoundException("有効な価格が見つかりません");
         }
 
-        // 優先順位：仕入先・得意先・品目 > 仕入先・品目 > 仕入先のみ > 品目のみ
+        // 優先順位：仕入先・得意先・品目 > 仕入先・品目 > 品目のみ
         return validPrices.stream()
             .filter(price -> price.getConditionType() == ConditionType.SUPPLIER_CUSTOMER_ITEM)
             .findFirst()
@@ -138,16 +136,10 @@ public class PriceService {
                     .map(price -> findSupplierItemPrice(price, supplierCode, itemCode, quantity))
                     .orElseGet(() ->
                         validPrices.stream()
-                            .filter(price -> price.getConditionType() == ConditionType.SUPPLIER_ONLY)
+                            .filter(price -> price.getConditionType() == ConditionType.ITEM_ONLY)
                             .findFirst()
-                            .map(price -> findSupplierPrice(price, supplierCode, quantity))
-                            .orElseGet(() ->
-                                validPrices.stream()
-                                    .filter(price -> price.getConditionType() == ConditionType.ITEM_ONLY)
-                                    .findFirst()
-                                    .map(price -> findItemPrice(price, itemCode, quantity))
-                                    .orElseThrow(() -> new ResourceNotFoundException("有効な価格が見つかりません"))
-                            )
+                            .map(price -> findItemPrice(price, itemCode, quantity))
+                            .orElseThrow(() -> new ResourceNotFoundException("有効な価格が見つかりません"))
                     )
             );
     }
@@ -155,8 +147,7 @@ public class PriceService {
     private void validatePriceCondition(PriceRequest request) {
         // 販売単価の場合、仕入先関連の条件タイプは使用不可
         if (request.getPriceType() == PriceType.SALES) {
-            if (request.getConditionType() == ConditionType.SUPPLIER_ONLY ||
-                request.getConditionType() == ConditionType.SUPPLIER_ITEM ||
+            if (request.getConditionType() == ConditionType.SUPPLIER_ITEM ||
                 request.getConditionType() == ConditionType.SUPPLIER_CUSTOMER_ITEM) {
                 throw new IllegalArgumentException("販売単価では仕入先関連の条件タイプは使用できません");
             }
@@ -171,14 +162,6 @@ public class PriceService {
     private BigDecimal findItemPrice(Price price, String itemCode, BigDecimal quantity) {
         return price.getPriceItems().stream()
             .filter(p -> p.getItemCode().equals(itemCode) && p.getStatus() == Status.ACTIVE)
-            .findFirst()
-            .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
-            .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
-    }
-
-    private BigDecimal findSupplierPrice(Price price, String supplierCode, BigDecimal quantity) {
-        return price.getPriceSuppliers().stream()
-            .filter(p -> p.getSupplierCode().equals(supplierCode) && p.getStatus() == Status.ACTIVE)
             .findFirst()
             .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
             .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
@@ -235,16 +218,6 @@ public class PriceService {
             PriceItem item = priceMapper.toEntity(request);
             item.setPrice(price);
             price.getPriceItems().add(item);
-        });
-    }
-
-    private void setSupplierPrices(Price price, List<PriceSupplierRequest> requests) {
-        if (requests == null) return;
-        price.getPriceSuppliers().clear();
-        requests.forEach(request -> {
-            PriceSupplier supplier = priceMapper.toEntity(request);
-            supplier.setPrice(price);
-            price.getPriceSuppliers().add(supplier);
         });
     }
 
@@ -313,34 +286,11 @@ public class PriceService {
             newPrice.getPriceItems().add(newItem);
         });
 
-        // 得意先別品目単価のコピー
-        originalPrice.getPriceCustomerItems().forEach(item -> {
-            PriceCustomerItem newItem = new PriceCustomerItem();
-            newItem.setPrice(newPrice);
-            newItem.setCustomerCode(item.getCustomerCode());
-            newItem.setItemCode(item.getItemCode());
-            newItem.setBasePrice(item.getBasePrice());
-            newItem.setCurrencyCode(item.getCurrencyCode());
-
-            // 数量スケール価格のコピー
-            item.getPriceScales().forEach(scale -> {
-                PriceScale newScale = new PriceScale();
-                newScale.setPriceCustomerItem(newItem);
-                newScale.setFromQuantity(scale.getFromQuantity());
-                newScale.setToQuantity(scale.getToQuantity());
-                newScale.setScalePrice(scale.getScalePrice());
-                newItem.getPriceScales().add(newScale);
-            });
-
-            newPrice.getPriceCustomerItems().add(newItem);
-        });
-
-        // 仕入先・得意先別品目単価のコピー
-        originalPrice.getPriceSupplierCustomerItems().forEach(item -> {
-            PriceSupplierCustomerItem newItem = new PriceSupplierCustomerItem();
+        // 仕入先・品目単価のコピー
+        originalPrice.getPriceSupplierItems().forEach(item -> {
+            PriceSupplierItem newItem = new PriceSupplierItem();
             newItem.setPrice(newPrice);
             newItem.setSupplierCode(item.getSupplierCode());
-            newItem.setCustomerCode(item.getCustomerCode());
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
@@ -348,66 +298,17 @@ public class PriceService {
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                newScale.setPriceSupplierCustomerItem(newItem);
+                newScale.setPriceSupplierItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
                 newItem.getPriceScales().add(newScale);
             });
 
-            newPrice.getPriceSupplierCustomerItems().add(newItem);
+            newPrice.getPriceSupplierItems().add(newItem);
         });
 
-        return priceMapper.toResponse(priceRepository.save(newPrice));
-    }
-
-    private String generateNewPriceNumber(String originalNumber) {
-        // 元の価格表番号に "-copy-N" を付加（Nは連番）
-        String baseNumber = originalNumber;
-        int copyNumber = 1;
-
-        while (true) {
-            String newNumber = baseNumber + "-copy-" + copyNumber;
-            if (!priceRepository.existsByPriceNumberAndDeletedFalse(newNumber)) {
-                return newNumber;
-            }
-            copyNumber++;
-        }
-    }
-        Price originalPrice = priceRepository.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Price not found with id: " + id));
-
-        Price newPrice = new Price();
-        newPrice.setPriceNumber(generateNewPriceNumber(originalPrice.getPriceNumber()));
-        newPrice.setPriceName(originalPrice.getPriceName() + " (コピー)");
-        newPrice.setPriceType(originalPrice.getPriceType());
-        newPrice.setConditionType(originalPrice.getConditionType());
-        newPrice.setStartDate(originalPrice.getStartDate());
-        newPrice.setEndDate(originalPrice.getEndDate());
-        newPrice.setStatus(Status.ACTIVE);
-
-        // 品目単価のコピー
-        originalPrice.getPriceItems().forEach(item -> {
-            PriceItem newItem = new PriceItem();
-            newItem.setPrice(newPrice);
-            newItem.setItemCode(item.getItemCode());
-            newItem.setBasePrice(item.getBasePrice());
-            newItem.setCurrencyCode(item.getCurrencyCode());
-
-            // 数量スケール価格のコピー
-            item.getPriceScales().forEach(scale -> {
-                PriceScale newScale = new PriceScale();
-                newScale.setPriceItem(newItem);
-                newScale.setFromQuantity(scale.getFromQuantity());
-                newScale.setToQuantity(scale.getToQuantity());
-                newScale.setScalePrice(scale.getScalePrice());
-                newItem.getPriceScales().add(newScale);
-            });
-
-            newPrice.getPriceItems().add(newItem);
-        });
-
-        // 得意先別品目単価のコピー
+        // 得意先・品目単価のコピー
         originalPrice.getPriceCustomerItems().forEach(item -> {
             PriceCustomerItem newItem = new PriceCustomerItem();
             newItem.setPrice(newPrice);
@@ -429,7 +330,7 @@ public class PriceService {
             newPrice.getPriceCustomerItems().add(newItem);
         });
 
-        // 仕入先・得意先別品目単価のコピー
+        // 仕入先・得意先・品目単価のコピー
         originalPrice.getPriceSupplierCustomerItems().forEach(item -> {
             PriceSupplierCustomerItem newItem = new PriceSupplierCustomerItem();
             newItem.setPrice(newPrice);
