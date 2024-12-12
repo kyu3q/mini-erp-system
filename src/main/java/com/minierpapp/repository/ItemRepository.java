@@ -21,4 +21,6 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     boolean existsByItemCodeAndDeletedFalse(String itemCode);
 
     List<Item> findByItemCodeContainingAndItemNameContainingAndDeletedFalse(String itemCode, String itemName);
+
+    List<Item> findByItemCodeContainingOrItemNameContainingAndDeletedFalse(String itemCode, String itemName);
 }

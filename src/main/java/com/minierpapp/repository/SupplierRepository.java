@@ -20,4 +20,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     Optional<Supplier> findBySupplierCodeAndDeletedFalse(String supplierCode);
 
     boolean existsBySupplierCodeAndDeletedFalse(String supplierCode);
+
+    List<Supplier> findBySupplierCodeContainingOrNameContainingAndDeletedFalse(String supplierCode, String name);
 }

@@ -39,6 +39,15 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
+    public List<ItemResponse> searchItems(String keyword) {
+        keyword = keyword != null ? keyword.trim() : "";
+        List<Item> items = itemRepository.findByItemCodeContainingOrItemNameContainingAndDeletedFalse(keyword, keyword);
+        return items.stream()
+            .map(itemMapper::toResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public Page<Item> findAll(Pageable pageable) {
         return itemRepository.findByDeletedFalse(pageable);
     }

@@ -246,6 +246,125 @@ BEGIN
     END IF;
 END $$;
 
+-- 単価マスタテーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'prices') THEN
+        CREATE TABLE prices (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            deleted BOOLEAN DEFAULT FALSE,
+            price_type VARCHAR(20) NOT NULL,
+            condition_type VARCHAR(30) NOT NULL,
+            valid_from_date DATE NOT NULL,
+            valid_to_date DATE NOT NULL,
+            status VARCHAR(20) NOT NULL
+        );
+    END IF;
+END $$;
+
+-- 単価マスタ明細（品目単位）テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_items') THEN
+        CREATE TABLE price_items (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
+            item_code VARCHAR(50) NOT NULL,
+            base_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL,
+            CONSTRAINT uk_price_items_price_item UNIQUE(price_id, item_code)
+        );
+    END IF;
+END $$;
+
+-- 単価マスタ明細（仕入先・品目単位）テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_supplier_items') THEN
+        CREATE TABLE price_supplier_items (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
+            supplier_code VARCHAR(50) NOT NULL,
+            item_code VARCHAR(50) NOT NULL,
+            base_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL,
+            CONSTRAINT uk_price_supplier_items_price_supplier_item UNIQUE(price_id, supplier_code, item_code)
+        );
+    END IF;
+END $$;
+
+-- 単価マスタ明細（得意先・品目単位）テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_customer_items') THEN
+        CREATE TABLE price_customer_items (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
+            customer_code VARCHAR(50) NOT NULL,
+            item_code VARCHAR(50) NOT NULL,
+            base_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL,
+            CONSTRAINT uk_price_customer_items_price_customer_item UNIQUE(price_id, customer_code, item_code)
+        );
+    END IF;
+END $$;
+
+-- 単価マスタ明細（仕入先・得意先・品目単位）テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_supplier_customer_items') THEN
+        CREATE TABLE price_supplier_customer_items (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
+            supplier_code VARCHAR(50) NOT NULL,
+            customer_code VARCHAR(50) NOT NULL,
+            item_code VARCHAR(50) NOT NULL,
+            base_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL,
+            CONSTRAINT uk_price_supplier_customer_items_price_supplier_customer_item UNIQUE(price_id, supplier_code, customer_code, item_code)
+        );
+    END IF;
+END $$;
+
+-- 数量スケール価格テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_scales') THEN
+        CREATE TABLE price_scales (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
+            from_quantity DECIMAL(12,3) NOT NULL,
+            to_quantity DECIMAL(12,3) NOT NULL,
+            scale_price DECIMAL(12,2) NOT NULL,
+            CONSTRAINT uk_price_scales_price_quantity UNIQUE(price_id, from_quantity, to_quantity)
+        );
+    END IF;
+END $$;
+
 -- mini_erp_userに必要な権限を付与
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mini_erp_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO mini_erp_user;

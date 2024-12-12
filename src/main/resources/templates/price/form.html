@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>単価マスタ登録</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>単価マスタ登録</h1>
+
+    <!-- 検索モーダル -->
+    <div th:replace="fragments/search-modals :: item-search-modal"></div>
+    <div th:replace="fragments/search-modals :: customer-search-modal"></div>
+    <div th:replace="fragments/search-modals :: supplier-search-modal"></div>
+
+    <form th:action="${priceRequest.id} ? @{/prices/edit/{id}(id=${priceRequest.id})} : @{/prices/create}"
+          th:object="${priceRequest}" method="post">
+
+        <div class="mb-3">
+            <label for="priceNumber" class="form-label">価格表番号</label>
+            <input type="text" class="form-control" id="priceNumber" th:field="*{priceNumber}">
+            <div class="text-danger" th:if="${#fields.hasErrors('priceNumber')}" th:errors="*{priceNumber}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="priceName" class="form-label">価格表名</label>
+            <input type="text" class="form-control" id="priceName" th:field="*{priceName}">
+            <div class="text-danger" th:if="${#fields.hasErrors('priceName')}" th:errors="*{priceName}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="priceType" class="form-label">価格表種別</label>
+            <select class="form-select" id="priceType" th:field="*{priceType}">
+                <option value="">選択してください</option>
+                <option th:each="type : ${priceTypes}"
+                        th:value="${type}"
+                        th:text="${type.displayName}"></option>
+            </select>
+            <div class="text-danger" th:if="${#fields.hasErrors('priceType')}" th:errors="*{priceType}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="conditionType" class="form-label">条件種別</label>
+            <select class="form-select" id="conditionType" th:field="*{conditionType}">
+                <option value="">選択してください</option>
+                <option th:each="type : ${conditionTypes}"
+                        th:value="${type}"
+                        th:text="${type.displayName}"></option>
+            </select>
+            <div class="text-danger" th:if="${#fields.hasErrors('conditionType')}" th:errors="*{conditionType}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="startDate" class="form-label">適用開始日</label>
+            <input type="date" class="form-control" id="startDate" th:field="*{startDate}">
+            <div class="text-danger" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+        </div>
+
+        <div class="mb-3">
+            <label for="endDate" class="form-label">適用終了日</label>
+            <input type="date" class="form-control" id="endDate" th:field="*{endDate}">
+            <div class="text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+        </div>
+
+        <!-- 品目のみの場合の入力フォーム -->
+        <div id="itemOnlyForm" style="display: none;">
+            <h3>品目単価</h3>
+            <div class="price-items">
+                <div class="price-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceItems[0].itemCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{priceItems[0].basePrice}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" th:field="*{priceItems[0].currencyCode}">
+                        </div>
+                    </div>
+                    <!-- 数量スケール価格 -->
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleScales(this)">
+                            <i class="fas fa-chevron-down"></i> 数量スケール価格
+                        </button>
+                        <div class="scales-container mt-2" style="display: none;">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>開始数量</th>
+                                        <th>終了数量</th>
+                                        <th>単価</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="scale, scaleStat : *{priceItems[0].priceScales}">
+                                        <td>
+                                            <input type="number" step="0.001" class="form-control form-control-sm"
+                                                   th:field="*{priceItems[0].priceScales[__${scaleStat.index}__].fromQuantity}">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.001" class="form-control form-control-sm"
+                                                   th:field="*{priceItems[0].priceScales[__${scaleStat.index}__].toQuantity}">
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control form-control-sm"
+                                                   th:field="*{priceItems[0].priceScales[__${scaleStat.index}__].scalePrice}">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger" onclick="removeScale(this)">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addScale(this)">
+                                <i class="fas fa-plus"></i> スケール追加
+                            </button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addPriceItem()">品目を追加</button>
+        </div>
+
+        <!-- 得意先・品目の場合の入力フォーム -->
+        <div id="customerItemForm" style="display: none;">
+            <h3>得意先別品目単価</h3>
+            <div class="customer-items">
+                <div class="customer-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">得意先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceCustomerItems[0].customerCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openCustomerSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceCustomerItems[0].itemCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{priceCustomerItems[0].basePrice}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" th:field="*{priceCustomerItems[0].currencyCode}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addCustomerItem()">得意先・品目を追加</button>
+        </div>
+
+        <!-- 仕入先・得意先・品目の場合の入力フォーム -->
+        <div id="supplierCustomerItemForm" style="display: none;">
+            <h3>仕入先・得意先別品目単価</h3>
+            <div class="supplier-customer-items">
+                <div class="supplier-customer-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">仕入先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceSupplierCustomerItems[0].supplierCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openSupplierSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">得意先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceSupplierCustomerItems[0].customerCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openCustomerSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" th:field="*{priceSupplierCustomerItems[0].itemCode}">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" th:field="*{priceSupplierCustomerItems[0].basePrice}">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" th:field="*{priceSupplierCustomerItems[0].currencyCode}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="addSupplierCustomerItem()">仕入先・得意先・品目を追加</button>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">保存</button>
+            <a th:href="@{/prices}" class="btn btn-secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+<th:block layout:fragment="scripts">
+    <script th:inline="javascript">
+        document.getElementById('conditionType').addEventListener('change', function() {
+            const value = this.value;
+            document.getElementById('itemOnlyForm').style.display = value === 'ITEM_ONLY' ? 'block' : 'none';
+            document.getElementById('customerItemForm').style.display = value === 'CUSTOMER_ITEM' ? 'block' : 'none';
+            document.getElementById('supplierCustomerItemForm').style.display = value === 'SUPPLIER_CUSTOMER_ITEM' ? 'block' : 'none';
+        });
+
+        // 商品検索
+        function openItemSearch(button) {
+            currentItemInput = button.closest('.input-group').querySelector('input');
+            $('#itemSearchModal').modal('show');
+        }
+
+        function searchItems() {
+            const keyword = document.getElementById('itemSearchKeyword').value;
+            fetch(`/api/items/search?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(items => {
+                    const tbody = document.querySelector('#itemSearchTable tbody');
+                    tbody.innerHTML = '';
+                    items.forEach(item => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${item.itemCode}</td>
+                            <td>${item.itemName}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                        onclick="selectItem('${item.itemCode}')">選択</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        let currentItemInput = null;
+
+        function selectItem(itemCode) {
+            if (currentItemInput) {
+                currentItemInput.value = itemCode;
+            }
+            $('#itemSearchModal').modal('hide');
+        }
+
+        // 得意先検索
+        function openCustomerSearch(button) {
+            currentCustomerInput = button.closest('.input-group').querySelector('input');
+            $('#customerSearchModal').modal('show');
+        }
+
+        function searchCustomers() {
+            const keyword = document.getElementById('customerSearchKeyword').value;
+            fetch(`/api/customers/search?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(customers => {
+                    const tbody = document.querySelector('#customerSearchTable tbody');
+                    tbody.innerHTML = '';
+                    customers.forEach(customer => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${customer.customerCode}</td>
+                            <td>${customer.name}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                        onclick="selectCustomer('${customer.customerCode}')">選択</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        let currentCustomerInput = null;
+
+        function selectCustomer(customerCode) {
+            if (currentCustomerInput) {
+                currentCustomerInput.value = customerCode;
+            }
+            $('#customerSearchModal').modal('hide');
+        }
+
+        // 仕入先検索
+        function openSupplierSearch(button) {
+            currentSupplierInput = button.closest('.input-group').querySelector('input');
+            $('#supplierSearchModal').modal('show');
+        }
+
+        function searchSuppliers() {
+            const keyword = document.getElementById('supplierSearchKeyword').value;
+            fetch(`/api/suppliers/search?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(suppliers => {
+                    const tbody = document.querySelector('#supplierSearchTable tbody');
+                    tbody.innerHTML = '';
+                    suppliers.forEach(supplier => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${supplier.supplierCode}</td>
+                            <td>${supplier.name}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary"
+                                        onclick="selectSupplier('${supplier.supplierCode}')">選択</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        let currentSupplierInput = null;
+
+        function selectSupplier(supplierCode) {
+            if (currentSupplierInput) {
+                currentSupplierInput.value = supplierCode;
+            }
+            $('#supplierSearchModal').modal('hide');
+        }
+
+        // 行の追加処理
+        function addPriceItem() {
+            const container = document.querySelector('.price-items');
+            const index = container.children.length;
+            const template = `
+                <div class="price-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceItems[${index}].itemCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" name="priceItems[${index}].basePrice">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" name="priceItems[${index}].currencyCode">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-danger" onclick="this.closest('.price-item').remove()">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', template);
+        }
+
+        function addCustomerItem() {
+            const container = document.querySelector('.customer-items');
+            const index = container.children.length;
+            const template = `
+                <div class="customer-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">得意先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceCustomerItems[${index}].customerCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openCustomerSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceCustomerItems[${index}].itemCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" name="priceCustomerItems[${index}].basePrice">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" name="priceCustomerItems[${index}].currencyCode">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-danger" onclick="this.closest('.customer-item').remove()">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', template);
+        }
+
+        function addSupplierCustomerItem() {
+            const container = document.querySelector('.supplier-customer-items');
+            const index = container.children.length;
+            const template = `
+                <div class="supplier-customer-item mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">仕入先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceSupplierCustomerItems[${index}].supplierCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openSupplierSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">得意先コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceSupplierCustomerItems[${index}].customerCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openCustomerSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">商品コード</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="priceSupplierCustomerItems[${index}].itemCode">
+                                <button type="button" class="btn btn-outline-secondary" onclick="openItemSearch(this)">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">基本単価</label>
+                            <input type="number" step="0.01" class="form-control" name="priceSupplierCustomerItems[${index}].basePrice">
+                        </div>
+                        <div class="col">
+                            <label class="form-label">通貨コード</label>
+                            <input type="text" class="form-control" name="priceSupplierCustomerItems[${index}].currencyCode">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-danger" onclick="this.closest('.supplier-customer-item').remove()">削除</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', template);
+        }
+
+        // 数量スケール価格の表示/非表示
+        function toggleScales(button) {
+            const container = button.nextElementSibling;
+            const icon = button.querySelector('i');
+            if (container.style.display === 'none') {
+                container.style.display = 'block';
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                container.style.display = 'none';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // スケール行の追加
+        function addScale(button) {
+            const tbody = button.previousElementSibling.querySelector('tbody');
+            const rows = tbody.children;
+            const index = rows.length;
+            const priceItemIndex = button.closest('.price-item').getAttribute('data-index') || '0';
+
+            const template = `
+                <tr>
+                    <td>
+                        <input type="number" step="0.001" class="form-control form-control-sm"
+                               name="priceItems[${priceItemIndex}].priceScales[${index}].fromQuantity">
+                    </td>
+                    <td>
+                        <input type="number" step="0.001" class="form-control form-control-sm"
+                               name="priceItems[${priceItemIndex}].priceScales[${index}].toQuantity">
+                    </td>
+                    <td>
+                        <input type="number" step="0.01" class="form-control form-control-sm"
+                               name="priceItems[${priceItemIndex}].priceScales[${index}].scalePrice">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="removeScale(this)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', template);
+        }
+
+        // スケール行の削除
+        function removeScale(button) {
+            button.closest('tr').remove();
+        }
+
+        // 初期表示時の条件種別に応じたフォーム表示
+        document.addEventListener('DOMContentLoaded', function() {
+            const conditionType = document.getElementById('conditionType').value;
+            document.getElementById('itemOnlyForm').style.display = conditionType === 'ITEM_ONLY' ? 'block' : 'none';
+            document.getElementById('customerItemForm').style.display = conditionType === 'CUSTOMER_ITEM' ? 'block' : 'none';
+            document.getElementById('supplierCustomerItemForm').style.display = conditionType === 'SUPPLIER_CUSTOMER_ITEM' ? 'block' : 'none';
+        });
+    </script>
+</th:block>
+</body>
+</html>

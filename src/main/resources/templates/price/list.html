@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>単価マスタ一覧</title>
+</head>
+<body>
+<div layout:fragment="content">
+    <h1>単価マスタ一覧</h1>
+
+    <div class="mb-3">
+        <a th:href="@{/prices/create}" class="btn btn-primary">新規登録</a>
+        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="fas fa-file-import"></i> 一括登録
+        </button>
+    </div>
+
+    <div th:if="${message}" class="alert alert-success" role="alert">
+        <span th:text="${message}"></span>
+    </div>
+
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>価格表番号</th>
+            <th>価格表名</th>
+            <th>価格表種別</th>
+            <th>条件種別</th>
+            <th>適用開始日</th>
+            <th>適用終了日</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="price : ${prices}">
+            <td th:text="${price.priceNumber}"></td>
+            <td th:text="${price.priceName}"></td>
+            <td th:text="${price.priceType.displayName}"></td>
+            <td th:text="${price.conditionType.displayName}"></td>
+            <td th:text="${#temporals.format(price.startDate, 'yyyy/MM/dd')}"></td>
+            <td th:text="${#temporals.format(price.endDate, 'yyyy/MM/dd')}"></td>
+            <td>
+                <a th:href="@{/prices/edit/{id}(id=${price.id})}" class="btn btn-sm btn-primary">編集</a>
+                <form th:action="@{/prices/duplicate/{id}(id=${price.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-secondary"
+                            onclick="return confirm('この価格表を複製しますか？')">複製</button>
+                </form>
+                <form th:action="@{/prices/delete/{id}(id=${price.id})}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-sm btn-danger"
+                            onclick="return confirm('本当に削除しますか？')">削除</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- インポートモーダル -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">単価マスタ一括登録</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/prices/import}" method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Excelファイル</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx">
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                            <button type="submit" class="btn btn-primary">インポート</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

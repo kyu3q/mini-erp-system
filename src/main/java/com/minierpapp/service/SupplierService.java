@@ -26,6 +26,15 @@ public class SupplierService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<SupplierResponse> searchSuppliers(String keyword) {
+        keyword = keyword != null ? keyword.trim() : "";
+        List<Supplier> suppliers = supplierRepository.findBySupplierCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword);
+        return suppliers.stream()
+            .map(supplierMapper::toResponse)
+            .toList();
+    }
+
     public SupplierDto findById(Long id) {
         return supplierRepository.findById(id)
                 .map(supplierMapper::toDto)

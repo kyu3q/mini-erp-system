@@ -27,6 +27,15 @@ public class CustomerService {
     }
 
     @Transactional(readOnly = true)
+    public List<CustomerResponse> searchCustomers(String keyword) {
+        keyword = keyword != null ? keyword.trim() : "";
+        List<Customer> customers = customerRepository.findByCustomerCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword);
+        return customers.stream()
+            .map(customerMapper::toResponse)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<Customer> findAllActive() {
         return customerRepository.findByDeletedFalse();
     }

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 商品検索モーダル -->
+    <div th:fragment="item-search-modal">
+        <div class="modal fade" id="itemSearchModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">商品検索</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="itemSearchKeyword" placeholder="商品コードまたは商品名で検索">
+                                <button class="btn btn-outline-secondary" type="button" onclick="searchItems()">
+                                    <i class="fas fa-search"></i> 検索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="itemSearchTable">
+                                <thead>
+                                    <tr>
+                                        <th>商品コード</th>
+                                        <th>商品名</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 得意先検索モーダル -->
+    <div th:fragment="customer-search-modal">
+        <div class="modal fade" id="customerSearchModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">得意先検索</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="customerSearchKeyword" placeholder="得意先コードまたは得意先名で検索">
+                                <button class="btn btn-outline-secondary" type="button" onclick="searchCustomers()">
+                                    <i class="fas fa-search"></i> 検索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="customerSearchTable">
+                                <thead>
+                                    <tr>
+                                        <th>得意先コード</th>
+                                        <th>得意先名</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 仕入先検索モーダル -->
+    <div th:fragment="supplier-search-modal">
+        <div class="modal fade" id="supplierSearchModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">仕入先検索</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="supplierSearchKeyword" placeholder="仕入先コードまたは仕入先名で検索">
+                                <button class="btn btn-outline-secondary" type="button" onclick="searchSuppliers()">
+                                    <i class="fas fa-search"></i> 検索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="supplierSearchTable">
+                                <thead>
+                                    <tr>
+                                        <th>仕入先コード</th>
+                                        <th>仕入先名</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
