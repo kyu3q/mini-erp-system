@@ -275,176 +275,106 @@
             // グローバル変数の定義
             const warehouses = /*[[${warehouses}]]*/ [];
 
-            // DOMContentLoadedイベントを待つ
+            // 初期化処理
             document.addEventListener('DOMContentLoaded', function() {
-                // jQueryとSelect2が利用可能になるまで待つ
-                const initializeApp = function() {
-                    if (window.jQuery && window.jQuery.fn.select2) {
-                        // 既存のSelect2を破棄
-                        try {
-                            $('.warehouse-select').select2('destroy');
-                        } catch (e) {
-                            console.log('Select2 not initialized yet');
-                        }
-
-                        // 得意先のSelect2初期化
-                        $('#customerId').select2({
-                            theme: 'bootstrap-5',
-                            placeholder: '得意先を選択してください',
-                            width: '100%'
-                        });
-
-                        // 得意先選択時の処理
-                        $('#customerId').on('change', function() {
-                            const selectedOption = $(this).find('option:selected');
-                            if (selectedOption.val()) {
-                                $('#shippingPostalCode').val(selectedOption.data('postal-code'));
-                                $('#shippingAddress').val(selectedOption.data('address'));
-                                $('#shippingPhone').val(selectedOption.data('phone'));
-                                $('#shippingContactPerson').val(selectedOption.data('contact-person'));
-                            } else {
-                                $('#shippingPostalCode, #shippingAddress, #shippingPhone, #shippingContactPerson').val('');
-                            }
-                        });
-
-                        // 倉庫選択のSelect2初期化
-                        $('.warehouse-select').each(function() {
-                            const select = $(this);
-                            select.select2({
-                                theme: 'bootstrap-5',
-                                placeholder: '倉庫を選択してください',
-                                width: '100%'
-                            });
-                        });
-
-                        // 初期化完了
-                        console.log('Application initialized');
-                    } else {
-                        // Select2が読み込まれるまで待機
-                        setTimeout(initializeApp, 100);
-                    }
-                };
-
-                        // 明細行のSelect2初期化
-                        initializeDetailSelects();
-
-                        // 明細行のドラッグ&ドロップ
-                        const tbody = document.querySelector('#detailsTable tbody');
-                        if (tbody) {
-                            new Sortable(tbody, {
-                                handle: '.drag-handle',
-                                animation: 150,
-                                onEnd: function() {
-                                    updateLineNumbers();
-                                }
-                            });
-                        }
-
-                        // フォームのバリデーション
-                        const form = document.getElementById('orderForm');
-                        if (form) {
-                            form.addEventListener('submit', function(event) {
-                                if (!form.checkValidity()) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                } else if (!confirm('受注を保存してよろしいですか？')) {
-                                    event.preventDefault();
-                                }
-                                form.classList.add('was-validated');
-                            });
-                        }
-
-                        // 初期表示時に金額を計算
-                        updateAmounts();
-
-                        // 数量・単価の変更時に金額を更新
-                        document.addEventListener('input', function(e) {
-                            if (e.target.classList.contains('quantity') || e.target.classList.contains('unit-price')) {
-                                updateAmounts();
-                            }
-                        });
-                    } else {
-                        // jQueryまたはSelect2が読み込まれていない場合は再試行
-                        setTimeout(initializeApp, 100);
-                    }
-                };
-
-                // 初期化処理を開始
                 initializeApp();
+                initializeFormValidation();
+                initializeDragAndDrop();
+                initializeEventHandlers();
+                updateAmounts();
             });
 
-            function initializeDetailSelects() {
-                // 品目選択のSelect2初期化
-                $('.item-select').each(function() {
-                    const select = $(this);
-                    // 既存のオプションを保持
-                    const selectedValue = select.val();
-                    const existingOptions = select.find('option').not(':first').remove();
+            // アプリケーションの初期化（Select2関連）
+            function initializeApp() {
+                if (!window.jQuery || !window.jQuery.fn.select2) {
+                    setTimeout(initializeApp, 100);
+                    return;
+                }
 
-                    // 品目オプションを追加
-                    items.forEach(item => {
-                        const option = new Option(item.itemName, item.id);
-                        $(option).data('unit-price', item.standardPrice || 0);
-                        select.append(option);
-                    });
+                // 既存のSelect2を破棄
+                try {
+                    $('.warehouse-select').select2('destroy');
+                } catch (e) {
+                    console.log('Select2 not initialized yet');
+                }
 
-                    // 選択状態を復元
-                    if (selectedValue) {
-                        select.val(selectedValue);
+                // 得意先のSelect2初期化
+                $('#customerId').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '得意先を選択してください',
+                    width: '100%'
+                }).on('change', function() {
+                    const selectedOption = $(this).find('option:selected');
+                    if (selectedOption.val()) {
+                        $('#shippingPostalCode').val(selectedOption.data('postal-code'));
+                        $('#shippingAddress').val(selectedOption.data('address'));
+                        $('#shippingPhone').val(selectedOption.data('phone'));
+                        $('#shippingContactPerson').val(selectedOption.data('contact-person'));
+                    } else {
+                        $('#shippingPostalCode, #shippingAddress, #shippingPhone, #shippingContactPerson').val('');
                     }
-
-                    select.select2({
-                        theme: 'bootstrap-5',
-                        placeholder: '品目を選択してください',
-                        width: '100%'
-                    }).on('change', function() {
-                        const selectedOption = $(this).find('option:selected');
-                        if (selectedOption.val()) {
-                            const unitPrice = selectedOption.data('unit-price') || 0;
-                            $(this).closest('tr').find('.unit-price').val(unitPrice).trigger('input');
-                        }
-                    });
                 });
 
                 // 倉庫選択のSelect2初期化
                 $('.warehouse-select').each(function() {
-                    const select = $(this);
-                    // 既存のオプションを保持
-                    const selectedValue = select.val();
-                    const existingOptions = select.find('option').not(':first').remove();
-
-                    // 倉庫オプションを追加
-                    warehouses.forEach(warehouse => {
-                        const option = document.createElement('option');
-                        option.value = warehouse.id;
-                        option.textContent = warehouse.name;
-                        select.append(option);
-                    });
-
-                    // 選択状態を復元
-                    if (selectedValue) {
-                        select.val(selectedValue);
-                    }
-
-                    select.select2({
+                    $(this).select2({
                         theme: 'bootstrap-5',
                         placeholder: '倉庫を選択してください',
                         width: '100%'
                     });
                 });
+
+                console.log('Application initialized');
             }
 
+            // フォームバリデーションの初期化
+            function initializeFormValidation() {
+                const form = document.getElementById('orderForm');
+                if (form) {
+                    form.addEventListener('submit', function(event) {
+                        if (!form.checkValidity()) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        } else if (!confirm('受注を保存してよろしいですか？')) {
+                            event.preventDefault();
+                        }
+                        form.classList.add('was-validated');
+                    });
+                }
+            }
+
+            // ドラッグ&ドロップの初期化
+            function initializeDragAndDrop() {
+                const tbody = document.querySelector('#detailsTable tbody');
+                if (tbody && window.Sortable) {
+                    new Sortable(tbody, {
+                        handle: '.drag-handle',
+                        animation: 150,
+                        onEnd: function() {
+                            updateLineNumbers();
+                        }
+                    });
+                }
+            }
+
+            // イベントハンドラの初期化
+            function initializeEventHandlers() {
+                // 数量・単価の変更時に金額を更新
+                document.addEventListener('input', function(e) {
+                    if (e.target.matches('.quantity, .unit-price')) {
+                        updateAmounts();
+                    }
+                });
+            }
+
+            // 明細行の追加
             function addDetail() {
                 console.log('addDetail called');
                 const template = document.getElementById('detailRowTemplate');
-                if (!template) {
-                    console.error('Template not found');
-                    return;
-                }
-
                 const tbody = document.querySelector('#detailsTable tbody');
-                if (!tbody) {
-                    console.error('Table body not found');
+                
+                if (!template || !tbody) {
+                    console.error('Template or tbody not found');
                     return;
                 }
 
@@ -457,18 +387,14 @@
                 const row = clone.querySelector('tr');
 
                 // インデックスと行番号の更新
-                const inputs = row.querySelectorAll('[name*="INDEX"]');
-                console.log('Found inputs to update:', inputs.length);
-                inputs.forEach(input => {
-                    const newName = input.name.replace('INDEX', index);
-                    console.log('Updating input name from', input.name, 'to', newName);
-                    input.name = newName;
+                row.querySelectorAll('[name*="INDEX"]').forEach(input => {
+                    input.name = input.name.replace('INDEX', index);
                 });
 
-                const lineNumberInputs = row.querySelectorAll('[value="LINE_NUMBER"]');
-                lineNumberInputs.forEach(input => {
+                row.querySelectorAll('[value="LINE_NUMBER"]').forEach(input => {
                     input.value = lineNumber;
                 });
+
                 const lineNumberSpan = row.querySelector('span');
                 if (lineNumberSpan) {
                     lineNumberSpan.textContent = lineNumber;
@@ -477,34 +403,32 @@
                 // 配送予定日のデフォルト値を設定
                 const deliveryDateInput = row.querySelector('[name*="deliveryDate"]');
                 if (deliveryDateInput) {
-                    const defaultDeliveryDate = document.getElementById('deliveryDate')?.value || new Date().toISOString().split('T')[0];
+                    const defaultDeliveryDate = document.getElementById('deliveryDate')?.value 
+                        || new Date().toISOString().split('T')[0];
                     deliveryDateInput.value = defaultDeliveryDate;
-                    console.log('Set delivery date to:', defaultDeliveryDate);
                 }
 
                 // 倉庫のオプションを設定
                 const warehouseSelect = row.querySelector('.warehouse-select');
-
-                // 倉庫オプションを追加
-                warehouses.forEach(warehouse => {
-                    const option = document.createElement('option');
-                    option.value = warehouse.id;
-                    option.textContent = warehouse.name;
-                    warehouseSelect.appendChild(option);
-                });
+                if (warehouseSelect) {
+                    warehouses.forEach(warehouse => {
+                        const option = document.createElement('option');
+                        option.value = warehouse.id;
+                        option.textContent = warehouse.name;
+                        warehouseSelect.appendChild(option);
+                    });
+                }
 
                 // 行を追加
                 tbody.appendChild(row);
-                console.log('Row added to tbody');
 
+                // Select2の初期化
                 try {
-                    // 倉庫選択のSelect2初期化
-                    $(row).find('.warehouse-select').select2({
+                    $(warehouseSelect).select2({
                         theme: 'bootstrap-5',
                         placeholder: '倉庫を選択してください',
                         width: '100%'
                     });
-                    console.log('Select2 initialization completed');
                 } catch (error) {
                     console.error('Error initializing Select2:', error);
                 }
@@ -513,81 +437,93 @@
                 console.log('Detail row initialization completed');
             }
 
+            // 明細行の削除
             function removeDetail(button) {
                 if (confirm('この明細行を削除してよろしいですか？')) {
                     const row = button.closest('tr');
-                    // Select2インスタンスを破棄
-                    $(row).find('.warehouse-select').select2('destroy');
+                    try {
+                        $(row).find('.warehouse-select').select2('destroy');
+                    } catch (error) {
+                        console.error('Error destroying Select2:', error);
+                    }
                     row.remove();
                     updateLineNumbers();
                     updateAmounts();
                 }
             }
 
+            // 行番号の更新
             function updateLineNumbers() {
                 const tbody = document.getElementById('detailsTable').querySelector('tbody');
                 const rows = tbody.querySelectorAll('tr');
                 rows.forEach((row, index) => {
                     const lineNumber = index + 1;
-                    const input = row.querySelector('[name*="].lineNumber"]');
-                    input.value = lineNumber;
-                    const span = row.querySelector('td:first-child + td span');
-                    span.textContent = lineNumber;
+                    
+                    // 行番号の更新
+                    const input = row.querySelector('[name*="lineNumber"]');
+                    if (input) input.value = lineNumber;
+                    
+                    const span = row.querySelector('td:nth-child(2) span');
+                    if (span) span.textContent = lineNumber;
 
-                    const inputs = row.querySelectorAll('[name*="orderDetails["]');
-                    inputs.forEach(input => {
+                    // インデックスの更新
+                    row.querySelectorAll('[name*="orderDetails["]').forEach(input => {
                         input.name = input.name.replace(/orderDetails\[\d+\]/, `orderDetails[${index}]`);
                     });
                 });
             }
 
+            // 金額の更新
             function updateAmounts() {
-                const rows = document.querySelectorAll('.detail-row');
                 let total = 0;
 
-                rows.forEach(row => {
+                // 各明細行の金額を計算
+                document.querySelectorAll('.detail-row').forEach(row => {
                     const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
                     const unitPrice = parseFloat(row.querySelector('.unit-price').value) || 0;
                     const amount = quantity * unitPrice;
+                    
                     row.querySelector('.amount').value = amount.toFixed(0);
                     total += amount;
                 });
 
-                const taxRate = 0.1; // 10%
+                // 消費税と総額の計算
+                const taxRate = 0.1;
                 const taxAmount = Math.floor(total * taxRate);
+
+                // 表示用の金額更新
                 document.getElementById('totalAmount').value = total.toLocaleString();
                 document.getElementById('taxAmount').value = taxAmount.toLocaleString();
 
-                // hidden inputsの更新
+                // hidden項目の更新
+                updateHiddenAmounts(total, taxAmount);
+            }
+
+            // hidden項目の金額更新
+            function updateHiddenAmounts(total, taxAmount) {
                 const form = document.getElementById('orderForm');
-                const existingTotal = form.querySelector('input[name="totalAmount"][type="hidden"]');
-                const existingTax = form.querySelector('input[name="taxAmount"][type="hidden"]');
-
-                if (existingTotal) {
-                    existingTotal.value = total;
-                } else {
-                    const totalAmountHidden = document.createElement('input');
-                    totalAmountHidden.type = 'hidden';
-                    totalAmountHidden.name = 'totalAmount';
-                    totalAmountHidden.value = total;
-                    form.appendChild(totalAmountHidden);
+                
+                // 合計金額
+                let totalInput = form.querySelector('input[name="totalAmount"][type="hidden"]');
+                if (!totalInput) {
+                    totalInput = document.createElement('input');
+                    totalInput.type = 'hidden';
+                    totalInput.name = 'totalAmount';
+                    form.appendChild(totalInput);
                 }
+                totalInput.value = total;
 
-                if (existingTax) {
-                    existingTax.value = taxAmount;
-                } else {
-                    const taxAmountHidden = document.createElement('input');
-                    taxAmountHidden.type = 'hidden';
-                    taxAmountHidden.name = 'taxAmount';
-                    taxAmountHidden.value = taxAmount;
-                    form.appendChild(taxAmountHidden);
+                // 消費税額
+                let taxInput = form.querySelector('input[name="taxAmount"][type="hidden"]');
+                if (!taxInput) {
+                    taxInput = document.createElement('input');
+                    taxInput.type = 'hidden';
+                    taxInput.name = 'taxAmount';
+                    form.appendChild(taxInput);
                 }
+                taxInput.value = taxAmount;
             }
         </script>
-    </div>
-</div>
-</body>
-</html>
     </div>
 </div>
 </body>
