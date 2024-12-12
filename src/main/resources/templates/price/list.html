@@ -27,8 +27,6 @@
     <table class="table">
         <thead>
         <tr>
-            <th>価格表番号</th>
-            <th>価格表名</th>
             <th>価格表種別</th>
             <th>条件種別</th>
             <th>適用開始日</th>
@@ -38,12 +36,10 @@
         </thead>
         <tbody>
         <tr th:each="price : ${prices}">
-            <td th:text="${price.priceNumber}"></td>
-            <td th:text="${price.priceName}"></td>
             <td th:text="${price.priceType.displayName}"></td>
             <td th:text="${price.conditionType.displayName}"></td>
-            <td th:text="${#temporals.format(price.startDate, 'yyyy/MM/dd')}"></td>
-            <td th:text="${#temporals.format(price.endDate, 'yyyy/MM/dd')}"></td>
+            <td th:text="${#temporals.format(price.validFromDate, 'yyyy/MM/dd')}"></td>
+            <td th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"></td>
             <td>
                 <a th:href="@{/prices/edit/{id}(id=${price.id})}" class="btn btn-sm btn-primary">編集</a>
                 <form th:action="@{/prices/duplicate/{id}(id=${price.id})}" method="post" style="display: inline;">

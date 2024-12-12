@@ -10,12 +10,10 @@ import java.util.List;
 @Data
 public class PriceResponse {
     private Long id;
-    private String priceNumber;
-    private String priceName;
     private PriceType priceType;
     private ConditionType conditionType;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private LocalDate validFromDate;
+    private LocalDate validToDate;
     private String status;
     private List<PriceItemResponse> priceItems = new ArrayList<>();
     private List<PriceSupplierItemResponse> priceSupplierItems = new ArrayList<>();

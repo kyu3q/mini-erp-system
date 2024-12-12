@@ -18,18 +18,6 @@
           th:object="${priceRequest}" method="post">
 
         <div class="mb-3">
-            <label for="priceNumber" class="form-label">価格表番号</label>
-            <input type="text" class="form-control" id="priceNumber" th:field="*{priceNumber}">
-            <div class="text-danger" th:if="${#fields.hasErrors('priceNumber')}" th:errors="*{priceNumber}"></div>
-        </div>
-
-        <div class="mb-3">
-            <label for="priceName" class="form-label">価格表名</label>
-            <input type="text" class="form-control" id="priceName" th:field="*{priceName}">
-            <div class="text-danger" th:if="${#fields.hasErrors('priceName')}" th:errors="*{priceName}"></div>
-        </div>
-
-        <div class="mb-3">
             <label for="priceType" class="form-label">価格表種別</label>
             <select class="form-select" id="priceType" th:field="*{priceType}">
                 <option value="">選択してください</option>
@@ -52,15 +40,15 @@
         </div>
 
         <div class="mb-3">
-            <label for="startDate" class="form-label">適用開始日</label>
-            <input type="date" class="form-control" id="startDate" th:field="*{startDate}">
-            <div class="text-danger" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+            <label for="validFromDate" class="form-label">適用開始日</label>
+            <input type="date" class="form-control" id="validFromDate" th:field="*{validFromDate}">
+            <div class="text-danger" th:if="${#fields.hasErrors('validFromDate')}" th:errors="*{validFromDate}"></div>
         </div>
 
         <div class="mb-3">
-            <label for="endDate" class="form-label">適用終了日</label>
-            <input type="date" class="form-control" id="endDate" th:field="*{endDate}">
-            <div class="text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+            <label for="validToDate" class="form-label">適用終了日</label>
+            <input type="date" class="form-control" id="validToDate" th:field="*{validToDate}">
+            <div class="text-danger" th:if="${#fields.hasErrors('validToDate')}" th:errors="*{validToDate}"></div>
         </div>
 
         <!-- 品目のみの場合の入力フォーム -->

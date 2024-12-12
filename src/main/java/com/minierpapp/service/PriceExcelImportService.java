@@ -57,12 +57,10 @@ public class PriceExcelImportService {
 
     private PriceRequest createPriceRequest(Row row) {
         PriceRequest request = new PriceRequest();
-        request.setPriceNumber(getCellStringValue(row.getCell(1)));
-        request.setPriceName(getCellStringValue(row.getCell(2)));
-        request.setPriceType(PriceType.valueOf(getCellStringValue(row.getCell(3))));
-        request.setConditionType(ConditionType.valueOf(getCellStringValue(row.getCell(4))));
-        request.setStartDate(row.getCell(5).getLocalDateTimeCellValue().toLocalDate());
-        request.setEndDate(row.getCell(6).getLocalDateTimeCellValue().toLocalDate());
+        request.setPriceType(PriceType.valueOf(getCellStringValue(row.getCell(1))));
+        request.setConditionType(ConditionType.valueOf(getCellStringValue(row.getCell(2))));
+        request.setValidFromDate(row.getCell(3).getLocalDateTimeCellValue().toLocalDate());
+        request.setValidToDate(row.getCell(4).getLocalDateTimeCellValue().toLocalDate());
         return request;
     }
 

@@ -30,7 +30,6 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     @Mapping(target = "price", ignore = true)
     PriceItem toEntity(PriceItemRequest request);
 
@@ -40,7 +39,6 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     @Mapping(target = "price", ignore = true)
     PriceCustomerItem toEntity(PriceCustomerItemRequest request);
 
@@ -50,7 +48,6 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     @Mapping(target = "price", ignore = true)
     PriceSupplierItem toEntity(PriceSupplierItemRequest request);
 
@@ -60,7 +57,6 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     @Mapping(target = "price", ignore = true)
     PriceSupplierCustomerItem toEntity(PriceSupplierCustomerItemRequest request);
 
@@ -70,11 +66,6 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
-    @Mapping(target = "priceItem", ignore = true)
-    @Mapping(target = "priceSupplierItem", ignore = true)
-    @Mapping(target = "priceCustomerItem", ignore = true)
-    @Mapping(target = "priceSupplierCustomerItem", ignore = true)
     PriceScale toEntity(PriceScaleRequest request);
 
     @Mapping(target = "id", ignore = true)

@@ -1,6 +1,7 @@
 package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
+import com.minierpapp.model.common.Status;
 import com.minierpapp.model.price.*;
 import com.minierpapp.model.price.dto.*;
 import com.minierpapp.model.price.mapper.PriceMapper;
@@ -261,8 +262,8 @@ public class PriceService {
         newPrice.setPriceName(originalPrice.getPriceName() + " (コピー)");
         newPrice.setPriceType(originalPrice.getPriceType());
         newPrice.setConditionType(originalPrice.getConditionType());
-        newPrice.setStartDate(originalPrice.getStartDate());
-        newPrice.setEndDate(originalPrice.getEndDate());
+        newPrice.setValidFromDate(originalPrice.getValidFromDate());
+        newPrice.setValidToDate(originalPrice.getValidToDate());
         newPrice.setStatus(Status.ACTIVE);
 
         // 品目単価のコピー
@@ -272,6 +273,7 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
+            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
@@ -280,6 +282,7 @@ public class PriceService {
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
+                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -294,6 +297,7 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
+            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
@@ -302,6 +306,7 @@ public class PriceService {
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
+                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -316,6 +321,7 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
+            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
@@ -324,6 +330,7 @@ public class PriceService {
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
+                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -339,6 +346,7 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
+            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
@@ -347,6 +355,7 @@ public class PriceService {
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
+                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
