@@ -37,6 +37,7 @@ public class PriceSupplierCustomerItem extends BaseEntity {
     private String currencyCode;
 
 
-    @OneToMany(mappedBy = "priceSupplierCustomerItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "price_supplier_customer_item_id", nullable = false)
     private List<PriceScale> priceScales = new ArrayList<>();
 }

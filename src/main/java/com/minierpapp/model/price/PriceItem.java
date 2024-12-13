@@ -30,6 +30,7 @@ public class PriceItem extends BaseEntity {
     @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
 
-    @OneToMany(mappedBy = "priceItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "price_item_id", nullable = false)
     private List<PriceScale> priceScales = new ArrayList<>();
 }
