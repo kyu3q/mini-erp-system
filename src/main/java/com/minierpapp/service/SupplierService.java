@@ -4,6 +4,7 @@ import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.model.supplier.dto.SupplierDto;
 import com.minierpapp.model.supplier.dto.SupplierRequest;
+import com.minierpapp.model.supplier.dto.SupplierResponse;
 import com.minierpapp.model.supplier.mapper.SupplierMapper;
 import com.minierpapp.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;

@@ -2,6 +2,7 @@ package com.minierpapp.service;
 
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.item.dto.ItemRequest;
+import com.minierpapp.model.item.dto.ItemResponse;
 import com.minierpapp.model.item.mapper.ItemMapper;
 import com.minierpapp.repository.ItemRepository;
 import jakarta.persistence.EntityNotFoundException;

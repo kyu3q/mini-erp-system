@@ -22,6 +22,16 @@ public class PriceService {
     private final PriceMapper priceMapper;
 
     /**
+     * 全ての単価マスタを取得する
+     */
+    @Transactional(readOnly = true)
+    public List<PriceResponse> findAll() {
+        return priceRepository.findAll().stream()
+            .map(priceMapper::toResponse)
+            .toList();
+    }
+
+    /**
      * 単価マスタを登録する
      */
     public PriceResponse createPrice(PriceRequest request) {
@@ -258,8 +268,6 @@ public class PriceService {
             .orElseThrow(() -> new ResourceNotFoundException("Price not found with id: " + id));
 
         Price newPrice = new Price();
-        newPrice.setPriceNumber(generateNewPriceNumber(originalPrice.getPriceNumber()));
-        newPrice.setPriceName(originalPrice.getPriceName() + " (コピー)");
         newPrice.setPriceType(originalPrice.getPriceType());
         newPrice.setConditionType(originalPrice.getConditionType());
         newPrice.setValidFromDate(originalPrice.getValidFromDate());
@@ -363,19 +371,5 @@ public class PriceService {
         });
 
         return priceMapper.toResponse(priceRepository.save(newPrice));
-    }
-
-    private String generateNewPriceNumber(String originalNumber) {
-        // 元の価格表番号に "-copy-N" を付加（Nは連番）
-        String baseNumber = originalNumber;
-        int copyNumber = 1;
-
-        while (true) {
-            String newNumber = baseNumber + "-copy-" + copyNumber;
-            if (!priceRepository.existsByPriceNumberAndDeletedFalse(newNumber)) {
-                return newNumber;
-            }
-            copyNumber++;
-        }
     }
 }

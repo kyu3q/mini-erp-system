@@ -4,6 +4,7 @@ import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
+import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;

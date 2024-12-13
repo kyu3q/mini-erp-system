@@ -93,6 +93,4 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
             @Param("supplierCode") String supplierCode,
             @Param("customerCode") String customerCode,
             @Param("priceDate") LocalDate priceDate);
-
-    boolean existsByPriceNumberAndDeletedFalse(String priceNumber);
 }
