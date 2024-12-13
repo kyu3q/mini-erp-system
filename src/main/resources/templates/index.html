@@ -4,119 +4,190 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>Welcome</title>
+    <style>
+        .feature-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        }
+        .icon-wrapper {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-item {
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background-color: white;
+            height: 100%;
+            transition: transform 0.2s;
+        }
+        .stat-item:hover {
+            transform: translateY(-3px);
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container py-5">
-            <div class="text-center mb-5">
-                <h1 class="display-4 fw-bold text-primary">Mini ERP System</h1>
-                <p class="lead text-muted">効率的な在庫・受注管理システム</p>
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-primary">Mini ERP System</h1>
+            <p class="lead text-muted">効率的な在庫・受注管理システム</p>
+        </div>
+
+        <div class="row g-4 mb-5">
+            <!-- マスタ管理 -->
+            <div class="col-12 mb-4">
+                <h2 class="h4 mb-4"><i class="fas fa-database text-primary me-2"></i>マスタ管理</h2>
+                <div class="row g-4">
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-box fa-3x text-primary"></i>
+                                </div>
+                                <h5 class="card-title mb-3">品目マスタ</h5>
+                                <p class="card-text text-muted mb-4">商品情報の一元管理</p>
+                                <a href="/items" class="btn btn-primary w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-tags fa-3x text-danger"></i>
+                                </div>
+                                <h5 class="card-title mb-3">単価マスタ</h5>
+                                <p class="card-text text-muted mb-4">商品単価の管理</p>
+                                <a href="/prices" class="btn btn-danger w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-users fa-3x text-success"></i>
+                                </div>
+                                <h5 class="card-title mb-3">得意先マスタ</h5>
+                                <p class="card-text text-muted mb-4">得意先情報の管理</p>
+                                <a href="/customers" class="btn btn-success w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-truck fa-3x text-info"></i>
+                                </div>
+                                <h5 class="card-title mb-3">仕入先マスタ</h5>
+                                <p class="card-text text-muted mb-4">仕入先情報の管理</p>
+                                <a href="/suppliers" class="btn btn-info w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-warehouse fa-3x text-secondary"></i>
+                                </div>
+                                <h5 class="card-title mb-3">倉庫マスタ</h5>
+                                <p class="card-text text-muted mb-4">倉庫情報の管理</p>
+                                <a href="/warehouses" class="btn btn-secondary w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="row justify-content-center g-4">
-                <div class="col-md-4 col-lg-3">
-                    <div class="feature-card card h-100 border-0 shadow-sm hover-card">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-box fa-3x text-primary"></i>
+
+            <!-- 在庫管理 -->
+            <div class="col-12 mb-4">
+                <h2 class="h4 mb-4"><i class="fas fa-cubes text-primary me-2"></i>在庫管理</h2>
+                <div class="row g-4">
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-layer-group fa-3x text-warning"></i>
+                                </div>
+                                <h5 class="card-title mb-3">在庫一覧</h5>
+                                <p class="card-text text-muted mb-4">在庫状況の確認・管理</p>
+                                <a href="/stocks" class="btn btn-warning w-100">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
                             </div>
-                            <h5 class="card-title mb-3">品目マスタ</h5>
-                            <p class="card-text text-muted mb-4">商品情報の一元管理</p>
-                            <a href="/items" class="btn btn-primary btn-lg w-100">
-                                <i class="fas fa-arrow-right me-2"></i>管理画面へ
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-lg-3">
-                    <div class="feature-card card h-100 border-0 shadow-sm hover-card">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-warehouse fa-3x text-success"></i>
-                            </div>
-                            <h5 class="card-title mb-3">倉庫マスタ</h5>
-                            <p class="card-text text-muted mb-4">倉庫情報の管理</p>
-                            <a href="/warehouses" class="btn btn-success btn-lg w-100">
-                                <i class="fas fa-arrow-right me-2"></i>管理画面へ
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-lg-3">
-                    <div class="feature-card card h-100 border-0 shadow-sm hover-card">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-cubes fa-3x text-info"></i>
-                            </div>
-                            <h5 class="card-title mb-3">在庫管理</h5>
-                            <p class="card-text text-muted mb-4">在庫状況の確認・管理</p>
-                            <a href="/stocks" class="btn btn-info btn-lg w-100 text-white">
-                                <i class="fas fa-arrow-right me-2"></i>管理画面へ
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-lg-3">
-                    <div class="feature-card card h-100 border-0 shadow-sm hover-card">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-shopping-cart fa-3x text-warning"></i>
-                            </div>
-                            <h5 class="card-title mb-3">受注管理</h5>
-                            <p class="card-text text-muted mb-4">受注情報の管理</p>
-                            <a href="/orders" class="btn btn-warning btn-lg w-100">
-                                <i class="fas fa-arrow-right me-2"></i>管理画面へ
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4 col-lg-3">
-                    <div class="feature-card card h-100 border-0 shadow-sm hover-card">
-                        <div class="card-body text-center p-4">
-                            <div class="icon-wrapper mb-3">
-                                <i class="fas fa-tags fa-3x text-danger"></i>
-                            </div>
-                            <h5 class="card-title mb-3">単価マスタ</h5>
-                            <p class="card-text text-muted mb-4">商品単価の管理</p>
-                            <a href="/prices" class="btn btn-danger btn-lg w-100">
-                                <i class="fas fa-arrow-right me-2"></i>管理画面へ
-                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row mt-5">
-                <div class="col-12 text-center">
-                    <div class="quick-stats p-4 bg-light rounded-3">
-                        <h3 class="mb-4">システム概要</h3>
-                        <div class="row g-4">
-                            <div class="col-md-3">
-                                <div class="stat-item">
-                                    <i class="fas fa-tasks fa-2x text-primary mb-3"></i>
-                                    <h4>簡単操作</h4>
-                                    <p class="text-muted">直感的なUIで業務効率化</p>
+
+            <!-- 受注管理 -->
+            <div class="col-12">
+                <h2 class="h4 mb-4"><i class="fas fa-shopping-cart text-primary me-2"></i>受注管理</h2>
+                <div class="row g-4">
+                    <div class="col-md-4 col-lg-3">
+                        <div class="feature-card card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center p-4">
+                                <div class="icon-wrapper mb-3">
+                                    <i class="fas fa-file-invoice fa-3x text-purple"></i>
                                 </div>
+                                <h5 class="card-title mb-3">受注一覧</h5>
+                                <p class="card-text text-muted mb-4">受注情報の管理</p>
+                                <a href="/orders" class="btn btn-purple w-100" style="background-color: #6f42c1; color: white;">
+                                    <i class="fas fa-arrow-right me-2"></i>管理画面へ
+                                </a>
                             </div>
-                            <div class="col-md-3">
-                                <div class="stat-item">
-                                    <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
-                                    <h4>リアルタイム</h4>
-                                    <p class="text-muted">在庫状況をリアルタイム把握</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="stat-item">
-                                    <i class="fas fa-shield-alt fa-2x text-info mb-3"></i>
-                                    <h4>セキュア</h4>
-                                    <p class="text-muted">安全なデータ管理</p>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="stat-item">
-                                    <i class="fas fa-sync fa-2x text-warning mb-3"></i>
-                                    <h4>自動化</h4>
-                                    <p class="text-muted">業務プロセスの自動化</p>
-                                </div>
-                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card bg-light border-0 rounded-3 mt-4">
+            <div class="card-body p-4">
+                <h2 class="h4 mb-4 text-center">システム概要</h2>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="stat-item shadow-sm">
+                            <i class="fas fa-tasks fa-2x text-primary mb-3"></i>
+                            <h4 class="h5">簡単操作</h4>
+                            <p class="text-muted mb-0">直感的なUIで業務効率化</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item shadow-sm">
+                            <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                            <h4 class="h5">リアルタイム</h4>
+                            <p class="text-muted mb-0">在庫状況をリアルタイム把握</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item shadow-sm">
+                            <i class="fas fa-shield-alt fa-2x text-info mb-3"></i>
+                            <h4 class="h5">セキュア</h4>
+                            <p class="text-muted mb-0">安全なデータ管理</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item shadow-sm">
+                            <i class="fas fa-sync fa-2x text-warning mb-3"></i>
+                            <h4 class="h5">自動化</h4>
+                            <p class="text-muted mb-0">業務プロセスの自動化</p>
                         </div>
                     </div>
                 </div>
