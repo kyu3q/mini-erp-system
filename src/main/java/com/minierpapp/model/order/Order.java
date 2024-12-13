@@ -12,12 +12,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_orders_order_number_not_deleted",
+                        columnNames = {"order_number", "deleted"})
+        })
 @Getter
 @Setter
 public class Order extends BaseEntity {
 
-    @Column(name = "order_number", nullable = false, unique = true)
+    @Column(name = "order_number", nullable = false)
     private String orderNumber;
 
     @Column(name = "order_date", nullable = false)
@@ -57,6 +61,9 @@ public class Order extends BaseEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails = new ArrayList<>();
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
     public void addOrderDetail(OrderDetail detail) {
         orderDetails.add(detail);
