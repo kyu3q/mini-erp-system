@@ -68,7 +68,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "priceItems", ignore = true)
     @Mapping(target = "priceSupplierItems", ignore = true)
     @Mapping(target = "priceCustomerItems", ignore = true)

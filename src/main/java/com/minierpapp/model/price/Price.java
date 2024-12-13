@@ -13,7 +13,11 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "prices")
+@Table(name = "prices",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_prices_type_condition_date_not_deleted",
+                        columnNames = {"price_type", "condition_type", "valid_from_date", "valid_to_date", "deleted"})
+        })
 public class Price extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
@@ -45,6 +49,9 @@ public class Price extends BaseEntity {
 
     @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PriceSupplierCustomerItem> priceSupplierCustomerItems = new ArrayList<>();
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 
     public boolean isExpired() {
         return LocalDate.now().isAfter(validToDate);

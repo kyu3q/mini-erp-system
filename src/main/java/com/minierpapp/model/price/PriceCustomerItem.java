@@ -9,7 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "price_customer_items")
+@Table(name = "price_customer_items",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_price_customer_items_price_customer_item_not_deleted",
+                        columnNames = {"price_id", "customer_code", "item_code", "deleted"})
+        })
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class PriceCustomerItem extends BaseEntity {
@@ -33,9 +37,10 @@ public class PriceCustomerItem extends BaseEntity {
     @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
 
-
-
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "price_customer_item_id", nullable = false)
     private List<PriceScale> priceScales = new ArrayList<>();
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }
