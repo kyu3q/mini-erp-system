@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title layout:title-pattern="$CONTENT_TITLE - Mini ERP">Mini ERP System</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
@@ -72,7 +73,7 @@
                     <ul class="nav flex-column">
                         <!-- ホーム -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/" th:classappend="${#httpServletRequest.requestURI == '/'} ? 'active'">
+                            <a class="nav-link" href="/" th:classappend="${#servletPath == '/'} ? 'active'">
                                 <i class="fas fa-home"></i> ホーム
                             </a>
                         </li>
@@ -84,27 +85,27 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/items" th:classappend="${#httpServletRequest.requestURI.startsWith('/items')} ? 'active'">
+                            <a class="nav-link" href="/items" th:classappend="${#strings.startsWith(#servletPath, '/items')} ? 'active'">
                                 <i class="fas fa-box"></i> 品目マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/prices" th:classappend="${#httpServletRequest.requestURI.startsWith('/prices')} ? 'active'">
+                            <a class="nav-link" href="/prices" th:classappend="${#strings.startsWith(#servletPath, '/prices')} ? 'active'">
                                 <i class="fas fa-tags"></i> 単価マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/customers" th:classappend="${#httpServletRequest.requestURI.startsWith('/customers')} ? 'active'">
+                            <a class="nav-link" href="/customers" th:classappend="${#strings.startsWith(#servletPath, '/customers')} ? 'active'">
                                 <i class="fas fa-users"></i> 得意先マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/suppliers" th:classappend="${#httpServletRequest.requestURI.startsWith('/suppliers')} ? 'active'">
+                            <a class="nav-link" href="/suppliers" th:classappend="${#strings.startsWith(#servletPath, '/suppliers')} ? 'active'">
                                 <i class="fas fa-truck"></i> 仕入先マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/warehouses" th:classappend="${#httpServletRequest.requestURI.startsWith('/warehouses')} ? 'active'">
+                            <a class="nav-link" href="/warehouses" th:classappend="${#strings.startsWith(#servletPath, '/warehouses')} ? 'active'">
                                 <i class="fas fa-warehouse"></i> 倉庫マスタ
                             </a>
                         </li>
@@ -116,7 +117,7 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/stocks" th:classappend="${#httpServletRequest.requestURI.startsWith('/stocks')} ? 'active'">
+                            <a class="nav-link" href="/stocks" th:classappend="${#strings.startsWith(#servletPath, '/stocks')} ? 'active'">
                                 <i class="fas fa-layer-group"></i> 在庫一覧
                             </a>
                         </li>
@@ -128,7 +129,7 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/orders" th:classappend="${#httpServletRequest.requestURI.startsWith('/orders')} ? 'active'">
+                            <a class="nav-link" href="/orders" th:classappend="${#strings.startsWith(#servletPath, '/orders')} ? 'active'">
                                 <i class="fas fa-file-invoice"></i> 受注一覧
                             </a>
                         </li>

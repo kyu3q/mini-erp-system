@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,6 +35,19 @@ public class GlobalExceptionHandler {
         model.addAttribute("status", HttpStatus.NOT_FOUND.value());
         model.addAttribute("error", "Resource Not Found");
         model.addAttribute("message", e.getMessage());
+        
+        return "error";
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNoResourceFoundException(NoResourceFoundException e, Model model) {
+        // 静的リソースが見つからない場合は、WARNレベルでログを出力
+        logger.warn("Static resource not found: {}", e.getMessage());
+        
+        model.addAttribute("status", HttpStatus.NOT_FOUND.value());
+        model.addAttribute("error", "Resource Not Found");
+        model.addAttribute("message", "The requested resource was not found");
         
         return "error";
     }
