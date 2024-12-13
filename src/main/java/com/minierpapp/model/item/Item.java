@@ -52,4 +52,7 @@ public class Item extends BaseEntity {
 
     @Column(name = "reorder_point")
     private Integer reorderPoint;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

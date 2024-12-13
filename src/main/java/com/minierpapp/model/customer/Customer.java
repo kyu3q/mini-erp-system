@@ -7,7 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "customers")
+@Table(name = "customers",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_customers_customer_code_not_deleted",
+                        columnNames = {"customer_code", "deleted"})
+        })
 @Getter
 @Setter
 public class Customer extends BaseEntity {
@@ -47,4 +51,7 @@ public class Customer extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

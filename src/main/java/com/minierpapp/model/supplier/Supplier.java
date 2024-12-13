@@ -7,7 +7,11 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "suppliers")
+@Table(name = "suppliers",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_suppliers_supplier_code_not_deleted",
+                        columnNames = {"supplier_code", "deleted"})
+        })
 @Getter
 @Setter
 public class Supplier extends BaseEntity {
@@ -47,4 +51,7 @@ public class Supplier extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String notes;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }
