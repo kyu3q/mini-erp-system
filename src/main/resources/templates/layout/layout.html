@@ -73,7 +73,7 @@
                     <ul class="nav flex-column">
                         <!-- ホーム -->
                         <li class="nav-item">
-                            <a class="nav-link" href="/" th:classappend="${#servletPath == '/'} ? 'active'">
+                            <a class="nav-link" href="/" th:classappend="${#request.servletPath == '/'} ? 'active'">
                                 <i class="fas fa-home"></i> ホーム
                             </a>
                         </li>
@@ -85,27 +85,27 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/items" th:classappend="${#strings.startsWith(#servletPath, '/items')} ? 'active'">
+                            <a class="nav-link" href="/items" th:classappend="${#strings.startsWith(#request.servletPath, '/items')} ? 'active'">
                                 <i class="fas fa-box"></i> 品目マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/prices" th:classappend="${#strings.startsWith(#servletPath, '/prices')} ? 'active'">
+                            <a class="nav-link" href="/prices" th:classappend="${#strings.startsWith(#request.servletPath, '/prices')} ? 'active'">
                                 <i class="fas fa-tags"></i> 単価マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/customers" th:classappend="${#strings.startsWith(#servletPath, '/customers')} ? 'active'">
+                            <a class="nav-link" href="/customers" th:classappend="${#strings.startsWith(#request.servletPath, '/customers')} ? 'active'">
                                 <i class="fas fa-users"></i> 得意先マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/suppliers" th:classappend="${#strings.startsWith(#servletPath, '/suppliers')} ? 'active'">
+                            <a class="nav-link" href="/suppliers" th:classappend="${#strings.startsWith(#request.servletPath, '/suppliers')} ? 'active'">
                                 <i class="fas fa-truck"></i> 仕入先マスタ
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/warehouses" th:classappend="${#strings.startsWith(#servletPath, '/warehouses')} ? 'active'">
+                            <a class="nav-link" href="/warehouses" th:classappend="${#strings.startsWith(#request.servletPath, '/warehouses')} ? 'active'">
                                 <i class="fas fa-warehouse"></i> 倉庫マスタ
                             </a>
                         </li>
@@ -117,7 +117,7 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/stocks" th:classappend="${#strings.startsWith(#servletPath, '/stocks')} ? 'active'">
+                            <a class="nav-link" href="/stocks" th:classappend="${#strings.startsWith(#request.servletPath, '/stocks')} ? 'active'">
                                 <i class="fas fa-layer-group"></i> 在庫一覧
                             </a>
                         </li>
@@ -129,7 +129,7 @@
                             </div>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="/orders" th:classappend="${#strings.startsWith(#servletPath, '/orders')} ? 'active'">
+                            <a class="nav-link" href="/orders" th:classappend="${#strings.startsWith(#request.servletPath, '/orders')} ? 'active'">
                                 <i class="fas fa-file-invoice"></i> 受注一覧
                             </a>
                         </li>
