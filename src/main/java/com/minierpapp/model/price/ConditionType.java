@@ -6,13 +6,13 @@ public enum ConditionType {
     SUPPLIER_ITEM("仕入先・品目"),
     SUPPLIER_CUSTOMER_ITEM("仕入先・得意先・品目");
 
-    private final String description;
+    private final String displayName;
 
-    ConditionType(String description) {
-        this.description = description;
+    ConditionType(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDisplayName() {
+        return displayName;
     }
 }

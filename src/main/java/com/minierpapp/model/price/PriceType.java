@@ -4,13 +4,13 @@ public enum PriceType {
     SALES("販売単価"),
     PURCHASE("購買単価");
 
-    private final String description;
+    private final String displayName;
 
-    PriceType(String description) {
-        this.description = description;
+    PriceType(String displayName) {
+        this.displayName = displayName;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDisplayName() {
+        return displayName;
     }
 }
