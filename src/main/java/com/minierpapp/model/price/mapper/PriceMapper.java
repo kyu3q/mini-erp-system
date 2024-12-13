@@ -126,10 +126,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "priceItem", ignore = true)
-    @Mapping(target = "priceSupplierItem", ignore = true)
-    @Mapping(target = "priceCustomerItem", ignore = true)
-    @Mapping(target = "priceSupplierCustomerItem", ignore = true)
+    @Mapping(target = "price", ignore = true)
     void updateEntity(@MappingTarget PriceScale priceScale, PriceScaleRequest request);
 
     PriceResponse toResponse(Price price);
