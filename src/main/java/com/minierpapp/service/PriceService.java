@@ -79,6 +79,15 @@ public class PriceService {
     }
 
     /**
+     * 単価マスタのエンティティを取得する
+     */
+    @Transactional(readOnly = true)
+    public Price getPriceEntity(Long id) {
+        return priceRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Price not found with id: " + id));
+    }
+
+    /**
      * 単価マスタを削除する
      */
     public void deletePrice(Long id) {
@@ -283,7 +292,6 @@ public class PriceService {
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                // newScale.setPriceItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
@@ -305,7 +313,6 @@ public class PriceService {
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                // newScale.setPriceSupplierItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
@@ -327,7 +334,6 @@ public class PriceService {
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                // newScale.setPriceCustomerItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
@@ -350,7 +356,6 @@ public class PriceService {
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                // newScale.setPriceSupplierCustomerItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());

@@ -45,4 +45,13 @@ public class Price extends BaseEntity {
 
     @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PriceSupplierCustomerItem> priceSupplierCustomerItems = new ArrayList<>();
+
+    public boolean isExpired() {
+        return LocalDate.now().isAfter(validToDate);
+    }
+
+    public boolean isExpiringSoon() {
+        LocalDate now = LocalDate.now();
+        return !isExpired() && now.plusDays(30).isAfter(validToDate);
+    }
 }

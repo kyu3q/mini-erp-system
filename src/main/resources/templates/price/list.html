@@ -4,74 +4,122 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>単価マスタ一覧</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+    <style>
+        .expired { color: #dc3545; }
+        .expiring-soon { color: #ffc107; }
+        .price-details { background-color: #f8f9fa; }
+        .hover-card:hover { transform: translateY(-2px); transition: transform 0.2s; }
+    </style>
 </head>
 <body>
 <div layout:fragment="content">
-    <h1>単価マスタ一覧</h1>
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="h2 mb-0">単価マスタ一覧</h1>
+            </div>
+            <div class="col text-end">
+                <a th:href="@{/prices/create}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新規登録
+                </a>
+                <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fas fa-file-import"></i> 一括登録
+                </button>
+            </div>
+        </div>
 
-    <div class="mb-3">
-        <a th:href="@{/prices/create}" class="btn btn-primary">新規登録</a>
-        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-            <i class="fas fa-file-import"></i> 一括登録
-        </button>
+        <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${message}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="priceTable">
+                        <thead>
+                        <tr>
+                            <th>価格表種別</th>
+                            <th>条件種別</th>
+                            <th>適用開始日</th>
+                            <th>適用終了日</th>
+                            <th>状態</th>
+                            <th style="width: 200px;">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="price : ${prices}" th:class="${price.isExpired()} ? 'expired' : (${price.isExpiringSoon()} ? 'expiring-soon' : '')"
+                            th:data-price-id="${price.id}">
+                            <td>
+                                <a href="#" class="text-decoration-none toggle-details" th:text="${price.priceType.displayName}"></a>
+                            </td>
+                            <td th:text="${price.conditionType.displayName}"></td>
+                            <td th:text="${#temporals.format(price.validFromDate, 'yyyy/MM/dd')}"></td>
+                            <td th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"></td>
+                            <td>
+                                <span th:if="${price.isExpired()}" class="badge bg-danger">期限切れ</span>
+                                <span th:if="${price.isExpiringSoon()}" class="badge bg-warning">まもなく期限切れ</span>
+                                <span th:if="${!price.isExpired() && !price.isExpiringSoon()}" class="badge bg-success">有効</span>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a th:href="@{/prices/edit/{id}(id=${price.id})}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> 編集
+                                    </a>
+                                    <form th:action="@{/prices/duplicate/{id}(id=${price.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-secondary"
+                                                onclick="return confirm('この価格表を複製しますか？')">
+                                            <i class="fas fa-copy"></i> 複製
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/prices/delete/{id}(id=${price.id})}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                onclick="return confirm('本当に削除しますか？')">
+                                            <i class="fas fa-trash"></i> 削除
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div th:if="${message}" class="alert alert-success" role="alert">
-        <span th:text="${message}"></span>
-    </div>
-
-    <div th:if="${error}" class="alert alert-danger" role="alert">
-        <span th:text="${error}"></span>
-    </div>
-
-    <table class="table">
-        <thead>
-        <tr>
-            <th>価格表種別</th>
-            <th>条件種別</th>
-            <th>適用開始日</th>
-            <th>適用終了日</th>
-            <th>操作</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="price : ${prices}">
-            <td th:text="${price.priceType.displayName}"></td>
-            <td th:text="${price.conditionType.displayName}"></td>
-            <td th:text="${#temporals.format(price.validFromDate, 'yyyy/MM/dd')}"></td>
-            <td th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"></td>
-            <td>
-                <a th:href="@{/prices/edit/{id}(id=${price.id})}" class="btn btn-sm btn-primary">編集</a>
-                <form th:action="@{/prices/duplicate/{id}(id=${price.id})}" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-sm btn-secondary"
-                            onclick="return confirm('この価格表を複製しますか？')">複製</button>
-                </form>
-                <form th:action="@{/prices/delete/{id}(id=${price.id})}" method="post" style="display: inline;">
-                    <button type="submit" class="btn btn-sm btn-danger"
-                            onclick="return confirm('本当に削除しますか？')">削除</button>
-                </form>
-            </td>
-        </tr>
-        </tbody>
-    </table>
 
     <!-- インポートモーダル -->
     <div class="modal fade" id="importModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">単価マスタ一括登録</h5>
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-import me-2"></i>単価マスタ一括登録
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form th:action="@{/prices/import}" method="post" enctype="multipart/form-data">
-                        <div class="mb-3">
-                            <label for="file" class="form-label">Excelファイル</label>
-                            <input type="file" class="form-control" id="file" name="file" accept=".xlsx">
+                    <form th:action="@{/prices/import}" method="post" enctype="multipart/form-data"
+                          class="dropzone" id="importDropzone">
+                        <div class="fallback">
+                            <div class="mb-3">
+                                <label for="file" class="form-label">Excelファイル</label>
+                                <input type="file" class="form-control" id="file" name="file" accept=".xlsx">
+                            </div>
                         </div>
-                        <div class="text-end">
+                        <div class="text-end mt-3">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
-                            <button type="submit" class="btn btn-primary">インポート</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-1"></i>インポート
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -79,5 +127,71 @@
         </div>
     </div>
 </div>
+
+<th:block layout:fragment="scripts">
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // DataTablesの初期化
+            $('#priceTable').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
+                },
+                order: [[2, 'desc']], // 適用開始日でソート
+                pageLength: 25,
+                stateSave: true
+            });
+
+            // 詳細情報の表示/非表示
+            $('.toggle-details').click(function(e) {
+                e.preventDefault();
+                const row = $(this).closest('tr');
+                const priceId = row.data('price-id');
+                
+                if (row.next().hasClass('price-details')) {
+                    row.next().remove();
+                } else {
+                    // 価格詳細情報を取得して表示
+                    $.get(`/api/prices/${priceId}/details`, function(details) {
+                        const detailsHtml = createDetailsHtml(details);
+                        row.after(`
+                            <tr class="price-details">
+                                <td colspan="6">
+                                    <div class="p-3">
+                                        ${detailsHtml}
+                                    </div>
+                                </td>
+                            </tr>
+                        `);
+                    });
+                }
+            });
+        });
+
+        function createDetailsHtml(details) {
+            // 価格詳細情報のHTML生成
+            let html = '<div class="row">';
+            
+            if (details.priceItems && details.priceItems.length > 0) {
+                html += '<div class="col-12"><h6>品目単価</h6><table class="table table-sm">';
+                html += '<thead><tr><th>商品コード</th><th>基本単価</th><th>通貨</th></tr></thead><tbody>';
+                details.priceItems.forEach(item => {
+                    html += `<tr>
+                        <td>${item.itemCode}</td>
+                        <td>${item.basePrice}</td>
+                        <td>${item.currencyCode}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table></div>';
+            }
+
+            // 他の価格タイプ（得意先別、仕入先別など）も同様に表示
+            
+            html += '</div>';
+            return html;
+        }
+    </script>
+</th:block>
 </body>
 </html>
