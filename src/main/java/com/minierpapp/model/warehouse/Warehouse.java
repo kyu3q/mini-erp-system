@@ -7,20 +7,25 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "warehouses")
+@Table(name = "warehouses",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_warehouses_warehouse_code_not_deleted",
+                        columnNames = {"warehouse_code", "deleted"})
+        })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Warehouse extends BaseEntity {
 
-    @Column(name = "warehouse_code", nullable = false, unique = true)
+    @Column(name = "warehouse_code", nullable = false)
     private String warehouseCode;
 
     @Column(name = "name", nullable = false)
@@ -38,4 +43,7 @@ public class Warehouse extends BaseEntity {
 
     @Column(name = "description")
     private String description;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }

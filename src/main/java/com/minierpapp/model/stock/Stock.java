@@ -18,7 +18,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "stocks",
        uniqueConstraints = {
-           @UniqueConstraint(columnNames = {"warehouse_id", "item_id"})
+           @UniqueConstraint(name = "uk_stocks_warehouse_item_not_deleted",
+                   columnNames = {"warehouse_id", "item_id", "deleted"})
        })
 @Getter
 @Setter
@@ -48,4 +49,7 @@ public class Stock extends BaseEntity {
 
     @Column(name = "notes")
     private String notes;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }
