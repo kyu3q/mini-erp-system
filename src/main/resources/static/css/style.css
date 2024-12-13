@@ -1,3 +1,74 @@
+/* サイドバーのスタイル */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+    background-color: #343a40;
+    width: 16.66667%;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.5rem 1rem;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    color: #fff;
+    background-color: #007bff;
+}
+
+.sidebar .nav-section {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.875rem;
+    padding: 1rem 1rem 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.nav-link i {
+    width: 1.25em;
+    text-align: center;
+    margin-right: 0.5rem;
+}
+
+/* メインコンテンツのスタイル */
+.content {
+    padding: 20px;
+    margin-left: 16.66667%;
+}
+
+main {
+    padding-top: 48px;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .content {
+        margin-left: 0;
+    }
+    
+    main {
+        padding-top: 0;
+    }
+}
+
 /* 全体のスタイル */
 body {
     min-height: 100vh;
