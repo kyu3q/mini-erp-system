@@ -31,6 +31,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceItem toEntity(PriceItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -40,6 +41,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceCustomerItem toEntity(PriceCustomerItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -49,6 +51,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceSupplierItem toEntity(PriceSupplierItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -58,6 +61,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceSupplierCustomerItem toEntity(PriceSupplierCustomerItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -66,6 +70,7 @@ public interface PriceMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceScale toEntity(PriceScaleRequest request);
 
     @Mapping(target = "id", ignore = true)
