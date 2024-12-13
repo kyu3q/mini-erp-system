@@ -12,6 +12,5 @@ public class PriceSupplierItemResponse {
     private String itemCode;
     private BigDecimal basePrice;
     private String currencyCode;
-    private String status;
     private List<PriceScaleResponse> priceScales = new ArrayList<>();
 }

@@ -9,5 +9,4 @@ public class PriceScaleResponse {
     private BigDecimal fromQuantity;
     private BigDecimal toQuantity;
     private BigDecimal scalePrice;
-    private String status;
 }

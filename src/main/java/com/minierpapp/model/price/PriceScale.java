@@ -1,7 +1,6 @@
 package com.minierpapp.model.price;
 
 import com.minierpapp.model.common.BaseEntity;
-import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -28,8 +27,4 @@ public class PriceScale extends BaseEntity {
 
     @Column(name = "scale_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal scalePrice;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private Status status = Status.ACTIVE;
 }

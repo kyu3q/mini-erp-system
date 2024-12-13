@@ -1,7 +1,6 @@
 package com.minierpapp.model.price;
 
 import com.minierpapp.model.common.BaseEntity;
-import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,10 +29,6 @@ public class PriceItem extends BaseEntity {
 
     @Column(name = "currency_code", nullable = false, length = 3)
     private String currencyCode;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private Status status = Status.ACTIVE;
 
     @OneToMany(mappedBy = "priceItem", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PriceScale> priceScales = new ArrayList<>();

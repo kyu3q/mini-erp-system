@@ -172,7 +172,7 @@ public class PriceService {
 
     private BigDecimal findItemPrice(Price price, String itemCode, BigDecimal quantity) {
         return price.getPriceItems().stream()
-            .filter(p -> p.getItemCode().equals(itemCode) && p.getStatus() == Status.ACTIVE)
+            .filter(p -> p.getItemCode().equals(itemCode))
             .findFirst()
             .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
             .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
@@ -180,7 +180,7 @@ public class PriceService {
 
     private BigDecimal findSupplierItemPrice(Price price, String supplierCode, String itemCode, BigDecimal quantity) {
         return price.getPriceSupplierItems().stream()
-            .filter(p -> p.getSupplierCode().equals(supplierCode) && p.getItemCode().equals(itemCode) && p.getStatus() == Status.ACTIVE)
+            .filter(p -> p.getSupplierCode().equals(supplierCode) && p.getItemCode().equals(itemCode))
             .findFirst()
             .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
             .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
@@ -188,7 +188,7 @@ public class PriceService {
 
     private BigDecimal findCustomerItemPrice(Price price, String customerCode, String itemCode, BigDecimal quantity) {
         return price.getPriceCustomerItems().stream()
-            .filter(p -> p.getCustomerCode().equals(customerCode) && p.getItemCode().equals(itemCode) && p.getStatus() == Status.ACTIVE)
+            .filter(p -> p.getCustomerCode().equals(customerCode) && p.getItemCode().equals(itemCode))
             .findFirst()
             .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
             .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
@@ -204,8 +204,7 @@ public class PriceService {
             .filter(p -> 
                 p.getSupplierCode().equals(supplierCode) &&
                 p.getCustomerCode().equals(customerCode) &&
-                p.getItemCode().equals(itemCode) &&
-                p.getStatus() == Status.ACTIVE)
+                p.getItemCode().equals(itemCode))
             .findFirst()
             .map(p -> findScalePrice(p.getPriceScales(), quantity, p.getBasePrice()))
             .orElseThrow(() -> new ResourceNotFoundException("適用可能な価格が見つかりません"));
@@ -215,8 +214,7 @@ public class PriceService {
         return scales.stream()
             .filter(scale -> 
                 scale.getFromQuantity().compareTo(quantity) <= 0 &&
-                scale.getToQuantity().compareTo(quantity) >= 0 &&
-                scale.getStatus() == Status.ACTIVE)
+                scale.getToQuantity().compareTo(quantity) >= 0)
             .findFirst()
             .map(PriceScale::getScalePrice)
             .orElse(basePrice);
@@ -281,16 +279,14 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
-            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                newScale.setPriceItem(newItem);
+                // newScale.setPriceItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
-                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -305,16 +301,14 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
-            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                newScale.setPriceSupplierItem(newItem);
+                // newScale.setPriceSupplierItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
-                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -329,16 +323,14 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
-            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                newScale.setPriceCustomerItem(newItem);
+                // newScale.setPriceCustomerItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
-                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 
@@ -354,16 +346,14 @@ public class PriceService {
             newItem.setItemCode(item.getItemCode());
             newItem.setBasePrice(item.getBasePrice());
             newItem.setCurrencyCode(item.getCurrencyCode());
-            newItem.setStatus(Status.ACTIVE);
 
             // 数量スケール価格のコピー
             item.getPriceScales().forEach(scale -> {
                 PriceScale newScale = new PriceScale();
-                newScale.setPriceSupplierCustomerItem(newItem);
+                // newScale.setPriceSupplierCustomerItem(newItem);
                 newScale.setFromQuantity(scale.getFromQuantity());
                 newScale.setToQuantity(scale.getToQuantity());
                 newScale.setScalePrice(scale.getScalePrice());
-                newScale.setStatus(Status.ACTIVE);
                 newItem.getPriceScales().add(newScale);
             });
 

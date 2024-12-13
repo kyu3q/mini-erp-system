@@ -29,9 +29,7 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceItem toEntity(PriceItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -39,9 +37,7 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceCustomerItem toEntity(PriceCustomerItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -49,9 +45,7 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceSupplierItem toEntity(PriceSupplierItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -59,9 +53,7 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceSupplierCustomerItem toEntity(PriceSupplierCustomerItemRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -69,8 +61,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    @Mapping(target = "status", expression = "java(Status.ACTIVE)")
     PriceScale toEntity(PriceScaleRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -90,7 +80,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
     @Mapping(target = "priceScales", ignore = true)
     void updateEntity(@MappingTarget PriceItem priceItem, PriceItemRequest request);
@@ -100,7 +89,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
     @Mapping(target = "priceScales", ignore = true)
     void updateEntity(@MappingTarget PriceSupplierItem priceSupplierItem, PriceSupplierItemRequest request);
@@ -110,7 +98,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
     @Mapping(target = "priceScales", ignore = true)
     void updateEntity(@MappingTarget PriceCustomerItem priceCustomerItem, PriceCustomerItemRequest request);
@@ -120,7 +107,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
     @Mapping(target = "priceScales", ignore = true)
     void updateEntity(@MappingTarget PriceSupplierCustomerItem priceSupplierCustomerItem, PriceSupplierCustomerItemRequest request);
@@ -130,7 +116,6 @@ public interface PriceMapper {
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "price", ignore = true)
     void updateEntity(@MappingTarget PriceScale priceScale, PriceScaleRequest request);
 
@@ -146,7 +131,7 @@ public interface PriceMapper {
         if (request.getPriceScales() != null) {
             request.getPriceScales().forEach(scaleRequest -> {
                 PriceScale scale = toEntity(scaleRequest);
-                scale.setPriceItem(priceItem);
+                // scale.setPriceItem(priceItem);
                 priceItem.getPriceScales().add(scale);
             });
         }
@@ -157,7 +142,7 @@ public interface PriceMapper {
         if (request.getPriceScales() != null) {
             request.getPriceScales().forEach(scaleRequest -> {
                 PriceScale scale = toEntity(scaleRequest);
-                scale.setPriceSupplierItem(priceSupplierItem);
+                // scale.setPriceSupplierItem(priceSupplierItem);
                 priceSupplierItem.getPriceScales().add(scale);
             });
         }
@@ -168,7 +153,7 @@ public interface PriceMapper {
         if (request.getPriceScales() != null) {
             request.getPriceScales().forEach(scaleRequest -> {
                 PriceScale scale = toEntity(scaleRequest);
-                scale.setPriceCustomerItem(priceCustomerItem);
+                // scale.setPriceCustomerItem(priceCustomerItem);
                 priceCustomerItem.getPriceScales().add(scale);
             });
         }
@@ -179,7 +164,7 @@ public interface PriceMapper {
         if (request.getPriceScales() != null) {
             request.getPriceScales().forEach(scaleRequest -> {
                 PriceScale scale = toEntity(scaleRequest);
-                scale.setPriceSupplierCustomerItem(priceSupplierCustomerItem);
+                // scale.setPriceSupplierCustomerItem(priceSupplierCustomerItem);
                 priceSupplierCustomerItem.getPriceScales().add(scale);
             });
         }
