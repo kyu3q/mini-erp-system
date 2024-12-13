@@ -25,8 +25,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
                 SELECT 1 FROM PriceItem pi
                 WHERE pi.price = p
                 AND pi.itemCode = :itemCode
-                AND pi.status = 'ACTIVE'
-                AND pi.deleted = false
             ))
             OR
             (p.conditionType = 'CUSTOMER_ITEM'
@@ -35,8 +33,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
                 WHERE pci.price = p
                 AND pci.itemCode = :itemCode
                 AND pci.customerCode = :customerCode
-                AND pci.status = 'ACTIVE'
-                AND pci.deleted = false
             ))
         )
         ORDER BY p.conditionType DESC
@@ -60,8 +56,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
                 SELECT 1 FROM PriceItem pi
                 WHERE pi.price = p
                 AND pi.itemCode = :itemCode
-                AND pi.status = 'ACTIVE'
-                AND pi.deleted = false
             ))
             OR
             (p.conditionType = 'SUPPLIER_ITEM'
@@ -70,8 +64,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
                 WHERE psi.price = p
                 AND psi.itemCode = :itemCode
                 AND psi.supplierCode = :supplierCode
-                AND psi.status = 'ACTIVE'
-                AND psi.deleted = false
             ))
             OR
             (p.conditionType = 'SUPPLIER_CUSTOMER_ITEM'
@@ -81,8 +73,6 @@ public interface PriceRepository extends JpaRepository<Price, Long> {
                 AND psci.itemCode = :itemCode
                 AND psci.supplierCode = :supplierCode
                 AND psci.customerCode = :customerCode
-                AND psci.status = 'ACTIVE'
-                AND psci.deleted = false
             ))
         )
         ORDER BY p.conditionType DESC
