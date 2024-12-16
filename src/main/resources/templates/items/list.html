@@ -20,7 +20,7 @@
                         <a th:href="@{/items/new}" class="btn btn-outline-primary">
                             <i class="fas fa-plus"></i> 新規作成
                         </a>
-                        <a th:href="@{/items/export(itemCode=${itemCode},itemName=${itemName})}"
+                        <a th:href="@{/items/excel/export(searchParam1=${itemCode},searchParam2=${itemName})}"
                            class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excel出力
                         </a>
@@ -50,7 +50,7 @@
                                         <label for="itemCode" class="form-label">品目コード</label>
                                     </div>
                                     <div class="col-md-8">
-                                        <input type="text" class="form-control" id="itemCode" name="itemCode" th:value="${itemCode}">
+                                        <input type="text" class="form-control" id="itemCode" name="searchParam1" th:value="${itemCode}">
                                     </div>
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                         <label for="itemName" class="form-label">品目名</label>
                                     </div>
                                     <div class="col-md-8">
-                                        <input type="text" class="form-control" id="itemName" name="itemName" th:value="${itemName}">
+                                        <input type="text" class="form-control" id="itemName" name="searchParam2" th:value="${itemName}">
                                     </div>
                                 </div>
                             </div>

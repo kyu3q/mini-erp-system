@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class ItemDto {
     private Long id;
@@ -32,4 +34,10 @@ public class ItemDto {
     private Integer maximumStock;
     private Integer reorderPoint;
     private Long version;
+
+    private LocalDateTime createdAt;
+    private String createdBy;
+    private LocalDateTime updatedAt;
+    private String updatedBy;
+    private boolean deleted;
 }

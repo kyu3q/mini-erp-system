@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-    <!-- 商品検索モーダル -->
-    <div th:fragment="item-search-modal">
+    <!-- 品目検索モーダル -->
+    <div th:fragment="itemSearchModal">
         <div class="modal fade" id="itemSearchModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">商品検索</h5>
+                        <h5 class="modal-title">品目検索</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemSearchKeyword" placeholder="商品コードまたは商品名で検索">
+                                <input type="text" class="form-control" id="itemSearchKeyword" placeholder="品目コードまたは品目名で検索">
                                 <button class="btn btn-outline-secondary" type="button" onclick="searchItems()">
                                     <i class="fas fa-search"></i> 検索
                                 </button>
@@ -23,8 +23,8 @@
                             <table class="table table-hover" id="itemSearchTable">
                                 <thead>
                                     <tr>
-                                        <th>商品コード</th>
-                                        <th>商品名</th>
+                                        <th>品目コード</th>
+                                        <th>品目名</th>
                                         <th>操作</th>
                                     </tr>
                                 </thead>
@@ -39,7 +39,7 @@
     </div>
 
     <!-- 得意先検索モーダル -->
-    <div th:fragment="customer-search-modal">
+    <div th:fragment="customerSearchModal">
         <div class="modal fade" id="customerSearchModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -76,7 +76,7 @@
     </div>
 
     <!-- 仕入先検索モーダル -->
-    <div th:fragment="supplier-search-modal">
+    <div th:fragment="supplierSearchModal">
         <div class="modal fade" id="supplierSearchModal" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -110,6 +110,139 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- 共通のJavaScript -->
+    <div th:fragment="searchModalScripts">
+        <script th:inline="javascript">
+            // 品目検索
+            function openItemSearch() {
+                const modal = new bootstrap.Modal(document.getElementById('itemSearchModal'));
+                modal.show();
+                searchItems();
+            }
+
+            function searchItems() {
+                const keyword = document.getElementById('itemSearchKeyword').value;
+                fetch(`/api/items/search?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(items => {
+                        const tbody = document.querySelector('#itemSearchTable tbody');
+                        tbody.innerHTML = '';
+                        items.forEach(item => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${item.itemCode}</td>
+                                <td>${item.itemName}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="selectItem('${item.id}', '${item.itemCode} - ${item.itemName}')">
+                                        選択
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    });
+            }
+
+            function selectItem(id, display) {
+                document.getElementById('itemId').value = id;
+                document.getElementById('itemDisplay').value = display;
+                bootstrap.Modal.getInstance(document.getElementById('itemSearchModal')).hide();
+            }
+
+            // 仕入先検索
+            function openSupplierSearch() {
+                const modal = new bootstrap.Modal(document.getElementById('supplierSearchModal'));
+                modal.show();
+                searchSuppliers();
+            }
+
+            function searchSuppliers() {
+                const keyword = document.getElementById('supplierSearchKeyword').value;
+                fetch(`/api/suppliers/search?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(suppliers => {
+                        const tbody = document.querySelector('#supplierSearchTable tbody');
+                        tbody.innerHTML = '';
+                        suppliers.forEach(supplier => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${supplier.supplierCode}</td>
+                                <td>${supplier.name}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode} - ${supplier.name}')">
+                                        選択
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    });
+            }
+
+            function selectSupplier(id, display) {
+                document.getElementById('supplierId').value = id;
+                document.getElementById('supplierDisplay').value = display;
+                bootstrap.Modal.getInstance(document.getElementById('supplierSearchModal')).hide();
+            }
+
+            // 得意先検索
+            function openCustomerSearch() {
+                const modal = new bootstrap.Modal(document.getElementById('customerSearchModal'));
+                modal.show();
+                searchCustomers();
+            }
+
+            function searchCustomers() {
+                const keyword = document.getElementById('customerSearchKeyword').value;
+                fetch(`/api/customers/search?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(customers => {
+                        const tbody = document.querySelector('#customerSearchTable tbody');
+                        tbody.innerHTML = '';
+                        customers.forEach(customer => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${customer.customerCode}</td>
+                                <td>${customer.name}</td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="selectCustomer('${customer.id}', '${customer.customerCode} - ${customer.name}')">
+                                        選択
+                                    </button>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    });
+            }
+
+            function selectCustomer(id, display) {
+                document.getElementById('customerId').value = id;
+                document.getElementById('customerDisplay').value = display;
+                bootstrap.Modal.getInstance(document.getElementById('customerSearchModal')).hide();
+            }
+
+            // エンターキーでの検索
+            document.addEventListener('DOMContentLoaded', function() {
+                ['itemSearchKeyword', 'supplierSearchKeyword', 'customerSearchKeyword'].forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('keypress', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (id === 'itemSearchKeyword') searchItems();
+                                else if (id === 'supplierSearchKeyword') searchSuppliers();
+                                else if (id === 'customerSearchKeyword') searchCustomers();
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
     </div>
 </body>
 </html>

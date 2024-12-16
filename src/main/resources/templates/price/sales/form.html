@@ -38,29 +38,31 @@
             
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="itemId" class="form-label required">品目</label>
-                    <select class="form-select" id="itemId" name="itemId" required
-                            th:disabled="${priceRequest.id != null}">
-                        <option value="">選択してください</option>
-                        <option th:each="item : ${items}"
-                                th:value="${item.id}"
-                                th:text="${item.itemCode + ' - ' + item.itemName}"
-                                th:selected="${item.id == priceRequest.itemId}">
-                        </option>
-                    </select>
+                    <label for="itemDisplay" class="form-label required">品目</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="itemDisplay" readonly
+                               th:value="${priceRequest.itemId != null ? items.stream().filter(i -> i.id == priceRequest.itemId).findFirst().map(i -> i.itemCode + ' - ' + i.itemName).orElse('') : ''}"
+                               th:disabled="${priceRequest.id != null}">
+                        <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
+                        <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
+                                th:disabled="${priceRequest.id != null}">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                     <div class="invalid-feedback">品目を選択してください。</div>
                 </div>
                 <div class="col-md-6">
-                    <label for="customerId" class="form-label">得意先</label>
-                    <select class="form-select" id="customerId" name="customerId"
-                            th:disabled="${priceRequest.id != null}">
-                        <option value="">基本価格として設定</option>
-                        <option th:each="customer : ${customers}"
-                                th:value="${customer.id}"
-                                th:text="${customer.customerCode + ' - ' + customer.name}"
-                                th:selected="${customer.id == priceRequest.customerId}">
-                        </option>
-                    </select>
+                    <label for="customerDisplay" class="form-label">得意先</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="customerDisplay" readonly
+                               th:value="${priceRequest.customerId != null ? customers.stream().filter(c -> c.id == priceRequest.customerId).findFirst().map(c -> c.customerCode + ' - ' + c.name).orElse('') : ''}"
+                               th:disabled="${priceRequest.id != null}">
+                        <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
+                        <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
+                                th:disabled="${priceRequest.id != null}">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -170,6 +172,7 @@
             </div>
         </form>
 
+        <!-- スケール行のテンプレート -->
         <template id="scaleRowTemplate">
             <tr class="scale-row">
                 <td class="text-center">
@@ -201,6 +204,14 @@
             </tr>
         </template>
 
+        <!-- 検索モーダル -->
+        <div th:replace="~{fragments/search-modals :: itemSearchModal}"></div>
+        <div th:replace="~{fragments/search-modals :: customerSearchModal}"></div>
+    </div>
+
+    <!-- 追加のスクリプト -->
+    <th:block layout:fragment="scripts">
+        <div th:replace="~{fragments/search-modals :: searchModalScripts}"></div>
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 initializeForm();
@@ -208,11 +219,6 @@
             });
 
             function initializeForm() {
-                // Select2の初期化
-                $('#itemId, #customerId').select2({
-                    theme: 'bootstrap-5'
-                });
-
                 // バリデーションの初期化
                 const form = document.getElementById('priceForm');
                 form.addEventListener('submit', function(event) {
@@ -278,7 +284,7 @@
                 });
             }
         </script>
-    </div>
+    </th:block>
 </div>
 </body>
 </html>

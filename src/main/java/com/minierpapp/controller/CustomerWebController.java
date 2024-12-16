@@ -1,100 +1,97 @@
 package com.minierpapp.controller;
 
+import com.minierpapp.controller.base.BaseWebController;
+import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
+import com.minierpapp.model.customer.dto.CustomerResponse;
+import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.service.CustomerService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/customers")
-@RequiredArgsConstructor
-public class CustomerWebController {
+public class CustomerWebController extends BaseWebController<Customer, CustomerDto, CustomerRequest, CustomerResponse> {
+
     private final CustomerService customerService;
 
+    public CustomerWebController(CustomerMapper mapper, MessageSource messageSource, CustomerService customerService) {
+        super(mapper, messageSource, "customer", "Customer");
+        this.customerService = customerService;
+    }
+
+    @Override
     @GetMapping
-    public String list(@RequestParam(required = false) String customerCode,
-                      @RequestParam(required = false) String name,
-                      Model model) {
+    public String list(
+            @RequestParam(required = false) String searchParam1,
+            @RequestParam(required = false) String searchParam2,
+            Model model) {
+        String customerCode = searchParam1;
+        String name = searchParam2;
         model.addAttribute("customers", customerService.findAll(customerCode, name));
-        return "customer/list";
+        model.addAttribute("customerCode", customerCode);
+        model.addAttribute("name", name);
+        return getListTemplate();
     }
 
-    @GetMapping("/new")
-    public String createForm(Model model) {
-        model.addAttribute("customerRequest", new CustomerRequest());
-        return "customer/form";
+    @Override
+    protected List<CustomerResponse> findAll() {
+        return customerService.findAll(null, null);
     }
 
-    @PostMapping
-    public String create(@Valid @ModelAttribute CustomerRequest customerRequest,
-                        BindingResult result,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "customer/form";
-        }
-
-        try {
-            customerService.create(customerRequest);
-            redirectAttributes.addFlashAttribute("message", "得意先を登録しました。");
-            return "redirect:/customers";
-        } catch (IllegalArgumentException e) {
-            result.rejectValue("customerCode", "error.customerCode", e.getMessage());
-            return "customer/form";
-        }
+    @Override
+    protected CustomerRequest createNewRequest() {
+        return new CustomerRequest();
     }
 
-    @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        CustomerDto customerDto = customerService.findById(id);
-        CustomerRequest customerRequest = new CustomerRequest();
-        // DTOの値をRequestにコピー
-        customerRequest.setCustomerCode(customerDto.getCustomerCode());
-        customerRequest.setName(customerDto.getName());
-        customerRequest.setNameKana(customerDto.getNameKana());
-        customerRequest.setPostalCode(customerDto.getPostalCode());
-        customerRequest.setAddress(customerDto.getAddress());
-        customerRequest.setPhone(customerDto.getPhone());
-        customerRequest.setEmail(customerDto.getEmail());
-        customerRequest.setFax(customerDto.getFax());
-        customerRequest.setContactPerson(customerDto.getContactPerson());
-        customerRequest.setPaymentTerms(customerDto.getPaymentTerms());
-        customerRequest.setStatus(customerDto.getStatus());
-        customerRequest.setNotes(customerDto.getNotes());
-
-        model.addAttribute("customerRequest", customerRequest);
-        model.addAttribute("customerId", id);
-        return "customer/form";
+    @Override
+    protected CustomerRequest findById(Long id) {
+        CustomerResponse customerResponse = customerService.findById(id);
+        CustomerRequest request = new CustomerRequest();
+        request.setCustomerCode(customerResponse.getCustomerCode());
+        request.setName(customerResponse.getName());
+        request.setNameKana(customerResponse.getNameKana());
+        request.setPostalCode(customerResponse.getPostalCode());
+        request.setAddress(customerResponse.getAddress());
+        request.setPhone(customerResponse.getPhone());
+        request.setEmail(customerResponse.getEmail());
+        request.setFax(customerResponse.getFax());
+        request.setContactPerson(customerResponse.getContactPerson());
+        request.setPaymentTerms(customerResponse.getPaymentTerms());
+        request.setStatus(customerResponse.getStatus());
+        request.setNotes(customerResponse.getNotes());
+        return request;
     }
 
-    @PostMapping("/{id}")
-    public String update(@PathVariable Long id,
-                        @Valid @ModelAttribute CustomerRequest customerRequest,
-                        BindingResult result,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "customer/form";
-        }
-
-        try {
-            customerService.update(id, customerRequest);
-            redirectAttributes.addFlashAttribute("message", "得意先を更新しました。");
-            return "redirect:/customers";
-        } catch (IllegalArgumentException e) {
-            result.rejectValue("customerCode", "error.customerCode", e.getMessage());
-            return "customer/form";
-        }
+    @Override
+    protected void createEntity(CustomerRequest request) {
+        customerService.create(request);
     }
 
-    @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    @Override
+    protected void updateEntity(Long id, CustomerRequest request) {
+        customerService.update(id, request);
+    }
+
+    @Override
+    protected void deleteEntity(Long id) {
         customerService.delete(id);
-        redirectAttributes.addFlashAttribute("message", "得意先を削除しました。");
-        return "redirect:/customers";
+    }
+
+    @Override
+    protected void handleError(BindingResult result, Exception e) {
+        if (e.getMessage().contains("得意先コード")) {
+            result.rejectValue("customerCode", "error.customerCode", e.getMessage());
+        } else {
+            super.handleError(result, e);
+        }
     }
 }

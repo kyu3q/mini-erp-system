@@ -1,69 +1,56 @@
 package com.minierpapp.controller;
 
+import com.minierpapp.controller.base.BaseRestController;
+import com.minierpapp.model.item.Item;
+import com.minierpapp.model.item.dto.ItemDto;
 import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
 import com.minierpapp.model.item.mapper.ItemMapper;
 import com.minierpapp.service.ItemService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/items")
-@RequiredArgsConstructor
-public class ItemController {
-
+public class ItemController extends BaseRestController<Item, ItemDto, ItemRequest, ItemResponse> {
     private final ItemService itemService;
-    private final ItemMapper itemMapper;
 
-    @GetMapping
-    public ResponseEntity<List<ItemResponse>> findAll() {
-        return ResponseEntity.ok(
-                itemService.findAll().stream()
-                        .map(itemMapper::toResponse)
-                        .collect(Collectors.toList())
-        );
+    public ItemController(ItemMapper mapper, ItemService itemService) {
+        super(mapper);
+        this.itemService = itemService;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ItemResponse> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(
-                itemMapper.toResponse(itemService.findById(id))
-        );
+    @Override
+    protected List<ItemResponse> findAllEntities() {
+        return itemService.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    @GetMapping("/code/{itemCode}")
-    public ResponseEntity<ItemResponse> findByItemCode(@PathVariable String itemCode) {
-        return ResponseEntity.ok(
-                itemMapper.toResponse(itemService.findByItemCode(itemCode))
-        );
+    @Override
+    protected ItemResponse findEntityById(Long id) {
+        return mapper.toResponse(itemService.findById(id));
     }
 
-    @PostMapping
-    public ResponseEntity<ItemResponse> create(@Valid @RequestBody ItemRequest request) {
-        return new ResponseEntity<>(
-                itemMapper.toResponse(itemService.create(request)),
-                HttpStatus.CREATED
-        );
+    @Override
+    protected ItemResponse createEntity(ItemRequest request) {
+        return mapper.toResponse(itemService.create(request));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<ItemResponse> update(
-            @PathVariable Long id,
-            @Valid @RequestBody ItemRequest request) {
-        return ResponseEntity.ok(
-                itemMapper.toResponse(itemService.update(id, request))
-        );
+    @Override
+    protected ItemResponse updateEntity(Long id, ItemRequest request) {
+        return mapper.toResponse(itemService.update(id, request));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @Override
+    protected void deleteEntity(Long id) {
         itemService.delete(id);
-        return ResponseEntity.noContent().build();
+    }
+
+    @Override
+    protected List<ItemResponse> searchEntities(String keyword) {
+        return itemService.searchItems(keyword);
     }
 }

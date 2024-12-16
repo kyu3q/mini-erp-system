@@ -1,88 +1,66 @@
 package com.minierpapp.controller;
 
+import com.minierpapp.controller.base.BaseWebController;
 import com.minierpapp.model.item.Item;
+import com.minierpapp.model.item.dto.ItemDto;
 import com.minierpapp.model.item.dto.ItemRequest;
-import com.minierpapp.service.ExcelExportService;
-import com.minierpapp.service.ExcelImportService;
+import com.minierpapp.model.item.dto.ItemResponse;
+import com.minierpapp.model.item.mapper.ItemMapper;
 import com.minierpapp.service.ItemService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
 @RequestMapping("/items")
-@RequiredArgsConstructor
-public class ItemWebController {
+public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequest, ItemResponse> {
 
     private final ItemService itemService;
-    private final ExcelExportService excelExportService;
-    private final ExcelImportService excelImportService;
 
+    public ItemWebController(ItemMapper mapper, MessageSource messageSource, ItemService itemService) {
+        super(mapper, messageSource, "items", "Item");
+        this.itemService = itemService;
+    }
+
+    @Override
     @GetMapping
     public String list(
-            @RequestParam(required = false) String itemCode,
-            @RequestParam(required = false) String itemName,
+            @RequestParam(required = false) String searchParam1,
+            @RequestParam(required = false) String searchParam2,
             Model model) {
+        String itemCode = searchParam1;
+        String itemName = searchParam2;
         if ((itemCode != null && !itemCode.trim().isEmpty()) ||
             (itemName != null && !itemName.trim().isEmpty())) {
             model.addAttribute("items", itemService.search(itemCode, itemName));
             model.addAttribute("itemCode", itemCode);
             model.addAttribute("itemName", itemName);
         } else {
-            model.addAttribute("items", itemService.findAll());
+            model.addAttribute("items", findAll());
         }
-        return "items/list";
+        return getListTemplate();
     }
 
-    @GetMapping("/new")
-    public String newItem(Model model) {
-        model.addAttribute("item", new ItemRequest());
-        return "items/form";
+    @Override
+    protected List<ItemResponse> findAll() {
+        return itemService.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
-    @PostMapping
-    public String create(@Valid @ModelAttribute("item") ItemRequest request,
-                        BindingResult result,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "items/form";
-        }
-
-        try {
-            itemService.create(request);
-            redirectAttributes.addFlashAttribute("message", "商品を登録しました。");
-            return "redirect:/items";
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("商品コード")) {
-                result.rejectValue("itemCode", "error.itemCode", e.getMessage());
-            } else if (e.getMessage().contains("最小在庫数")) {
-                result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
-            } else if (e.getMessage().contains("最大在庫数")) {
-                result.rejectValue("maximumStock", "error.maximumStock", e.getMessage());
-            } else if (e.getMessage().contains("発注点")) {
-                result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
-            } else {
-                result.reject("error.global", e.getMessage());
-            }
-            return "items/form";
-        }
+    @Override
+    protected ItemRequest createNewRequest() {
+        return new ItemRequest();
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, Model model) {
+    @Override
+    protected ItemRequest findById(Long id) {
         Item item = itemService.findById(id);
         ItemRequest request = new ItemRequest();
         request.setId(id);
@@ -94,113 +72,36 @@ public class ItemWebController {
         request.setMinimumStock(item.getMinimumStock());
         request.setMaximumStock(item.getMaximumStock());
         request.setReorderPoint(item.getReorderPoint());
-        model.addAttribute("item", request);
-        return "items/form";
+        return request;
     }
 
-    @PutMapping("/{id}")
-    public String update(@PathVariable Long id,
-                        @Valid @ModelAttribute("item") ItemRequest request,
-                        BindingResult result,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return "items/form";
-        }
-
-        try {
-            itemService.update(id, request);
-            redirectAttributes.addFlashAttribute("message", "商品を更新しました。");
-            return "redirect:/items";
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            if (e.getMessage().contains("商品コード")) {
-                result.rejectValue("itemCode", "error.itemCode", e.getMessage());
-            } else if (e.getMessage().contains("最小在庫数")) {
-                result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
-            } else if (e.getMessage().contains("最大在庫数")) {
-                result.rejectValue("maximumStock", "error.maximumStock", e.getMessage());
-            } else if (e.getMessage().contains("発注点")) {
-                result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
-            } else {
-                result.reject("error.global", e.getMessage());
-            }
-            return "items/form";
-        }
+    @Override
+    protected void createEntity(ItemRequest request) {
+        itemService.create(request);
     }
 
-    @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    @Override
+    protected void updateEntity(Long id, ItemRequest request) {
+        itemService.update(id, request);
+    }
+
+    @Override
+    protected void deleteEntity(Long id) {
         itemService.delete(id);
-        redirectAttributes.addFlashAttribute("message", "商品を削除しました。");
-        return "redirect:/items";
     }
 
-    @GetMapping("/export")
-    public ResponseEntity<byte[]> exportToExcel(
-            @RequestParam(required = false) String itemCode,
-            @RequestParam(required = false) String itemName) throws IOException {
-        
-        List<Item> items;
-        if ((itemCode != null && !itemCode.trim().isEmpty()) ||
-            (itemName != null && !itemName.trim().isEmpty())) {
-            items = itemService.search(itemCode, itemName);
+    @Override
+    protected void handleError(BindingResult result, Exception e) {
+        if (e.getMessage().contains("品目コード")) {
+            result.rejectValue("itemCode", "error.itemCode", e.getMessage());
+        } else if (e.getMessage().contains("最小在庫数")) {
+            result.rejectValue("minimumStock", "error.minimumStock", e.getMessage());
+        } else if (e.getMessage().contains("最大在庫数")) {
+            result.rejectValue("maximumStock", "error.maximumStock", e.getMessage());
+        } else if (e.getMessage().contains("発注点")) {
+            result.rejectValue("reorderPoint", "error.reorderPoint", e.getMessage());
         } else {
-            items = itemService.findAll();
+            super.handleError(result, e);
         }
-
-        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
-        String filename = String.format("items_%s.xlsx", timestamp);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-        headers.setContentDispositionFormData("attachment", filename);
-
-        byte[] excelBytes = excelExportService.exportItemsToExcel(items);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(excelBytes);
-    }
-
-    @PostMapping("/import")
-    public String importFromExcel(@RequestParam("file") MultipartFile file,
-                                RedirectAttributes redirectAttributes) {
-        if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "ファイルを選択してください。");
-            return "redirect:/items";
-        }
-
-        if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
-            redirectAttributes.addFlashAttribute("error", "Excelファイル(.xlsx)を選択してください。");
-            return "redirect:/items";
-        }
-
-        try {
-            List<String> errors = excelImportService.importItems(file);
-            
-            if (errors.isEmpty()) {
-                redirectAttributes.addFlashAttribute("message", "商品データを取り込みました。");
-            } else {
-                StringBuilder errorMessage = new StringBuilder("取り込み時にエラーが発生しました：<br>");
-                errors.forEach(error -> errorMessage.append(error).append("<br>"));
-                redirectAttributes.addFlashAttribute("error", errorMessage.toString());
-            }
-        } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("error", "ファイルの読み込みに失敗しました。");
-        }
-        
-        return "redirect:/items";
-    }
-
-    @GetMapping("/import/template")
-    public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
-        String filename = "item_import_template.xlsx";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-        headers.setContentDispositionFormData("attachment", filename);
-
-        byte[] templateBytes = excelImportService.createImportTemplate();
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(templateBytes);
     }
 }

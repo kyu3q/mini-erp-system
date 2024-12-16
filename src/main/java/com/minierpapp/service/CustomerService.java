@@ -2,7 +2,6 @@ package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.customer.Customer;
-import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
@@ -20,10 +19,10 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
 
-    public List<CustomerDto> findAll(String customerCode, String name) {
+    public List<CustomerResponse> findAll(String customerCode, String name) {
         return customerRepository.findByCustomerCodeAndName(customerCode, name)
                 .stream()
-                .map(customerMapper::toDto)
+                .map(customerMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -41,24 +40,32 @@ public class CustomerService {
         return customerRepository.findByDeletedFalse();
     }
 
-    public CustomerDto findById(Long id) {
+    @Transactional(readOnly = true)
+    public CustomerResponse findByCustomerCode(String customerCode) {
+        return customerRepository.findByCustomerCodeAndDeletedFalse(customerCode)
+                .map(customerMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "customerCode", customerCode));
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerResponse findById(Long id) {
         return customerRepository.findById(id)
-                .map(customerMapper::toDto)
+                .map(customerMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
 
     @Transactional
-    public CustomerDto create(CustomerRequest request) {
+    public CustomerResponse create(CustomerRequest request) {
         if (customerRepository.existsByCustomerCodeAndDeletedFalse(request.getCustomerCode())) {
             throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
         }
 
         Customer customer = customerMapper.toEntity(request);
-        return customerMapper.toDto(customerRepository.save(customer));
+        return customerMapper.toResponse(customerRepository.save(customer));
     }
 
     @Transactional
-    public CustomerDto update(Long id, CustomerRequest request) {
+    public CustomerResponse update(Long id, CustomerRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
 
@@ -70,7 +77,7 @@ public class CustomerService {
                 });
 
         customerMapper.updateEntity(request, customer);
-        return customerMapper.toDto(customerRepository.save(customer));
+        return customerMapper.toResponse(customerRepository.save(customer));
     }
 
     @Transactional

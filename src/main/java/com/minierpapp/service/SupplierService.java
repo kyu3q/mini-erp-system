@@ -2,7 +2,6 @@ package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.supplier.Supplier;
-import com.minierpapp.model.supplier.dto.SupplierDto;
 import com.minierpapp.model.supplier.dto.SupplierRequest;
 import com.minierpapp.model.supplier.dto.SupplierResponse;
 import com.minierpapp.model.supplier.mapper.SupplierMapper;
@@ -20,10 +19,10 @@ public class SupplierService {
     private final SupplierRepository supplierRepository;
     private final SupplierMapper supplierMapper;
 
-    public List<SupplierDto> findAll(String supplierCode, String name) {
+    public List<SupplierResponse> findAll(String supplierCode, String name) {
         return supplierRepository.findBySupplierCodeAndName(supplierCode, name)
                 .stream()
-                .map(supplierMapper::toDto)
+                .map(supplierMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -44,24 +43,32 @@ public class SupplierService {
             .toList();
     }
 
-    public SupplierDto findById(Long id) {
+    @Transactional(readOnly = true)
+    public SupplierResponse findBySupplierCode(String supplierCode) {
+        return supplierRepository.findBySupplierCodeAndDeletedFalse(supplierCode)
+                .map(supplierMapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier", "supplierCode", supplierCode));
+    }
+
+    @Transactional(readOnly = true)
+    public SupplierResponse findById(Long id) {
         return supplierRepository.findById(id)
-                .map(supplierMapper::toDto)
+                .map(supplierMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
     }
 
     @Transactional
-    public SupplierDto create(SupplierRequest request) {
+    public SupplierResponse create(SupplierRequest request) {
         if (supplierRepository.existsBySupplierCodeAndDeletedFalse(request.getSupplierCode())) {
             throw new IllegalArgumentException("仕入先コード " + request.getSupplierCode() + " は既に使用されています");
         }
 
         Supplier supplier = supplierMapper.toEntity(request);
-        return supplierMapper.toDto(supplierRepository.save(supplier));
+        return supplierMapper.toResponse(supplierRepository.save(supplier));
     }
 
     @Transactional
-    public SupplierDto update(Long id, SupplierRequest request) {
+    public SupplierResponse update(Long id, SupplierRequest request) {
         Supplier supplier = supplierRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
 
@@ -73,7 +80,7 @@ public class SupplierService {
                 });
 
         supplierMapper.updateEntity(request, supplier);
-        return supplierMapper.toDto(supplierRepository.save(supplier));
+        return supplierMapper.toResponse(supplierRepository.save(supplier));
     }
 
     @Transactional

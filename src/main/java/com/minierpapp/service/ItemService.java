@@ -94,13 +94,7 @@ public class ItemService {
         validateStockLevels(request);
 
         // 品目情報の更新
-        existingItem.setItemName(request.getItemName());
-        existingItem.setDescription(request.getDescription());
-        existingItem.setUnit(request.getUnit());
-        existingItem.setStatus(request.getStatus());
-        existingItem.setMinimumStock(request.getMinimumStock());
-        existingItem.setMaximumStock(request.getMaximumStock());
-        existingItem.setReorderPoint(request.getReorderPoint());
+        itemMapper.updateEntity(request, existingItem);
         existingItem.setUpdatedAt(LocalDateTime.now());
 
         return itemRepository.save(existingItem);
