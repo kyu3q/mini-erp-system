@@ -58,4 +58,4 @@ application-local.yml
 *.tar.gz
 *.rar
 hs_err_pid*
-replay_pid*
+replay_pid**.bak

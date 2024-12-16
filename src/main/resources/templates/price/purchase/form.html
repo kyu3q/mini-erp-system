@@ -41,7 +41,7 @@
                     <label for="itemDisplay" class="form-label required">品目</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="itemDisplay" readonly
-                               th:value="${priceRequest.itemId != null ? items.stream().filter(i -> i.id == priceRequest.itemId).findFirst().map(i -> i.itemCode + ' - ' + i.itemName).orElse('') : ''}"
+                               th:value="${item != null ? item.itemCode + ' - ' + item.itemName : ''}"
                                th:disabled="${priceRequest.id != null}">
                         <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
                         <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
@@ -55,7 +55,7 @@
                     <label for="supplierDisplay" class="form-label required">仕入先</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="supplierDisplay" readonly
-                               th:value="${priceRequest.supplierId != null ? suppliers.stream().filter(s -> s.id == priceRequest.supplierId).findFirst().map(s -> s.supplierCode + ' - ' + s.name).orElse('') : ''}"
+                               th:value="${supplier != null ? supplier.supplierCode + ' - ' + supplier.name : ''}"
                                th:disabled="${priceRequest.id != null}">
                         <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
                         <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
@@ -69,7 +69,7 @@
                     <label for="customerDisplay" class="form-label">得意先</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="customerDisplay" readonly
-                               th:value="${priceRequest.customerId != null ? customers.stream().filter(c -> c.id == priceRequest.customerId).findFirst().map(c -> c.customerCode + ' - ' + c.name).orElse('') : ''}"
+                               th:value="${customer != null ? customer.customerCode + ' - ' + customer.name : ''}"
                                th:disabled="${priceRequest.id != null}">
                         <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
                         <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"

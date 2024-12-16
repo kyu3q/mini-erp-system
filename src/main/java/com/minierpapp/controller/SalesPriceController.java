@@ -42,16 +42,19 @@ public class SalesPriceController {
         request.setPriceType(PriceType.SALES);
         request.setPriceScales(new ArrayList<>());
         model.addAttribute("priceRequest", request);
-        model.addAttribute("items", itemService.findAllActive());
-        model.addAttribute("customers", customerService.findAllActive());
         return "price/sales/form";
     }
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        model.addAttribute("priceRequest", priceService.getPrice(id));
-        model.addAttribute("items", itemService.findAllActive());
-        model.addAttribute("customers", customerService.findAllActive());
+        var price = priceService.getPrice(id);
+        model.addAttribute("priceRequest", price);
+        if (price.getItemId() != null) {
+            model.addAttribute("item", itemService.findById(price.getItemId()));
+        }
+        if (price.getCustomerId() != null) {
+            model.addAttribute("customer", customerService.findById(price.getCustomerId()));
+        }
         return "price/sales/form";
     }
 
@@ -62,8 +65,12 @@ public class SalesPriceController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("items", itemService.findAllActive());
-            model.addAttribute("customers", customerService.findAllActive());
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
+            }
             return "price/sales/form";
         }
 
@@ -80,8 +87,12 @@ public class SalesPriceController {
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
             model.addAttribute("messageType", "danger");
-            model.addAttribute("items", itemService.findAllActive());
-            model.addAttribute("customers", customerService.findAllActive());
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
+            }
             return "price/sales/form";
         }
 

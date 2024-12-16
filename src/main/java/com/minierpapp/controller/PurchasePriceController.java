@@ -47,18 +47,22 @@ public class PurchasePriceController {
         request.setPriceType(PriceType.PURCHASE);
         request.setPriceScales(new ArrayList<>());
         model.addAttribute("priceRequest", request);
-        model.addAttribute("items", itemService.findAllActive());
-        model.addAttribute("suppliers", supplierService.findAllActive());
-        model.addAttribute("customers", customerService.findAllActive());
         return "price/purchase/form";
     }
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        model.addAttribute("priceRequest", priceService.getPrice(id));
-        model.addAttribute("items", itemService.findAllActive());
-        model.addAttribute("suppliers", supplierService.findAllActive());
-        model.addAttribute("customers", customerService.findAllActive());
+        var price = priceService.getPrice(id);
+        model.addAttribute("priceRequest", price);
+        if (price.getItemId() != null) {
+            model.addAttribute("item", itemService.findById(price.getItemId()));
+        }
+        if (price.getSupplierId() != null) {
+            model.addAttribute("supplier", supplierService.findById(price.getSupplierId()));
+        }
+        if (price.getCustomerId() != null) {
+            model.addAttribute("customer", customerService.findById(price.getCustomerId()));
+        }
         return "price/purchase/form";
     }
 
@@ -69,9 +73,15 @@ public class PurchasePriceController {
             Model model,
             RedirectAttributes redirectAttributes) {
         if (result.hasErrors()) {
-            model.addAttribute("items", itemService.findAllActive());
-            model.addAttribute("suppliers", supplierService.findAllActive());
-            model.addAttribute("customers", customerService.findAllActive());
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getSupplierId() != null) {
+                model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
+            }
             return "price/purchase/form";
         }
 
@@ -88,9 +98,15 @@ public class PurchasePriceController {
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());
             model.addAttribute("messageType", "danger");
-            model.addAttribute("items", itemService.findAllActive());
-            model.addAttribute("suppliers", supplierService.findAllActive());
-            model.addAttribute("customers", customerService.findAllActive());
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getSupplierId() != null) {
+                model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
+            }
             return "price/purchase/form";
         }
 
