@@ -246,6 +246,54 @@ BEGIN
     END IF;
 END $$;
 
+-- 価格条件マスタ
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_conditions') THEN
+        CREATE TABLE price_conditions (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            deleted BOOLEAN DEFAULT FALSE,
+            price_type VARCHAR(20) NOT NULL CHECK (price_type IN ('SALES', 'PURCHASE')),
+            item_id BIGINT NOT NULL REFERENCES items(id),
+            customer_id BIGINT REFERENCES customers(id),
+            supplier_id BIGINT REFERENCES suppliers(id),
+            base_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL DEFAULT 'JPY',
+            valid_from_date DATE NOT NULL,
+            valid_to_date DATE NOT NULL,
+            status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+            CONSTRAINT uk_price_conditions_item_customer_supplier_date_not_deleted 
+                UNIQUE (price_type, item_id, customer_id, supplier_id, valid_from_date, valid_to_date, deleted)
+        );
+    END IF;
+END $$;
+
+-- 数量スケール価格テーブル
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_scales') THEN
+        CREATE TABLE price_scales (
+            id BIGSERIAL PRIMARY KEY,
+            created_at TIMESTAMP NOT NULL,
+            updated_at TIMESTAMP,
+            created_by VARCHAR(100),
+            updated_by VARCHAR(100),
+            deleted BOOLEAN DEFAULT FALSE,
+            price_condition_id BIGINT NOT NULL REFERENCES price_conditions(id),
+            from_quantity DECIMAL(12,3) NOT NULL,
+            to_quantity DECIMAL(12,3),
+            scale_price DECIMAL(12,2) NOT NULL,
+            currency_code VARCHAR(3) NOT NULL DEFAULT 'JPY',
+            CONSTRAINT uk_price_scales_condition_quantity_not_deleted 
+                UNIQUE (price_condition_id, from_quantity, deleted)
+        );
+    END IF;
+END $$;
+
 -- mini_erp_userに必要な権限を付与
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO mini_erp_user;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO mini_erp_user;
