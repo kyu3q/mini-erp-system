@@ -41,4 +41,7 @@ public abstract class BaseEntity {
     @LastModifiedBy
     @Column(name = "updated_by")
     private String updatedBy;
+
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
 }
