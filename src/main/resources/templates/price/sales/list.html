@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title>販売単価一覧</title>
+    <style>
+        .price-expired {
+            color: #dc3545;
+        }
+        .price-expiring-soon {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col">
+                <h2>販売単価一覧</h2>
+            </div>
+            <div class="col text-end">
+                <a th:href="@{/prices/sales/new}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新規登録
+                </a>
+                <button type="button" class="btn btn-success" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Excel出力
+                </button>
+                <button type="button" class="btn btn-info" onclick="downloadTemplate()">
+                    <i class="fas fa-download"></i> 取込テンプレート
+                </button>
+                <button type="button" class="btn btn-warning" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-upload"></i> Excel取込
+                </button>
+                <input type="file" id="fileInput" style="display: none" accept=".xlsx" onchange="importFromExcel(this)">
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form th:action="@{/prices/sales}" method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="itemId" class="form-label">品目</label>
+                        <select class="form-select" id="itemId" name="itemId">
+                            <option value="">全て</option>
+                            <option th:each="item : ${items}"
+                                    th:value="${item.id}"
+                                    th:text="${item.itemCode + ' - ' + item.itemName}"
+                                    th:selected="${item.id == selectedItemId}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="customerId" class="form-label">得意先</label>
+                        <select class="form-select" id="customerId" name="customerId">
+                            <option value="">全て</option>
+                            <option th:each="customer : ${customers}"
+                                    th:value="${customer.id}"
+                                    th:text="${customer.customerCode + ' - ' + customer.name}"
+                                    th:selected="${customer.id == selectedCustomerId}">
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> 検索
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-success" role="alert" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="priceTable">
+                <thead>
+                <tr>
+                    <th>品目</th>
+                    <th>得意先</th>
+                    <th>基本価格</th>
+                    <th>通貨</th>
+                    <th>有効期間</th>
+                    <th>スケール価格</th>
+                    <th>状態</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="price : ${prices}">
+                    <td th:text="${price.itemCode + ' - ' + price.itemName}"></td>
+                    <td th:text="${price.customerCode != null ? price.customerCode + ' - ' + price.customerName : '基本価格'}"></td>
+                    <td class="text-end" th:text="${#numbers.formatDecimal(price.basePrice, 0, 'COMMA', 0, 'POINT')}"></td>
+                    <td th:text="${price.currencyCode}"></td>
+                    <td>
+                        <span th:text="${#temporals.format(price.validFromDate, 'yyyy/MM/dd')}"></span>
+                        ～
+                        <span th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"
+                              th:class="${price.expired ? 'price-expired' : (price.expiringSoon ? 'price-expiring-soon' : '')}">
+                        </span>
+                    </td>
+                    <td>
+                        <span th:if="${price.priceScales.isEmpty()}">なし</span>
+                        <span th:if="${!price.priceScales.isEmpty()}"
+                              th:text="${price.priceScales.size() + '段階'}">
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${price.status.name() == 'ACTIVE' ? 'bg-success' : 'bg-danger'}"
+                              th:text="${price.status.displayName}">
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a th:href="@{/prices/sales/{id}/edit(id=${price.id})}"
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-danger"
+                                    th:onclick="'confirmDelete(\'' + ${price.id} + '\')'">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <form th:id="'deleteForm' + ${price.id}"
+                              th:action="@{/prices/sales/{id}/delete(id=${price.id})}"
+                              method="post" style="display: none;">
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDataTable();
+            initializeSelect2();
+        });
+
+        function initializeDataTable() {
+            $('#priceTable').DataTable({
+                language: {
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ja.json"
+                },
+                order: [[4, 'desc']],
+                pageLength: 25
+            });
+        }
+
+        function initializeSelect2() {
+            $('#itemId, #customerId').select2({
+                theme: 'bootstrap-5',
+                width: '100%'
+            });
+        }
+
+        function confirmDelete(id) {
+            if (confirm('この販売単価を削除してもよろしいですか？')) {
+                document.getElementById('deleteForm' + id).submit();
+            }
+        }
+
+        function exportToExcel() {
+            // Excel出力処理
+        }
+
+        function downloadTemplate() {
+            // テンプレートダウンロード処理
+        }
+
+        function importFromExcel(input) {
+            if (input.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+
+            fetch('/api/prices/sales/import', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert('取込が完了しました。');
+                    location.reload();
+                } else {
+                    alert('取込に失敗しました：' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('エラーが発生しました：' + error);
+            });
+
+            input.value = '';
+        }
+    </script>
+</div>
+</body>
+</html>

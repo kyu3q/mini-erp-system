@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/layout}">
+<head>
+    <title th:text="${priceRequest.id != null ? '販売単価編集' : '販売単価登録'}"></title>
+    <style>
+        .required::after {
+            content: " *";
+            color: red;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+        .amount-text {
+            text-align: right;
+        }
+        .scale-row:hover {
+            background-color: #f8f9fa;
+        }
+        .scale-row .drag-handle {
+            cursor: move;
+            color: #6c757d;
+        }
+        .scale-row.dragging {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container-fluid" style="max-width: 1400px;">
+        <h2 th:text="${priceRequest.id != null ? '販売単価編集' : '販売単価登録'}"></h2>
+
+        <form th:action="@{/prices/sales}" method="post" id="priceForm" class="needs-validation" novalidate>
+            <input type="hidden" name="id" th:value="${priceRequest.id}">
+            <input type="hidden" name="priceType" value="SALES">
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="itemId" class="form-label required">品目</label>
+                    <select class="form-select" id="itemId" name="itemId" required
+                            th:disabled="${priceRequest.id != null}">
+                        <option value="">選択してください</option>
+                        <option th:each="item : ${items}"
+                                th:value="${item.id}"
+                                th:text="${item.itemCode + ' - ' + item.itemName}"
+                                th:selected="${item.id == priceRequest.itemId}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">品目を選択してください。</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="customerId" class="form-label">得意先</label>
+                    <select class="form-select" id="customerId" name="customerId"
+                            th:disabled="${priceRequest.id != null}">
+                        <option value="">基本価格として設定</option>
+                        <option th:each="customer : ${customers}"
+                                th:value="${customer.id}"
+                                th:text="${customer.customerCode + ' - ' + customer.name}"
+                                th:selected="${customer.id == priceRequest.customerId}">
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="validFromDate" class="form-label required">有効開始日</label>
+                    <input type="date" class="form-control" id="validFromDate" name="validFromDate"
+                           th:value="${priceRequest.validFromDate}" required>
+                    <div class="invalid-feedback">有効開始日を入力してください。</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="validToDate" class="form-label required">有効終了日</label>
+                    <input type="date" class="form-control" id="validToDate" name="validToDate"
+                           th:value="${priceRequest.validToDate}" required>
+                    <div class="invalid-feedback">有効終了日を入力してください。</div>
+                </div>
+                <div class="col-md-4">
+                    <label for="status" class="form-label required">ステータス</label>
+                    <select class="form-select" id="status" name="status" required>
+                        <option th:each="status : ${T(com.minierpapp.model.common.Status).values()}"
+                                th:value="${status}"
+                                th:text="${status.displayName}"
+                                th:selected="${status == priceRequest.status}">
+                        </option>
+                    </select>
+                    <div class="invalid-feedback">ステータスを選択してください。</div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="basePrice" class="form-label required">基本価格</label>
+                    <input type="number" class="form-control amount-text" id="basePrice" name="basePrice"
+                           th:value="${priceRequest.basePrice}" required step="0.01" min="0">
+                    <div class="invalid-feedback">基本価格を入力してください。</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="currencyCode" class="form-label required">通貨</label>
+                    <select class="form-select" id="currencyCode" name="currencyCode" required>
+                        <option value="JPY" th:selected="${priceRequest.currencyCode == 'JPY'}">JPY - 日本円</option>
+                        <option value="USD" th:selected="${priceRequest.currencyCode == 'USD'}">USD - 米ドル</option>
+                        <option value="EUR" th:selected="${priceRequest.currencyCode == 'EUR'}">EUR - ユーロ</option>
+                    </select>
+                    <div class="invalid-feedback">通貨を選択してください。</div>
+                </div>
+            </div>
+
+            <h3>数量スケール価格</h3>
+            <div class="table-responsive mb-3">
+                <table class="table table-bordered" id="scalesTable">
+                    <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th style="width: 80px;">No.</th>
+                        <th style="width: 200px;">開始数量</th>
+                        <th style="width: 200px;">終了数量</th>
+                        <th style="width: 200px;">スケール価格</th>
+                        <th style="width: 80px;">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="scale, stat : ${priceRequest.priceScales}" class="scale-row">
+                        <td class="text-center">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
+                        </td>
+                        <td class="text-center" th:text="${stat.count}"></td>
+                        <td>
+                            <input type="number" class="form-control amount-text" 
+                                   th:name="|priceScales[${stat.index}].fromQuantity|"
+                                   th:value="${scale.fromQuantity}" required step="0.001" min="0">
+                            <div class="invalid-feedback">開始数量を入力してください。</div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control amount-text"
+                                   th:name="|priceScales[${stat.index}].toQuantity|"
+                                   th:value="${scale.toQuantity}" step="0.001" min="0">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control amount-text"
+                                   th:name="|priceScales[${stat.index}].scalePrice|"
+                                   th:value="${scale.scalePrice}" required step="0.01" min="0">
+                            <div class="invalid-feedback">スケール価格を入力してください。</div>
+                        </td>
+                        <td class="text-center">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeScale(this)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-secondary" onclick="addScale()">
+                    <i class="fas fa-plus"></i> スケール追加
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <a th:href="@{/prices/sales}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> キャンセル
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </form>
+
+        <template id="scaleRowTemplate">
+            <tr class="scale-row">
+                <td class="text-center">
+                    <i class="fas fa-grip-vertical drag-handle"></i>
+                </td>
+                <td class="text-center">INDEX</td>
+                <td>
+                    <input type="number" class="form-control amount-text"
+                           name="priceScales[INDEX].fromQuantity"
+                           required step="0.001" min="0">
+                    <div class="invalid-feedback">開始数量を入力してください。</div>
+                </td>
+                <td>
+                    <input type="number" class="form-control amount-text"
+                           name="priceScales[INDEX].toQuantity"
+                           step="0.001" min="0">
+                </td>
+                <td>
+                    <input type="number" class="form-control amount-text"
+                           name="priceScales[INDEX].scalePrice"
+                           required step="0.01" min="0">
+                    <div class="invalid-feedback">スケール価格を入力してください。</div>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeScale(this)">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        </template>
+
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeForm();
+                initializeDragAndDrop();
+            });
+
+            function initializeForm() {
+                // Select2の初期化
+                $('#itemId, #customerId').select2({
+                    theme: 'bootstrap-5'
+                });
+
+                // バリデーションの初期化
+                const form = document.getElementById('priceForm');
+                form.addEventListener('submit', function(event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                });
+
+                // 日付の初期値設定
+                if (!document.getElementById('validFromDate').value) {
+                    document.getElementById('validFromDate').value = new Date().toISOString().split('T')[0];
+                }
+                if (!document.getElementById('validToDate').value) {
+                    const nextYear = new Date();
+                    nextYear.setFullYear(nextYear.getFullYear() + 1);
+                    document.getElementById('validToDate').value = nextYear.toISOString().split('T')[0];
+                }
+            }
+
+            function initializeDragAndDrop() {
+                const tbody = document.querySelector('#scalesTable tbody');
+                new Sortable(tbody, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    onEnd: function() {
+                        updateScaleIndexes();
+                    }
+                });
+            }
+
+            function addScale() {
+                const tbody = document.querySelector('#scalesTable tbody');
+                const template = document.getElementById('scaleRowTemplate');
+                const clone = template.content.cloneNode(true);
+                const index = tbody.children.length;
+                
+                clone.querySelector('td:nth-child(2)').textContent = index + 1;
+                const inputs = clone.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.name = input.name.replace('INDEX', index);
+                });
+
+                tbody.appendChild(clone);
+            }
+
+            function removeScale(button) {
+                const row = button.closest('tr');
+                row.remove();
+                updateScaleIndexes();
+            }
+
+            function updateScaleIndexes() {
+                const tbody = document.querySelector('#scalesTable tbody');
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    row.querySelector('td:nth-child(2)').textContent = index + 1;
+                    const inputs = row.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        input.name = input.name.replace(/\d+/, index);
+                    });
+                });
+            }
+        </script>
+    </div>
+</div>
+</body>
+</html>

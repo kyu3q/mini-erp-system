@@ -28,6 +28,14 @@ public class SupplierService {
     }
 
     @Transactional(readOnly = true)
+    public List<SupplierResponse> findAllActive() {
+        return supplierRepository.findByDeletedFalseOrderBySupplierCodeAsc()
+                .stream()
+                .map(supplierMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<SupplierResponse> searchSuppliers(String keyword) {
         keyword = keyword != null ? keyword.trim() : "";
         List<Supplier> suppliers = supplierRepository.findBySupplierCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword);
