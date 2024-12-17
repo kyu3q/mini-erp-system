@@ -33,6 +33,22 @@ public class PriceService {
         return priceConditionRepository.findByPriceTypeAndDeletedFalse(PriceType.PURCHASE);
     }
 
+    @Transactional(readOnly = true)
+    public List<PriceConditionResponse> findSalesPrices(Long itemId, Long customerId) {
+        return priceConditionRepository.findByConditions(PriceType.SALES, itemId, customerId, null)
+                .stream()
+                .map(priceMapper::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<PriceConditionResponse> findPurchasePrices(Long itemId, Long supplierId, Long customerId) {
+        return priceConditionRepository.findByConditions(PriceType.PURCHASE, itemId, customerId, supplierId)
+                .stream()
+                .map(priceMapper::toResponse)
+                .toList();
+    }
+
     public PriceConditionResponse createPrice(PriceConditionRequest request) {
         validatePriceCondition(request);
 
