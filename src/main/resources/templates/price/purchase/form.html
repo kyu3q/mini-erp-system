@@ -44,11 +44,14 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="itemCode" name="itemCode"
                                        th:value="${item != null ? item.itemCode : ''}"
-                                       th:disabled="${priceRequest.id != null}">
+                                       th:disabled="${priceRequest.id != null}"
+                                       th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
                                         th:disabled="${priceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('itemCode')}"
+                                     th:errors="*{itemCode}">品目を選択してください。</div>
                             </div>
                         </div>
                         <div class="col-md-9">
@@ -57,7 +60,6 @@
                             <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
                         </div>
                     </div>
-                    <div class="invalid-feedback">品目を選択してください。</div>
                 </div>
             </div>
 
@@ -69,11 +71,14 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="supplierCode" name="supplierCode"
                                        th:value="${supplier != null ? supplier.supplierCode : ''}"
-                                       th:disabled="${priceRequest.id != null}">
+                                       th:disabled="${priceRequest.id != null}"
+                                       th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
                                         th:disabled="${priceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('supplierCode')}"
+                                     th:errors="*{supplierCode}">仕入先を選択してください。</div>
                             </div>
                         </div>
                         <div class="col-md-8">
@@ -82,7 +87,6 @@
                             <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
                         </div>
                     </div>
-                    <div class="invalid-feedback">仕入先を選択してください。</div>
                 </div>
                 <div class="col-md-6">
                     <label for="customerCode" class="form-label">得意先</label>
@@ -91,11 +95,14 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="customerCode" name="customerCode"
                                        th:value="${customer != null ? customer.customerCode : ''}"
-                                       th:disabled="${priceRequest.id != null}">
+                                       th:disabled="${priceRequest.id != null}"
+                                       th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
                                         th:disabled="${priceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('customerCode')}"
+                                     th:errors="*{customerCode}">得意先を選択してください。</div>
                             </div>
                         </div>
                         <div class="col-md-8">

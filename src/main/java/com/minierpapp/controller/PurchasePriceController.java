@@ -72,25 +72,48 @@ public class PurchasePriceController {
             BindingResult result,
             Model model,
             RedirectAttributes redirectAttributes) {
-        // コードからIDを設定
-        try {
-            if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+        // コードの存在チェックとIDの設定
+        if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+            try {
                 var item = itemService.findByItemCode(request.getItemCode());
                 request.setItemId(item.getId());
+            } catch (Exception e) {
+                result.rejectValue("itemCode", "error.itemCode", 
+                    String.format("品目コード '%s' は存在しません。", request.getItemCode()));
             }
-            if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
+        }
+
+        if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
+            try {
                 var supplier = supplierService.findBySupplierCode(request.getSupplierCode());
                 request.setSupplierId(supplier.getId());
+            } catch (Exception e) {
+                result.rejectValue("supplierCode", "error.supplierCode", 
+                    String.format("仕入先コード '%s' は存在しません。", request.getSupplierCode()));
             }
-            if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+        }
+
+        if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+            try {
                 var customer = customerService.findByCustomerCode(request.getCustomerCode());
                 request.setCustomerId(customer.getId());
+            } catch (Exception e) {
+                result.rejectValue("customerCode", "error.customerCode", 
+                    String.format("得意先コード '%s' は存在しません。", request.getCustomerCode()));
             }
-        } catch (Exception e) {
-            result.rejectValue("itemCode", "error.itemCode", "入力されたコードが見つかりません。");
+        }
+
+        // 必須項目のチェック
+        if (request.getItemId() == null) {
+            result.rejectValue("itemCode", "error.required", "品目は必須です。");
+        }
+
+        if (request.getSupplierId() == null) {
+            result.rejectValue("supplierCode", "error.required", "仕入先は必須です。");
         }
 
         if (result.hasErrors()) {
+            // エラー時に既存の選択値を保持
             if (request.getItemId() != null) {
                 model.addAttribute("item", itemService.findById(request.getItemId()));
             }
