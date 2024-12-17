@@ -23,6 +23,15 @@ public class PriceCondition extends BaseEntity {
     @Column(name = "price_type", nullable = false)
     private PriceType priceType;
 
+    @Column(name = "item_code")
+    private String itemCode;
+
+    @Column(name = "customer_code")
+    private String customerCode;
+
+    @Column(name = "supplier_code")
+    private String supplierCode;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
