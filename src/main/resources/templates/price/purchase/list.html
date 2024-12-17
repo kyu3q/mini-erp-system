@@ -179,11 +179,11 @@
         }
 
         function exportToExcel() {
-            // Excel出力処理
+            window.location.href = '/prices/purchase/export';
         }
 
         function downloadTemplate() {
-            // テンプレートダウンロード処理
+            window.location.href = '/prices/purchase/template';
         }
 
         function importFromExcel(input) {
@@ -192,17 +192,27 @@
             const formData = new FormData();
             formData.append('file', input.files[0]);
 
-            fetch('/api/prices/purchase/import', {
+            fetch('/prices/purchase/import', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(result => {
-                if (result.success) {
-                    alert('取込が完了しました。');
+                let message = `処理結果:\n`;
+                message += `処理件数: ${result.totalCount}件\n`;
+                message += `成功件数: ${result.successCount}件\n`;
+                message += `失敗件数: ${result.errorCount}件\n\n`;
+
+                if (result.errors.length > 0) {
+                    message += `エラー内容:\n`;
+                    result.errors.forEach(error => {
+                        message += `${error.rowNum}行目: ${error.message}\n`;
+                    });
+                }
+
+                alert(message);
+                if (result.successCount > 0) {
                     location.reload();
-                } else {
-                    alert('取込に失敗しました：' + result.message);
                 }
             })
             .catch(error => {
