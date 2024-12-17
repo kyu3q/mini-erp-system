@@ -7,6 +7,10 @@ import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
 import com.minierpapp.model.item.mapper.ItemMapper;
 import com.minierpapp.service.ItemService;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,6 +24,11 @@ public class ItemController extends BaseRestController<Item, ItemDto, ItemReques
     public ItemController(ItemMapper mapper, ItemService itemService) {
         super(mapper);
         this.itemService = itemService;
+    }
+
+    @GetMapping("/code/{itemCode}")
+    public ResponseEntity<ItemResponse> findByItemCode(@PathVariable String itemCode) {
+        return ResponseEntity.ok(itemService.findByItemCode(itemCode));
     }
 
     @Override
@@ -52,12 +61,5 @@ public class ItemController extends BaseRestController<Item, ItemDto, ItemReques
     @Override
     protected List<ItemResponse> searchEntities(String keyword) {
         return itemService.searchItems(keyword);
-    }
-
-    @GetMapping("/code/{itemCode}")
-    public ResponseEntity<ItemResponse> findByCode(@PathVariable String itemCode) {
-        return itemService.findByItemCode(itemCode)
-                .map(item -> ResponseEntity.ok(mapper.toResponse(item)))
-                .orElse(ResponseEntity.notFound().build());
     }
 }

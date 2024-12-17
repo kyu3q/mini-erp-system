@@ -60,8 +60,9 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public Item findByItemCode(String itemCode) {
+    public ItemResponse findByItemCode(String itemCode) {
         return itemRepository.findByItemCodeAndDeletedFalse(itemCode)
+                .map(itemMapper::toResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Item not found with code: " + itemCode));
     }
 

@@ -2,8 +2,8 @@ package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.common.Status;
-import com.minierpapp.model.item.Item;
 import com.minierpapp.model.item.dto.ItemRequest;
+import com.minierpapp.model.item.dto.ItemResponse;
 import com.minierpapp.model.warehouse.dto.WarehouseDto;
 import com.minierpapp.model.warehouse.dto.WarehouseRequest;
 import lombok.RequiredArgsConstructor;
@@ -137,7 +137,7 @@ public class ExcelImportService {
                     if (request != null) {
                         // 商品コードで既存の商品を検索
                         try {
-                            Item existingItem = itemService.findByItemCode(request.getItemCode());
+                            ItemResponse existingItem = itemService.findByItemCode(request.getItemCode());
                             // 既存の商品が見つかった場合は更新、見つからない場合は新規作成
                             if (existingItem != null) {
                                 itemService.update(existingItem.getId(), request);
