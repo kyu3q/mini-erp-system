@@ -307,7 +307,7 @@
                                 const response = await fetch(`/api/items/code/${encodeURIComponent(this.value)}`);
                                 if (response.ok) {
                                     const item = await response.json();
-                                    document.getElementById('itemName').value = item.name;
+                                    document.getElementById('itemName').value = item.itemName;
                                     document.getElementById('itemId').value = item.id;
                                     this.classList.remove('is-invalid');
                                 } else {
@@ -383,7 +383,6 @@
                         }
                     });
                 }
-            }
             }
 
             function initializeDragAndDrop() {
