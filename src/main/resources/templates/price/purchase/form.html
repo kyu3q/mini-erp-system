@@ -37,45 +37,72 @@
             <input type="hidden" name="priceType" value="PURCHASE">
             
             <div class="row mb-3">
-                <div class="col-md-4">
-                    <label for="itemDisplay" class="form-label required">品目</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="itemDisplay" readonly
-                               th:value="${item != null ? item.itemCode + ' - ' + item.itemName : ''}"
-                               th:disabled="${priceRequest.id != null}">
-                        <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
-                        <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
-                                th:disabled="${priceRequest.id != null}">
-                            <i class="fas fa-search"></i>
-                        </button>
+                <div class="col-md-12">
+                    <label for="itemCode" class="form-label required">品目</label>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="itemCode"
+                                       th:value="${item != null ? item.itemCode : ''}"
+                                       th:disabled="${priceRequest.id != null}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
+                                        th:disabled="${priceRequest.id != null}">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="itemName" readonly
+                                   th:value="${item != null ? item.itemName : ''}">
+                            <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
+                        </div>
                     </div>
                     <div class="invalid-feedback">品目を選択してください。</div>
                 </div>
-                <div class="col-md-4">
-                    <label for="supplierDisplay" class="form-label required">仕入先</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="supplierDisplay" readonly
-                               th:value="${supplier != null ? supplier.supplierCode + ' - ' + supplier.name : ''}"
-                               th:disabled="${priceRequest.id != null}">
-                        <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
-                        <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
-                                th:disabled="${priceRequest.id != null}">
-                            <i class="fas fa-search"></i>
-                        </button>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplierCode" class="form-label required">仕入先</label>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="supplierCode"
+                                       th:value="${supplier != null ? supplier.supplierCode : ''}"
+                                       th:disabled="${priceRequest.id != null}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
+                                        th:disabled="${priceRequest.id != null}">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="supplierName" readonly
+                                   th:value="${supplier != null ? supplier.name : ''}">
+                            <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
+                        </div>
                     </div>
                     <div class="invalid-feedback">仕入先を選択してください。</div>
                 </div>
-                <div class="col-md-4">
-                    <label for="customerDisplay" class="form-label">得意先</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="customerDisplay" readonly
-                               th:value="${customer != null ? customer.customerCode + ' - ' + customer.name : ''}"
-                               th:disabled="${priceRequest.id != null}">
-                        <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
-                        <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
-                                th:disabled="${priceRequest.id != null}">
-                            <i class="fas fa-search"></i>
-                        </button>
+                <div class="col-md-6">
+                    <label for="customerCode" class="form-label">得意先</label>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="customerCode"
+                                       th:value="${customer != null ? customer.customerCode : ''}"
+                                       th:disabled="${priceRequest.id != null}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
+                                        th:disabled="${priceRequest.id != null}">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control" id="customerName" readonly
+                                   th:value="${customer != null ? customer.name : ''}">
+                            <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
+                        </div>
                     </div>
                 </div>
             </div>

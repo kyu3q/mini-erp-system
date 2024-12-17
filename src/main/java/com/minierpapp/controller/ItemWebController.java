@@ -24,7 +24,7 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
     private final ItemService itemService;
 
     public ItemWebController(ItemMapper mapper, MessageSource messageSource, ItemService itemService) {
-        super(mapper, messageSource, "items", "Item");
+        super(mapper, messageSource, "items", "item");
         this.itemService = itemService;
     }
 

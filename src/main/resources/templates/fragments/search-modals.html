@@ -136,7 +136,7 @@
                                 <td>${item.itemName}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectItem('${item.id}', '${item.itemCode} - ${item.itemName}')">
+                                            onclick="selectItem('${item.id}', '${item.itemCode}', '${item.itemName}')">
                                         選択
                                     </button>
                                 </td>
@@ -146,10 +146,14 @@
                     });
             }
 
-            function selectItem(id, display) {
+            function selectItem(id, code, name) {
                 document.getElementById('itemId').value = id;
-                document.getElementById('itemDisplay').value = display;
-                bootstrap.Modal.getInstance(document.getElementById('itemSearchModal')).hide();
+                document.getElementById('itemCode').value = code;
+                document.getElementById('itemName').value = name;
+                if (window.bootstrap && bootstrap.Modal) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('itemSearchModal'));
+                    if (modal) modal.hide();
+                }
             }
 
             // 仕入先検索
@@ -173,7 +177,7 @@
                                 <td>${supplier.name}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode} - ${supplier.name}')">
+                                            onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode}', '${supplier.name}')">
                                         選択
                                     </button>
                                 </td>
@@ -183,10 +187,14 @@
                     });
             }
 
-            function selectSupplier(id, display) {
+            function selectSupplier(id, code, name) {
                 document.getElementById('supplierId').value = id;
-                document.getElementById('supplierDisplay').value = display;
-                bootstrap.Modal.getInstance(document.getElementById('supplierSearchModal')).hide();
+                document.getElementById('supplierCode').value = code;
+                document.getElementById('supplierName').value = name;
+                if (window.bootstrap && bootstrap.Modal) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('supplierSearchModal'));
+                    if (modal) modal.hide();
+                }
             }
 
             // 得意先検索
@@ -210,7 +218,7 @@
                                 <td>${customer.name}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectCustomer('${customer.id}', '${customer.customerCode} - ${customer.name}')">
+                                            onclick="selectCustomer('${customer.id}', '${customer.customerCode}', '${customer.name}')">
                                         選択
                                     </button>
                                 </td>
@@ -220,10 +228,14 @@
                     });
             }
 
-            function selectCustomer(id, display) {
+            function selectCustomer(id, code, name) {
                 document.getElementById('customerId').value = id;
-                document.getElementById('customerDisplay').value = display;
-                bootstrap.Modal.getInstance(document.getElementById('customerSearchModal')).hide();
+                document.getElementById('customerCode').value = code;
+                document.getElementById('customerName').value = name;
+                if (window.bootstrap && bootstrap.Modal) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('customerSearchModal'));
+                    if (modal) modal.hide();
+                }
             }
 
             // エンターキーでの検索
