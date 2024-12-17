@@ -22,6 +22,9 @@ import java.util.List;
 public class PriceService {
     private final PriceConditionRepository priceConditionRepository;
     private final PriceMapper priceMapper;
+    private final ItemService itemService;
+    private final CustomerService customerService;
+    private final SupplierService supplierService;
 
     @Transactional(readOnly = true)
     public List<PriceCondition> findAllSalesPrices() {
@@ -52,6 +55,20 @@ public class PriceService {
     public PriceConditionResponse createPrice(PriceConditionRequest request) {
         validatePriceCondition(request);
 
+        // コードの設定
+        if (request.getItemId() != null) {
+            var item = itemService.findById(request.getItemId());
+            request.setItemCode(item.getItemCode());
+        }
+        if (request.getCustomerId() != null) {
+            var customer = customerService.findById(request.getCustomerId());
+            request.setCustomerCode(customer.getCustomerCode());
+        }
+        if (request.getSupplierId() != null) {
+            var supplier = supplierService.findById(request.getSupplierId());
+            request.setSupplierCode(supplier.getSupplierCode());
+        }
+
         PriceCondition price = priceMapper.toEntity(request);
         return priceMapper.toResponse(priceConditionRepository.save(price));
     }
@@ -61,6 +78,20 @@ public class PriceService {
 
         PriceCondition price = priceConditionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Price not found with id: " + id));
+
+        // コードの設定
+        if (request.getItemId() != null) {
+            var item = itemService.findById(request.getItemId());
+            request.setItemCode(item.getItemCode());
+        }
+        if (request.getCustomerId() != null) {
+            var customer = customerService.findById(request.getCustomerId());
+            request.setCustomerCode(customer.getCustomerCode());
+        }
+        if (request.getSupplierId() != null) {
+            var supplier = supplierService.findById(request.getSupplierId());
+            request.setSupplierCode(supplier.getSupplierCode());
+        }
 
         priceMapper.updateEntity(price, request);
         return priceMapper.toResponse(priceConditionRepository.save(price));

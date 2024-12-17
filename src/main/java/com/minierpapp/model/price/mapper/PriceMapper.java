@@ -27,6 +27,9 @@ public abstract class PriceMapper {
     @Mapping(target = "item", source = "itemId")
     @Mapping(target = "customer", source = "customerId")
     @Mapping(target = "supplier", source = "supplierId")
+    @Mapping(target = "itemCode", expression = "java(request.getItemCode())")
+    @Mapping(target = "customerCode", expression = "java(request.getCustomerCode())")
+    @Mapping(target = "supplierCode", expression = "java(request.getSupplierCode())")
     @Mapping(target = "priceScales", ignore = true)
     public abstract PriceCondition toEntity(PriceConditionRequest request);
 
