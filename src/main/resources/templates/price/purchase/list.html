@@ -179,11 +179,11 @@
         }
 
         function exportToExcel() {
-            window.location.href = '/prices/purchase/export';
+            window.location.href = '/prices/excel/purchase/export';
         }
 
         function downloadTemplate() {
-            window.location.href = '/prices/purchase/template';
+            window.location.href = '/prices/excel/purchase/template';
         }
 
         function importFromExcel(input) {
@@ -192,7 +192,7 @@
             const formData = new FormData();
             formData.append('file', input.files[0]);
 
-            fetch('/prices/purchase/import', {
+            fetch('/prices/excel/purchase/import', {
                 method: 'POST',
                 body: formData
             })

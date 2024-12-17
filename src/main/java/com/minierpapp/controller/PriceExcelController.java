@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -20,27 +19,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-@RequestMapping("/prices")
+@RequestMapping("/prices/excel")
 @RequiredArgsConstructor
-public class PriceController {
+public class PriceExcelController {
     private final PriceService priceService;
     private final PriceExcelService priceExcelService;
-
-    // 販売単価一覧
-    @GetMapping("/sales")
-    public String listSalesPrices(Model model) {
-        List<PriceCondition> prices = priceService.findAllSalesPrices();
-        model.addAttribute("prices", prices);
-        return "price/sales/list";
-    }
-
-    // 購買単価一覧
-    @GetMapping("/purchase")
-    public String listPurchasePrices(Model model) {
-        List<PriceCondition> prices = priceService.findAllPurchasePrices();
-        model.addAttribute("prices", prices);
-        return "price/purchase/list";
-    }
 
     // 販売単価Excel出力
     @GetMapping("/sales/export")
