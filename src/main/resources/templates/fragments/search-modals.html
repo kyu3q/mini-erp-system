@@ -20,12 +20,11 @@
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover" id="itemSearchTable">
+                            <table class="table table-hover search-table" id="itemSearchTable">
                                 <thead>
                                     <tr>
                                         <th>品目コード</th>
                                         <th>品目名</th>
-                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -57,12 +56,11 @@
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover" id="customerSearchTable">
+                            <table class="table table-hover search-table" id="customerSearchTable">
                                 <thead>
                                     <tr>
                                         <th>得意先コード</th>
                                         <th>得意先名</th>
-                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,12 +92,11 @@
                             </div>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover" id="supplierSearchTable">
+                            <table class="table table-hover search-table" id="supplierSearchTable">
                                 <thead>
                                     <tr>
                                         <th>仕入先コード</th>
                                         <th>仕入先名</th>
-                                        <th>操作</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -131,16 +128,12 @@
                         tbody.innerHTML = '';
                         items.forEach(item => {
                             const tr = document.createElement('tr');
+                            tr.style.cursor = 'pointer';
                             tr.innerHTML = `
-                                <td>${item.itemCode}</td>
-                                <td>${item.itemName}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectItem('${item.id}', '${item.itemCode}', '${item.itemName}')">
-                                        選択
-                                    </button>
-                                </td>
+                                <td><a href="#" onclick="selectItem('${item.id}', '${item.itemCode}', '${item.itemName}'); return false;">${item.itemCode}</a></td>
+                                <td><a href="#" onclick="selectItem('${item.id}', '${item.itemCode}', '${item.itemName}'); return false;">${item.itemName}</a></td>
                             `;
+                            tr.onclick = () => selectItem(item.id, item.itemCode, item.itemName);
                             tbody.appendChild(tr);
                         });
                     });
@@ -172,16 +165,12 @@
                         tbody.innerHTML = '';
                         suppliers.forEach(supplier => {
                             const tr = document.createElement('tr');
+                            tr.style.cursor = 'pointer';
                             tr.innerHTML = `
-                                <td>${supplier.supplierCode}</td>
-                                <td>${supplier.name}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode}', '${supplier.name}')">
-                                        選択
-                                    </button>
-                                </td>
+                                <td><a href="#" onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode}', '${supplier.name}'); return false;">${supplier.supplierCode}</a></td>
+                                <td><a href="#" onclick="selectSupplier('${supplier.id}', '${supplier.supplierCode}', '${supplier.name}'); return false;">${supplier.name}</a></td>
                             `;
+                            tr.onclick = () => selectSupplier(supplier.id, supplier.supplierCode, supplier.name);
                             tbody.appendChild(tr);
                         });
                     });
@@ -213,16 +202,12 @@
                         tbody.innerHTML = '';
                         customers.forEach(customer => {
                             const tr = document.createElement('tr');
+                            tr.style.cursor = 'pointer';
                             tr.innerHTML = `
-                                <td>${customer.customerCode}</td>
-                                <td>${customer.name}</td>
-                                <td>
-                                    <button type="button" class="btn btn-sm btn-primary"
-                                            onclick="selectCustomer('${customer.id}', '${customer.customerCode}', '${customer.name}')">
-                                        選択
-                                    </button>
-                                </td>
+                                <td><a href="#" onclick="selectCustomer('${customer.id}', '${customer.customerCode}', '${customer.name}'); return false;">${customer.customerCode}</a></td>
+                                <td><a href="#" onclick="selectCustomer('${customer.id}', '${customer.customerCode}', '${customer.name}'); return false;">${customer.name}</a></td>
                             `;
+                            tr.onclick = () => selectCustomer(customer.id, customer.customerCode, customer.name);
                             tbody.appendChild(tr);
                         });
                     });

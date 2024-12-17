@@ -176,6 +176,23 @@ main {
 .shadow-sm { box-shadow: var(--shadow-sm); }
 .shadow-md { box-shadow: var(--shadow-md); }
 
+/* 検索モーダルのスタイル */
+.search-table td a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    padding: 0.25rem;
+}
+
+.search-table tr:hover {
+    background-color: var(--color-light);
+    cursor: pointer;
+}
+
+.search-table tr:hover a {
+    color: var(--color-primary);
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 768px) {
     :root {
