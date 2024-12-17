@@ -48,9 +48,12 @@ public class PurchasePriceController {
             request.setPriceType(PriceType.PURCHASE);
             request.setPriceScales(new ArrayList<>());
             model.addAttribute("priceRequest", request);
+            // デバッグ情報を追加
+            System.out.println("Debug - Creating new price request: " + request);
+            System.out.println("Debug - Model attributes: " + model.asMap().keySet());
             return "price/purchase/form";
         } catch (Exception e) {
-            e.printStackTrace(); // デバッグ用
+            e.printStackTrace();
             throw e;
         }
     }

@@ -32,9 +32,9 @@
     <div class="container-fluid" style="max-width: 1400px;">
         <h2 th:text="${priceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></h2>
 
-        <form th:action="@{/prices/purchase}" method="post" id="priceForm" class="needs-validation" novalidate>
-            <input type="hidden" name="id" th:value="${priceRequest.id}">
-            <input type="hidden" name="priceType" value="PURCHASE">
+        <form th:action="@{/prices/purchase}" method="post" th:object="${priceRequest}" id="priceForm" class="needs-validation" novalidate>
+            <input type="hidden" name="id" th:field="*{id}">
+            <input type="hidden" name="priceType" th:field="*{priceType}">
             
             <div class="row mb-3">
                 <div class="col-md-12">
@@ -42,8 +42,8 @@
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemCode" name="itemCode"
-                                       th:value="${priceRequest.itemCode}"
+                                <input type="text" class="form-control" id="itemCode"
+                                       th:field="*{itemCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
@@ -58,7 +58,7 @@
                             <input type="text" class="form-control" id="itemName" readonly
                                    th:value="${item != null ? item.itemName : ''}"
                                    th:data-original-value="${item != null ? item.itemName : ''}">
-                            <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
+                            <input type="hidden" id="itemId" th:field="*{itemId}">
                         </div>
                     </div>
                 </div>
@@ -70,8 +70,8 @@
                     <div class="row g-2">
                         <div class="col-md-4">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="supplierCode" name="supplierCode"
-                                       th:value="${priceRequest.supplierCode}"
+                                <input type="text" class="form-control" id="supplierCode"
+                                       th:field="*{supplierCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
@@ -86,7 +86,7 @@
                             <input type="text" class="form-control" id="supplierName" readonly
                                    th:value="${supplier != null ? supplier.name : ''}"
                                    th:data-original-value="${supplier != null ? supplier.name : ''}">
-                            <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
+                            <input type="hidden" id="supplierId" th:field="*{supplierId}">
                         </div>
                     </div>
                 </div>
@@ -95,8 +95,8 @@
                     <div class="row g-2">
                         <div class="col-md-4">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="customerCode" name="customerCode"
-                                       th:value="${priceRequest.customerCode}"
+                                <input type="text" class="form-control" id="customerCode"
+                                       th:field="*{customerCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
@@ -111,7 +111,7 @@
                             <input type="text" class="form-control" id="customerName" readonly
                                    th:value="${customer != null ? customer.name : ''}"
                                    th:data-original-value="${customer != null ? customer.name : ''}">
-                            <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
+                            <input type="hidden" id="customerId" th:field="*{customerId}">
                         </div>
                     </div>
                 </div>
