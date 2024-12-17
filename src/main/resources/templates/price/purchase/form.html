@@ -42,7 +42,7 @@
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemCode"
+                                <input type="text" class="form-control" id="itemCode" name="itemCode"
                                        th:value="${item != null ? item.itemCode : ''}"
                                        th:disabled="${priceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
@@ -67,7 +67,7 @@
                     <div class="row g-2">
                         <div class="col-md-4">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="supplierCode"
+                                <input type="text" class="form-control" id="supplierCode" name="supplierCode"
                                        th:value="${supplier != null ? supplier.supplierCode : ''}"
                                        th:disabled="${priceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
@@ -89,7 +89,7 @@
                     <div class="row g-2">
                         <div class="col-md-4">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="customerCode"
+                                <input type="text" class="form-control" id="customerCode" name="customerCode"
                                        th:value="${customer != null ? customer.customerCode : ''}"
                                        th:disabled="${priceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
@@ -297,7 +297,7 @@
                                 const response = await fetch(`/api/items/code/${encodeURIComponent(this.value)}`);
                                 if (response.ok) {
                                     const item = await response.json();
-                                    document.getElementById('itemName').value = item.itemName;
+                                    document.getElementById('itemName').value = item.name;
                                     document.getElementById('itemId').value = item.id;
                                 } else {
                                     document.getElementById('itemName').value = '';

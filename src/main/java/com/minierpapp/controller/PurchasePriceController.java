@@ -72,6 +72,24 @@ public class PurchasePriceController {
             BindingResult result,
             Model model,
             RedirectAttributes redirectAttributes) {
+        // コードからIDを設定
+        try {
+            if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+                var item = itemService.findByItemCode(request.getItemCode());
+                request.setItemId(item.getId());
+            }
+            if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
+                var supplier = supplierService.findBySupplierCode(request.getSupplierCode());
+                request.setSupplierId(supplier.getId());
+            }
+            if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+                var customer = customerService.findByCustomerCode(request.getCustomerCode());
+                request.setCustomerId(customer.getId());
+            }
+        } catch (Exception e) {
+            result.rejectValue("itemCode", "error.itemCode", "入力されたコードが見つかりません。");
+        }
+
         if (result.hasErrors()) {
             if (request.getItemId() != null) {
                 model.addAttribute("item", itemService.findById(request.getItemId()));

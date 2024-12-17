@@ -20,10 +20,13 @@ public class PriceConditionRequest {
 
     @NotNull(message = "品目は必須です")
     private Long itemId;
+    private String itemCode;
 
     private Long customerId;
+    private String customerCode;
 
     private Long supplierId;
+    private String supplierCode;
 
     @NotNull(message = "基本価格は必須です")
     @DecimalMin(value = "0.0", message = "基本価格は0以上である必要があります")
