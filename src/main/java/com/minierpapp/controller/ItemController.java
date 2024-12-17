@@ -53,4 +53,11 @@ public class ItemController extends BaseRestController<Item, ItemDto, ItemReques
     protected List<ItemResponse> searchEntities(String keyword) {
         return itemService.searchItems(keyword);
     }
+
+    @GetMapping("/find-by-code")
+    public ResponseEntity<Item> findByCode(@RequestParam String itemCode) {
+        return itemService.findByItemCode(itemCode)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

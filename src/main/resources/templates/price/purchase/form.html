@@ -314,7 +314,7 @@
                     supplierCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
-                                const response = await fetch(`/api/suppliers/find-by-code?supplierCode=${encodeURIComponent(this.value)}`);
+                                const response = await fetch(`/api/suppliers/code/${encodeURIComponent(this.value)}`);
                                 if (response.ok) {
                                     const supplier = await response.json();
                                     document.getElementById('supplierName').value = supplier.name;
@@ -334,7 +334,7 @@
                     customerCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
-                                const response = await fetch(`/api/customers/find-by-code?customerCode=${encodeURIComponent(this.value)}`);
+                                const response = await fetch(`/api/customers/code/${encodeURIComponent(this.value)}`);
                                 if (response.ok) {
                                     const customer = await response.json();
                                     document.getElementById('customerName').value = customer.name;
