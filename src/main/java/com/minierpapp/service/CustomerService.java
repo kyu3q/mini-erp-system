@@ -54,6 +54,17 @@ public class CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByCode(String customerCode) {
+        return customerRepository.existsByCustomerCodeAndDeletedFalse(customerCode);
+    }
+
+    @Transactional(readOnly = true)
+    public Customer findByCode(String customerCode) {
+        return customerRepository.findByCustomerCodeAndDeletedFalse(customerCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "customerCode", customerCode));
+    }
+
     @Transactional
     public CustomerResponse create(CustomerRequest request) {
         if (customerRepository.existsByCustomerCodeAndDeletedFalse(request.getCustomerCode())) {

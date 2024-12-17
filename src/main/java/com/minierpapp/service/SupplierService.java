@@ -90,4 +90,15 @@ public class SupplierService {
         supplier.setDeleted(true);
         supplierRepository.save(supplier);
     }
+
+        @Transactional(readOnly = true)
+    public boolean existsByCode(String supplierCode) {
+        return supplierRepository.existsBySupplierCodeAndDeletedFalse(supplierCode);
+    }
+
+    @Transactional(readOnly = true)
+    public Supplier findByCode(String supplierCode) {
+        return supplierRepository.findBySupplierCodeAndDeletedFalse(supplierCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier", "supplierCode", supplierCode));
+    }
 }

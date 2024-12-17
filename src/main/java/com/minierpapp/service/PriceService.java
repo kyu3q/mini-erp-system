@@ -216,4 +216,7 @@ public class PriceService {
             previousToQuantity = scale.getToQuantity();
         }
     }
+    public PriceCondition save(PriceCondition price) {
+        return priceConditionRepository.save(price);
+    }
 }

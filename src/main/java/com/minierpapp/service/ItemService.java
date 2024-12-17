@@ -120,6 +120,17 @@ public class ItemService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public boolean existsByCode(String itemCode) {
+        return itemRepository.existsByItemCodeAndDeletedFalse(itemCode);
+    }
+
+    @Transactional(readOnly = true)
+    public Item findByCode(String itemCode) {
+        return itemRepository.findByItemCodeAndDeletedFalse(itemCode)
+                .orElseThrow(() -> new EntityNotFoundException("Item not found with code: " + itemCode));
+    }
+
     @Transactional
     public void delete(Long id) {
         Item item = findById(id);
