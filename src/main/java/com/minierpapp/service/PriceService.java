@@ -24,19 +24,13 @@ public class PriceService {
     private final PriceMapper priceMapper;
 
     @Transactional(readOnly = true)
-    public List<PriceConditionResponse> findSalesPrices(Long itemId, Long customerId) {
-        return priceConditionRepository.findByConditions(PriceType.SALES, itemId, customerId, null)
-                .stream()
-                .map(priceMapper::toResponse)
-                .toList();
+    public List<PriceCondition> findAllSalesPrices() {
+        return priceConditionRepository.findByPriceTypeAndDeletedFalse(PriceType.SALES);
     }
 
     @Transactional(readOnly = true)
-    public List<PriceConditionResponse> findPurchasePrices(Long itemId, Long supplierId, Long customerId) {
-        return priceConditionRepository.findByConditions(PriceType.PURCHASE, itemId, customerId, supplierId)
-                .stream()
-                .map(priceMapper::toResponse)
-                .toList();
+    public List<PriceCondition> findAllPurchasePrices() {
+        return priceConditionRepository.findByPriceTypeAndDeletedFalse(PriceType.PURCHASE);
     }
 
     public PriceConditionResponse createPrice(PriceConditionRequest request) {

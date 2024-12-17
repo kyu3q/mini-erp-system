@@ -35,4 +35,5 @@ public interface PriceConditionRepository extends JpaRepository<PriceCondition, 
             @Param("itemId") Long itemId,
             @Param("customerId") Long customerId,
             @Param("supplierId") Long supplierId);
+    List<PriceCondition> findByPriceTypeAndDeletedFalse(PriceType priceType);
 }
