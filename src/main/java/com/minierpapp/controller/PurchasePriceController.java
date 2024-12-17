@@ -43,11 +43,16 @@ public class PurchasePriceController {
 
     @GetMapping("/new")
     public String create(Model model) {
-        var request = new PriceConditionRequest();
-        request.setPriceType(PriceType.PURCHASE);
-        request.setPriceScales(new ArrayList<>());
-        model.addAttribute("priceRequest", request);
-        return "price/purchase/form";
+        try {
+            var request = new PriceConditionRequest();
+            request.setPriceType(PriceType.PURCHASE);
+            request.setPriceScales(new ArrayList<>());
+            model.addAttribute("priceRequest", request);
+            return "price/purchase/form";
+        } catch (Exception e) {
+            e.printStackTrace(); // デバッグ用
+            throw e;
+        }
     }
 
     @GetMapping("/{id}/edit")

@@ -43,7 +43,7 @@
                         <div class="col-md-3">
                             <div class="input-group">
                                 <input type="text" class="form-control" id="itemCode" name="itemCode"
-                                       th:value="${item != null ? item.itemCode : ''}"
+                                       th:value="${priceRequest.itemCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
@@ -56,7 +56,8 @@
                         </div>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="itemName" readonly
-                                   th:value="${item != null ? item.itemName : ''}">
+                                   th:value="${item != null ? item.itemName : ''}"
+                                   th:data-original-value="${item != null ? item.itemName : ''}">
                             <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
                         </div>
                     </div>
@@ -70,7 +71,7 @@
                         <div class="col-md-4">
                             <div class="input-group">
                                 <input type="text" class="form-control" id="supplierCode" name="supplierCode"
-                                       th:value="${supplier != null ? supplier.supplierCode : ''}"
+                                       th:value="${priceRequest.supplierCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
@@ -83,7 +84,8 @@
                         </div>
                         <div class="col-md-8">
                             <input type="text" class="form-control" id="supplierName" readonly
-                                   th:value="${supplier != null ? supplier.name : ''}">
+                                   th:value="${supplier != null ? supplier.name : ''}"
+                                   th:data-original-value="${supplier != null ? supplier.name : ''}">
                             <input type="hidden" id="supplierId" name="supplierId" th:value="${priceRequest.supplierId}">
                         </div>
                     </div>
@@ -94,7 +96,7 @@
                         <div class="col-md-4">
                             <div class="input-group">
                                 <input type="text" class="form-control" id="customerCode" name="customerCode"
-                                       th:value="${customer != null ? customer.customerCode : ''}"
+                                       th:value="${priceRequest.customerCode}"
                                        th:disabled="${priceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
@@ -107,7 +109,8 @@
                         </div>
                         <div class="col-md-8">
                             <input type="text" class="form-control" id="customerName" readonly
-                                   th:value="${customer != null ? customer.name : ''}">
+                                   th:value="${customer != null ? customer.name : ''}"
+                                   th:data-original-value="${customer != null ? customer.name : ''}">
                             <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
                         </div>
                     </div>
@@ -306,13 +309,21 @@
                                     const item = await response.json();
                                     document.getElementById('itemName').value = item.name;
                                     document.getElementById('itemId').value = item.id;
+                                    this.classList.remove('is-invalid');
                                 } else {
                                     document.getElementById('itemName').value = '';
                                     document.getElementById('itemId').value = '';
+                                    this.classList.add('is-invalid');
                                 }
                             } catch (error) {
                                 console.error('Error fetching item:', error);
+                                document.getElementById('itemName').value = '';
+                                document.getElementById('itemId').value = '';
+                                this.classList.add('is-invalid');
                             }
+                        } else {
+                            document.getElementById('itemName').value = '';
+                            document.getElementById('itemId').value = '';
                         }
                     });
                 }
@@ -326,13 +337,21 @@
                                     const supplier = await response.json();
                                     document.getElementById('supplierName').value = supplier.name;
                                     document.getElementById('supplierId').value = supplier.id;
+                                    this.classList.remove('is-invalid');
                                 } else {
                                     document.getElementById('supplierName').value = '';
                                     document.getElementById('supplierId').value = '';
+                                    this.classList.add('is-invalid');
                                 }
                             } catch (error) {
                                 console.error('Error fetching supplier:', error);
+                                document.getElementById('supplierName').value = '';
+                                document.getElementById('supplierId').value = '';
+                                this.classList.add('is-invalid');
                             }
+                        } else {
+                            document.getElementById('supplierName').value = '';
+                            document.getElementById('supplierId').value = '';
                         }
                     });
                 }
@@ -346,13 +365,21 @@
                                     const customer = await response.json();
                                     document.getElementById('customerName').value = customer.name;
                                     document.getElementById('customerId').value = customer.id;
+                                    this.classList.remove('is-invalid');
                                 } else {
                                     document.getElementById('customerName').value = '';
                                     document.getElementById('customerId').value = '';
+                                    this.classList.add('is-invalid');
                                 }
                             } catch (error) {
                                 console.error('Error fetching customer:', error);
+                                document.getElementById('customerName').value = '';
+                                document.getElementById('customerId').value = '';
+                                this.classList.add('is-invalid');
                             }
+                        } else {
+                            document.getElementById('customerName').value = '';
+                            document.getElementById('customerId').value = '';
                         }
                     });
                 }
