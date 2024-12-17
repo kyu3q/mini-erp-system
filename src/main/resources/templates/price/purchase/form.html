@@ -294,7 +294,7 @@
                     itemCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
-                                const response = await fetch(`/api/items/find-by-code?itemCode=${encodeURIComponent(this.value)}`);
+                                const response = await fetch(`/api/items/code/${encodeURIComponent(this.value)}`);
                                 if (response.ok) {
                                     const item = await response.json();
                                     document.getElementById('itemName').value = item.itemName;

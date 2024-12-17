@@ -54,10 +54,10 @@ public class ItemController extends BaseRestController<Item, ItemDto, ItemReques
         return itemService.searchItems(keyword);
     }
 
-    @GetMapping("/find-by-code")
-    public ResponseEntity<Item> findByCode(@RequestParam String itemCode) {
+    @GetMapping("/code/{itemCode}")
+    public ResponseEntity<ItemResponse> findByCode(@PathVariable String itemCode) {
         return itemService.findByItemCode(itemCode)
-                .map(ResponseEntity::ok)
+                .map(item -> ResponseEntity.ok(mapper.toResponse(item)))
                 .orElse(ResponseEntity.notFound().build());
     }
 }
