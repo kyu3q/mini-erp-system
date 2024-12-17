@@ -24,6 +24,11 @@ public abstract class PriceMapper {
     @Autowired
     private SupplierRepository supplierRepository;
 
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "item", source = "itemId")
     @Mapping(target = "customer", source = "customerId")
     @Mapping(target = "supplier", source = "supplierId")
@@ -33,6 +38,10 @@ public abstract class PriceMapper {
     @Mapping(target = "priceScales", ignore = true)
     public abstract PriceCondition toEntity(PriceConditionRequest request);
 
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "itemId", source = "item.id")
     @Mapping(target = "itemCode", source = "item.itemCode")
     @Mapping(target = "itemName", source = "item.itemName")
@@ -46,6 +55,11 @@ public abstract class PriceMapper {
     @Mapping(target = "expiringSoon", expression = "java(priceCondition.isExpiringSoon())")
     public abstract PriceConditionResponse toResponse(PriceCondition priceCondition);
 
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     @Mapping(target = "priceCondition", ignore = true)
     public abstract PriceScale toEntity(PriceScaleRequest request);
 
@@ -63,6 +77,14 @@ public abstract class PriceMapper {
     }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    @Mapping(target = "item", source = "itemId")
+    @Mapping(target = "customer", source = "customerId")
+    @Mapping(target = "supplier", source = "supplierId")
     public abstract void updateEntity(@MappingTarget PriceCondition priceCondition, PriceConditionRequest request);
 
     protected Item mapItemId(Long id) {

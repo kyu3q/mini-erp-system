@@ -5,6 +5,7 @@ import com.minierpapp.dto.excel.PriceExcelRow;
 import com.minierpapp.model.common.Status;
 import com.minierpapp.model.price.PriceCondition;
 import com.minierpapp.model.price.PriceScale;
+import com.minierpapp.model.price.PriceType;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.ItemService;
 import com.minierpapp.service.PriceService;
@@ -158,7 +159,7 @@ public class PriceExcelService {
                 try {
                     PriceExcelRow priceRow = readSalesRow(row);
                     validateSalesRow(priceRow);
-                    PriceCondition condition = convertToPriceCondition(priceRow, "SALES");
+                    PriceCondition condition = convertToPriceCondition(priceRow, PriceType.SALES);
                     priceService.save(condition);
                     result.addSuccess();
                 } catch (Exception e) {
@@ -186,7 +187,7 @@ public class PriceExcelService {
                 try {
                     PriceExcelRow priceRow = readPurchaseRow(row);
                     validatePurchaseRow(priceRow);
-                    PriceCondition condition = convertToPriceCondition(priceRow, "PURCHASE");
+                    PriceCondition condition = convertToPriceCondition(priceRow, PriceType.PURCHASE);
                     priceService.save(condition);
                     result.addSuccess();
                 } catch (Exception e) {
@@ -382,7 +383,7 @@ public class PriceExcelService {
         }
     }
 
-    private PriceCondition convertToPriceCondition(PriceExcelRow row, String priceType) {
+    private PriceCondition convertToPriceCondition(PriceExcelRow row, PriceType priceType) {
         PriceCondition condition = new PriceCondition();
         condition.setPriceType(priceType);
         condition.setItemCode(row.getItemCode());
