@@ -37,31 +37,53 @@
             <input type="hidden" name="priceType" value="SALES">
             
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="itemDisplay" class="form-label required">品目</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="itemDisplay" readonly
-                               th:value="${item != null ? item.itemCode + ' - ' + item.itemName : ''}"
-                               th:disabled="${priceRequest.id != null}">
-                        <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
-                        <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
-                                th:disabled="${priceRequest.id != null}">
-                            <i class="fas fa-search"></i>
-                        </button>
+                <div class="col-md-12">
+                    <label for="itemCode" class="form-label required">品目</label>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="itemCode"
+                                       th:value="${item != null ? item.itemCode : ''}"
+                                       th:disabled="${priceRequest.id != null}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
+                                        th:disabled="${priceRequest.id != null}">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <div class="invalid-feedback">品目を選択してください。</div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="itemName" readonly
+                                   th:value="${item != null ? item.itemName : ''}"
+                                   th:data-original-value="${item != null ? item.itemName : ''}">
+                            <input type="hidden" id="itemId" name="itemId" th:value="${priceRequest.itemId}">
+                        </div>
                     </div>
-                    <div class="invalid-feedback">品目を選択してください。</div>
                 </div>
-                <div class="col-md-6">
-                    <label for="customerDisplay" class="form-label">得意先</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="customerDisplay" readonly
-                               th:value="${customer != null ? customer.customerCode + ' - ' + customer.name : ''}"
-                               th:disabled="${priceRequest.id != null}">
-                        <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
-                        <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
-                                th:disabled="${priceRequest.id != null}">
-                            <i class="fas fa-search"></i>
-                        </button>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="customerCode" class="form-label">得意先</label>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="customerCode"
+                                       th:value="${customer != null ? customer.customerCode : ''}"
+                                       th:disabled="${priceRequest.id != null}">
+                                <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
+                                        th:disabled="${priceRequest.id != null}">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <div class="invalid-feedback">得意先を選択してください。</div>
+                            </div>
+                        </div>
+                        <div class="col-md-9">
+                            <input type="text" class="form-control" id="customerName" readonly
+                                   th:value="${customer != null ? customer.name : ''}"
+                                   th:data-original-value="${customer != null ? customer.name : ''}">
+                            <input type="hidden" id="customerId" name="customerId" th:value="${priceRequest.customerId}">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -237,6 +259,48 @@
                     const nextYear = new Date();
                     nextYear.setFullYear(nextYear.getFullYear() + 1);
                     document.getElementById('validToDate').value = nextYear.toISOString().split('T')[0];
+                }
+
+                // コード入力時の自動補完
+                initializeCodeAutoComplete();
+            }
+
+            function initializeCodeAutoComplete() {
+                const itemCode = document.getElementById('itemCode');
+                const customerCode = document.getElementById('customerCode');
+
+                if (!itemCode.disabled) {
+                    itemCode.addEventListener('blur', async function() {
+                        if (this.value) {
+                            try {
+                                const response = await fetch(`/api/items/code/${encodeURIComponent(this.value)}`);
+                                if (response.ok) {
+                                    const item = await response.json();
+                                    document.getElementById('itemName').value = item.itemName;
+                                    document.getElementById('itemId').value = item.id;
+                                }
+                            } catch (error) {
+                                console.error('品目コードの検索に失敗しました:', error);
+                            }
+                        }
+                    });
+                }
+
+                if (!customerCode.disabled) {
+                    customerCode.addEventListener('blur', async function() {
+                        if (this.value) {
+                            try {
+                                const response = await fetch(`/api/customers/code/${encodeURIComponent(this.value)}`);
+                                if (response.ok) {
+                                    const customer = await response.json();
+                                    document.getElementById('customerName').value = customer.name;
+                                    document.getElementById('customerId').value = customer.id;
+                                }
+                            } catch (error) {
+                                console.error('得意先コードの検索に失敗しました:', error);
+                            }
+                        }
+                    });
                 }
             }
 
