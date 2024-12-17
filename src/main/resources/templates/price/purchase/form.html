@@ -280,6 +280,76 @@
                     nextYear.setFullYear(nextYear.getFullYear() + 1);
                     document.getElementById('validToDate').value = nextYear.toISOString().split('T')[0];
                 }
+
+                // コード入力時の自動補完
+                initializeCodeAutoComplete();
+            }
+
+            function initializeCodeAutoComplete() {
+                const itemCode = document.getElementById('itemCode');
+                const supplierCode = document.getElementById('supplierCode');
+                const customerCode = document.getElementById('customerCode');
+
+                if (!itemCode.disabled) {
+                    itemCode.addEventListener('blur', async function() {
+                        if (this.value) {
+                            try {
+                                const response = await fetch(`/api/items/find-by-code?itemCode=${encodeURIComponent(this.value)}`);
+                                if (response.ok) {
+                                    const item = await response.json();
+                                    document.getElementById('itemName').value = item.itemName;
+                                    document.getElementById('itemId').value = item.id;
+                                } else {
+                                    document.getElementById('itemName').value = '';
+                                    document.getElementById('itemId').value = '';
+                                }
+                            } catch (error) {
+                                console.error('Error fetching item:', error);
+                            }
+                        }
+                    });
+                }
+
+                if (!supplierCode.disabled) {
+                    supplierCode.addEventListener('blur', async function() {
+                        if (this.value) {
+                            try {
+                                const response = await fetch(`/api/suppliers/find-by-code?supplierCode=${encodeURIComponent(this.value)}`);
+                                if (response.ok) {
+                                    const supplier = await response.json();
+                                    document.getElementById('supplierName').value = supplier.name;
+                                    document.getElementById('supplierId').value = supplier.id;
+                                } else {
+                                    document.getElementById('supplierName').value = '';
+                                    document.getElementById('supplierId').value = '';
+                                }
+                            } catch (error) {
+                                console.error('Error fetching supplier:', error);
+                            }
+                        }
+                    });
+                }
+
+                if (!customerCode.disabled) {
+                    customerCode.addEventListener('blur', async function() {
+                        if (this.value) {
+                            try {
+                                const response = await fetch(`/api/customers/find-by-code?customerCode=${encodeURIComponent(this.value)}`);
+                                if (response.ok) {
+                                    const customer = await response.json();
+                                    document.getElementById('customerName').value = customer.name;
+                                    document.getElementById('customerId').value = customer.id;
+                                } else {
+                                    document.getElementById('customerName').value = '';
+                                    document.getElementById('customerId').value = '';
+                                }
+                            } catch (error) {
+                                console.error('Error fetching customer:', error);
+                            }
+                        }
+                    });
+                }
+            }
             }
 
             function initializeDragAndDrop() {
