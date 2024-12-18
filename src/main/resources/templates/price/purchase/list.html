@@ -41,37 +41,28 @@
             <div class="card-body">
                 <form th:action="@{/prices/purchase}" method="get" class="row g-3">
                     <div class="col-md-4">
-                        <label for="itemId" class="form-label">品目</label>
-                        <select class="form-select" id="itemId" name="itemId">
-                            <option value="">全て</option>
-                            <option th:each="item : ${items}"
-                                    th:value="${item.id}"
-                                    th:text="${item.itemCode + ' - ' + item.itemName}"
-                                    th:selected="${item.id == selectedItemId}">
-                            </option>
-                        </select>
+                        <label for="itemCode" class="form-label">品目コード</label>
+                        <input type="text" class="form-control" id="itemCode" name="itemCode" th:value="${param.itemCode}">
                     </div>
                     <div class="col-md-4">
-                        <label for="supplierId" class="form-label">仕入先</label>
-                        <select class="form-select" id="supplierId" name="supplierId">
-                            <option value="">全て</option>
-                            <option th:each="supplier : ${suppliers}"
-                                    th:value="${supplier.id}"
-                                    th:text="${supplier.supplierCode + ' - ' + supplier.name}"
-                                    th:selected="${supplier.id == selectedSupplierId}">
-                            </option>
-                        </select>
+                        <label for="itemName" class="form-label">品目名</label>
+                        <input type="text" class="form-control" id="itemName" name="itemName" th:value="${param.itemName}">
                     </div>
                     <div class="col-md-4">
-                        <label for="customerId" class="form-label">得意先</label>
-                        <select class="form-select" id="customerId" name="customerId">
-                            <option value="">全て</option>
-                            <option th:each="customer : ${customers}"
-                                    th:value="${customer.id}"
-                                    th:text="${customer.customerCode + ' - ' + customer.name}"
-                                    th:selected="${customer.id == selectedCustomerId}">
-                            </option>
-                        </select>
+                        <label for="supplierCode" class="form-label">仕入先コード</label>
+                        <input type="text" class="form-control" id="supplierCode" name="supplierCode" th:value="${param.supplierCode}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="supplierName" class="form-label">仕入先名</label>
+                        <input type="text" class="form-control" id="supplierName" name="supplierName" th:value="${param.supplierName}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="customerCode" class="form-label">得意先コード</label>
+                        <input type="text" class="form-control" id="customerCode" name="customerCode" th:value="${param.customerCode}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="customerName" class="form-label">得意先名</label>
+                        <input type="text" class="form-control" id="customerName" name="customerName" th:value="${param.customerName}">
                     </div>
                     <div class="col-md-12 text-end">
                         <button type="submit" class="btn btn-primary">
@@ -148,80 +139,72 @@
             </table>
         </div>
     </div>
+</div>
 
-    <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeDataTable();
-            initializeSelect2();
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDataTable();
+    });
+
+    function initializeDataTable() {
+        $('#priceTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ja.json"
+            },
+            order: [[5, 'desc']],
+            pageLength: 25
+        });
+    }
+
+    function confirmDelete(id) {
+        if (confirm('この購買単価を削除してもよろしいですか？')) {
+            document.getElementById('deleteForm' + id).submit();
+        }
+    }
+
+    function exportToExcel() {
+        window.location.href = '/prices/excel/purchase/export';
+    }
+
+    function downloadTemplate() {
+        window.location.href = '/prices/excel/purchase/template';
+    }
+
+    function importFromExcel(input) {
+        if (input.files.length === 0) return;
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        fetch('/prices/excel/purchase/import', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            let message = `処理結果:\n`;
+            message += `処理件数: ${result.totalCount}件\n`;
+            message += `成功件数: ${result.successCount}件\n`;
+            message += `失敗件数: ${result.errorCount}件\n\n`;
+
+            if (result.errors.length > 0) {
+                message += `エラー内容:\n`;
+                result.errors.forEach(error => {
+                    message += `${error.rowNum}行目: ${error.message}\n`;
+                });
+            }
+
+            alert(message);
+            if (result.successCount > 0) {
+                location.reload();
+            }
+        })
+        .catch(error => {
+            alert('エラーが発生しました：' + error);
         });
 
-        function initializeDataTable() {
-            $('#priceTable').DataTable({
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/ja.json"
-                },
-                order: [[5, 'desc']],
-                pageLength: 25
-            });
-        }
-
-        function initializeSelect2() {
-            $('#itemId, #supplierId, #customerId').select2({
-                theme: 'bootstrap-5',
-                width: '100%'
-            });
-        }
-
-        function confirmDelete(id) {
-            if (confirm('この購買単価を削除してもよろしいですか？')) {
-                document.getElementById('deleteForm' + id).submit();
-            }
-        }
-
-        function exportToExcel() {
-            window.location.href = '/prices/excel/purchase/export';
-        }
-
-        function downloadTemplate() {
-            window.location.href = '/prices/excel/purchase/template';
-        }
-
-        function importFromExcel(input) {
-            if (input.files.length === 0) return;
-
-            const formData = new FormData();
-            formData.append('file', input.files[0]);
-
-            fetch('/prices/excel/purchase/import', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                let message = `処理結果:\n`;
-                message += `処理件数: ${result.totalCount}件\n`;
-                message += `成功件数: ${result.successCount}件\n`;
-                message += `失敗件数: ${result.errorCount}件\n\n`;
-
-                if (result.errors.length > 0) {
-                    message += `エラー内容:\n`;
-                    result.errors.forEach(error => {
-                        message += `${error.rowNum}行目: ${error.message}\n`;
-                    });
-                }
-
-                alert(message);
-                if (result.successCount > 0) {
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                alert('エラーが発生しました：' + error);
-            });
-
-            input.value = '';
-        }
-    </script>
-</div>
+        input.value = '';
+    }
+</script>
 </body>
 </html>
