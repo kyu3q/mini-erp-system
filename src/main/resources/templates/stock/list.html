@@ -265,8 +265,7 @@
     </div>
 </div>
 
-<th:block layout:fragment="scripts">
-    <script>
+<script th:inline="javascript">
         $(document).ready(function() {
             $('#stocksTable').DataTable({
                 language: {
@@ -373,7 +372,6 @@
                 alert('在庫数量の調整に失敗しました');
             });
         }
-    </script>
-</th:block>
+</script>
 </body>
 </html>

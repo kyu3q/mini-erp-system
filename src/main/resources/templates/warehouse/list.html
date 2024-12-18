@@ -182,8 +182,7 @@
     </div>
 </div>
 
-<th:block layout:fragment="scripts">
-    <script>
+<script th:inline="javascript">
         $(document).ready(function() {
             $('#warehousesTable').DataTable({
                 language: {
@@ -222,6 +221,6 @@
             // フォームを送信
             document.getElementById('importForm').submit();
         }
-</th:block>
+</script>
 </body>
 </html>

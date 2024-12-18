@@ -282,7 +282,9 @@
         </div>
     </div>
 
-    <script th:inline="javascript">
+</div>
+
+<script th:inline="javascript">
         // DataTablesの初期化
         $(document).ready(function() {
             $('#orderTable').DataTable({
@@ -323,7 +325,7 @@
             form.action = `/orders/delete/${orderId}`;
             new bootstrap.Modal(modal).show();
         }
-    </script>
-</div>
+</script>
+
 </body>
 </html>
