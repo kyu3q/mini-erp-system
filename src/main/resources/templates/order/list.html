@@ -4,6 +4,9 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>受注一覧</title>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 </head>
 <body>
 <div layout:fragment="content">
@@ -281,51 +284,70 @@
             </div>
         </div>
     </div>
-
 </div>
 
-<script th:inline="javascript">
+<!-- Additional scripts -->
+<th:block layout:fragment="scripts">
+    <!-- DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    
+    <script th:inline="javascript">
         // DataTablesの初期化
         $(document).ready(function() {
-            $('#orderTable').DataTable({
+            const table = $('#orderTable').DataTable({
                 language: {
                     url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Japanese.json"
                 },
                 order: [[1, 'desc']], // 受注日の降順でソート
-                pageLength: 50, // 1ページあたりの表示件数を50件に増やす
+                pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "全件"]],
                 stateSave: true,
+                processing: true,
+                serverSide: false,
+                responsive: true,
                 dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
                      "<'row'<'col-sm-12'tr>>" +
                      "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                // スタイルのカスタマイズ
-                initComplete: function() {
-                    $('.dataTables_length select').addClass('form-select form-select-sm');
-                    $('.dataTables_filter input').addClass('form-control form-control-sm');
+                columnDefs: [
+                    { orderable: false, targets: [6] }, // 操作列はソート不可
+                    { searchable: false, targets: [6] }, // 操作列は検索対象外
+                    { responsivePriority: 1, targets: [0, 1, 2] }, // 優先して表示する列
+                    { responsivePriority: 2, targets: [4, 5] } // 次に優先して表示する列
+                ],
+                drawCallback: function(settings) {
+                    // ツールチップの再初期化
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    tooltipTriggerList.map(function(tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl, {
+                            trigger: 'hover'
+                        });
+                    });
                 }
             });
 
-            // ツールチップの初期化
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            // 検索フォームの送信時にDataTablesの状態をリセット
+            $('.search-form').on('submit', function() {
+                table.state.clear();
             });
         });
 
-        // 検索フォームのクリア
+        // フォームクリア
         function clearForm(form) {
             form.reset();
             form.submit();
         }
 
-        // 削除確認モーダルの表示
+        // 削除確認
         function confirmDelete(orderId) {
             const modal = document.getElementById('deleteModal');
-            const form = modal.querySelector('#deleteForm');
-            form.action = `/orders/delete/${orderId}`;
+            const form = document.getElementById('deleteForm');
+            form.action = `/orders/${orderId}/delete`;
             new bootstrap.Modal(modal).show();
         }
-</script>
-
+    </script>
+</th:block>
 </body>
 </html>
