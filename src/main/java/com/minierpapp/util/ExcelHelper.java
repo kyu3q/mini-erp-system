@@ -5,6 +5,7 @@ import com.minierpapp.model.order.dto.OrderDto;
 import com.minierpapp.model.order.dto.OrderRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -167,35 +168,86 @@ public class ExcelHelper {
 
     private String getStringValue(Cell cell) {
         if (cell == null) return null;
-        cell.setCellType(CellType.STRING);
-        return cell.getStringCellValue();
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return DATE_FORMATTER.format(cell.getLocalDateTimeCellValue().toLocalDate());
+                }
+                return String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            case BLANK:
+                return "";
+            default:
+                return null;
+        }
     }
 
     private LocalDate getDateValue(Cell cell) {
         if (cell == null) return null;
         try {
-            return cell.getLocalDateTimeCellValue().toLocalDate();
-        } catch (Exception e) {
+            if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+                return cell.getLocalDateTimeCellValue().toLocalDate();
+            }
             String dateStr = getStringValue(cell);
-            return dateStr != null ? LocalDate.parse(dateStr, DATE_FORMATTER) : null;
+            return dateStr != null && !dateStr.isEmpty() ? LocalDate.parse(dateStr, DATE_FORMATTER) : null;
+        } catch (Exception e) {
+            return null;
         }
     }
 
     private Long getLongValue(Cell cell) {
         if (cell == null) return null;
-        String value = getStringValue(cell);
-        return value != null ? Long.parseLong(value) : null;
+        try {
+            switch (cell.getCellType()) {
+                case NUMERIC:
+                    return (long) cell.getNumericCellValue();
+                case STRING:
+                    String value = cell.getStringCellValue().trim();
+                    return value.isEmpty() ? null : Long.parseLong(value);
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Integer getIntegerValue(Cell cell) {
         if (cell == null) return null;
-        cell.setCellType(CellType.NUMERIC);
-        return (int) cell.getNumericCellValue();
+        try {
+            switch (cell.getCellType()) {
+                case NUMERIC:
+                    return (int) cell.getNumericCellValue();
+                case STRING:
+                    String value = cell.getStringCellValue().trim();
+                    return value.isEmpty() ? null : Integer.parseInt(value);
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private BigDecimal getBigDecimalValue(Cell cell) {
         if (cell == null) return null;
-        cell.setCellType(CellType.NUMERIC);
-        return BigDecimal.valueOf(cell.getNumericCellValue());
+        try {
+            switch (cell.getCellType()) {
+                case NUMERIC:
+                    return BigDecimal.valueOf(cell.getNumericCellValue());
+                case STRING:
+                    String value = cell.getStringCellValue().trim();
+                    return value.isEmpty() ? null : new BigDecimal(value);
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
