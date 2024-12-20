@@ -53,7 +53,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                <form th:action="@{/orders}" method="get" class="search-form">
+                <form class="search-form">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <div class="row g-2">
@@ -61,8 +61,7 @@
                                     <label for="orderNumber" class="form-label">受注番号</label>
                                 </div>
                                 <div class="col-md-8">
-                                    <input type="text" class="form-control" id="orderNumber" name="orderNumber" 
-                                           th:value="${param.orderNumber}">
+                                    <input type="text" class="form-control" id="orderNumber" name="orderNumber">
                                 </div>
                             </div>
                         </div>
@@ -76,8 +75,7 @@
                                         <option value="">選択してください</option>
                                         <option th:each="customer : ${customers}"
                                                 th:value="${customer.id}"
-                                                th:text="${customer.name}"
-                                                th:selected="${param.customerId != null and param.customerId[0] == customer.id.toString()}">
+                                                th:text="${customer.name}">
                                         </option>
                                     </select>
                                 </div>
@@ -90,11 +88,9 @@
                                 </div>
                                 <div class="col-md-8">
                                     <div class="input-group">
-                                        <input type="date" class="form-control" id="orderDateFrom" name="orderDateFrom"
-                                               th:value="${param.orderDateFrom}">
+                                        <input type="date" class="form-control" id="orderDateFrom" name="orderDateFrom">
                                         <span class="input-group-text">～</span>
-                                        <input type="date" class="form-control" id="orderDateTo" name="orderDateTo"
-                                               th:value="${param.orderDateTo}">
+                                        <input type="date" class="form-control" id="orderDateTo" name="orderDateTo">
                                     </div>
                                 </div>
                             </div>
@@ -109,8 +105,7 @@
                                         <option value="">選択してください</option>
                                         <option th:each="item : ${items}"
                                                 th:value="${item.id}"
-                                                th:text="${item.itemName}"
-                                                th:selected="${param.itemId != null and param.itemId[0] == item.id.toString()}">
+                                                th:text="${item.itemName}">
                                         </option>
                                     </select>
                                 </div>
@@ -126,8 +121,7 @@
                                         <option value="">選択してください</option>
                                         <option th:each="status : ${statuses}"
                                                 th:value="${status}"
-                                                th:text="${status.displayName}"
-                                                th:selected="${param.status != null and param.status[0] == status.name()}">
+                                                th:text="${status.displayName}">
                                         </option>
                                     </select>
                                 </div>
@@ -167,53 +161,6 @@
                             <th class="text-center">操作</th>
                         </tr>
                         </thead>
-                        <tbody>
-                        <tr th:each="order : ${orders}">
-                            <td>
-                                <a th:href="@{/orders/{id}/edit(id=${order.id})}" 
-                                   class="text-primary text-decoration-none">
-                                    <i class="fas fa-file-alt me-1"></i>
-                                    <span th:text="${order.orderNumber}"></span>
-                                </a>
-                            </td>
-                            <td th:text="${#temporals.format(order.orderDate, 'yyyy/MM/dd')}"></td>
-                            <td th:text="${order.customerName}"></td>
-                            <td th:text="${order.deliveryDate != null ? #temporals.format(order.deliveryDate, 'yyyy/MM/dd') : ''}"></td>
-                            <td>
-                                <span th:text="${order.status.displayName}"
-                                      th:class="${'badge rounded-pill ' + 
-                                      (order.status.name() == 'DRAFT' ? 'bg-secondary' :
-                                       order.status.name() == 'CONFIRMED' ? 'bg-primary' :
-                                       order.status.name() == 'PROCESSING' ? 'bg-info' :
-                                       order.status.name() == 'SHIPPED' ? 'bg-success' :
-                                       order.status.name() == 'DELIVERED' ? 'bg-success' :
-                                       order.status.name() == 'CANCELLED' ? 'bg-danger' : 'bg-secondary')}">
-                                </span>
-                            </td>
-                            <td class="text-end">
-                                <span class="fw-bold" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}"></span>
-                                <small class="text-muted">円</small>
-                            </td>
-                            <td class="text-center">
-                                <div class="btn-group">
-                                    <a th:href="@{/orders/{id}/edit(id=${order.id})}" 
-                                       class="btn btn-sm btn-outline-primary"
-                                       data-bs-toggle="tooltip"
-                                       data-bs-title="編集">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            th:data-order-id="${order.id}"
-                                            onclick="confirmDelete(this.getAttribute('data-order-id'))"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-title="削除">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
                     </table>
                 </div>
             </div>
@@ -287,8 +234,84 @@
 <th:block layout:fragment="scripts">
     <script th:inline="javascript">
         $(document).ready(function() {
+            // 日本語ロケールの設定
+            moment.locale('ja');
+
             // DataTablesの初期化
             const table = $('#orderTable').DataTable({
+                ajax: {
+                    url: '/orders/search',
+                    dataSrc: '',
+                    data: function(d) {
+                        return {
+                            orderNumber: $('#orderNumber').val(),
+                            orderDateFrom: $('#orderDateFrom').val(),
+                            orderDateTo: $('#orderDateTo').val(),
+                            customerId: $('#customerId').val(),
+                            itemId: $('#itemId').val(),
+                            status: $('#status').val()
+                        };
+                    }
+                },
+                columns: [
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            return `<a href="/orders/${row.id}/edit" class="text-primary text-decoration-none">
+                                <i class="fas fa-file-alt me-1"></i>${row.orderNumber}</a>`;
+                        }
+                    },
+                    {
+                        data: 'orderDate',
+                        render: function(data) {
+                            return data ? moment(data).format('YYYY/MM/DD') : '';
+                        }
+                    },
+                    { data: 'customerName' },
+                    {
+                        data: 'deliveryDate',
+                        render: function(data) {
+                            return data ? moment(data).format('YYYY/MM/DD') : '';
+                        }
+                    },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            const statusClass = row.status === 'DRAFT' ? 'bg-secondary' :
+                                              row.status === 'CONFIRMED' ? 'bg-primary' :
+                                              row.status === 'PROCESSING' ? 'bg-info' :
+                                              row.status === 'SHIPPED' ? 'bg-success' :
+                                              row.status === 'DELIVERED' ? 'bg-success' :
+                                              row.status === 'CANCELLED' ? 'bg-danger' : 'bg-secondary';
+                            return `<span class="badge rounded-pill ${statusClass}">${row.statusDisplayName}</span>`;
+                        }
+                    },
+                    {
+                        data: 'totalAmount',
+                        className: 'text-end',
+                        render: function(data) {
+                            return `<span class="fw-bold">${new Intl.NumberFormat('ja-JP').format(data)}</span>
+                                <small class="text-muted">円</small>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        className: 'text-center',
+                        render: function(data, type, row) {
+                            return `<div class="btn-group">
+                                <a href="/orders/${row.id}/edit" class="btn btn-sm btn-outline-primary"
+                                   data-bs-toggle="tooltip" data-bs-title="編集">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmDelete(${row.id})"
+                                        data-bs-toggle="tooltip" data-bs-title="削除">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>`;
+                        }
+                    }
+                ],
                 order: [[1, 'desc']], // 受注日の降順でソート
                 columnDefs: [
                     { orderable: false, targets: [6] }, // 操作列はソート不可
@@ -307,9 +330,10 @@
                 }
             });
 
-            // 検索フォームの送信時にDataTablesの状態をリセット
-            $('.search-form').on('submit', function() {
-                table.state.clear();
+            // 検索フォームの送信時の処理
+            $('.search-form').on('submit', function(e) {
+                e.preventDefault();
+                table.ajax.reload();
             });
 
             // Select2の初期化
@@ -323,7 +347,7 @@
         function clearForm(form) {
             form.reset();
             $('#customerId, #itemId, #status').val(null).trigger('change');
-            form.submit();
+            $(form).trigger('submit');
         }
 
         // 削除確認

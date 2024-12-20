@@ -13,6 +13,7 @@ import com.minierpapp.service.WarehouseService;
 import com.minierpapp.util.ExcelHelper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -40,16 +41,26 @@ public class OrderWebController {
                       @RequestParam(required = false) Long itemId,
                       @RequestParam(required = false) OrderStatus status,
                       Model model) {
-        List<OrderDto> orders = orderService.search(orderNumber, orderDateFrom, orderDateTo,
-                customerId, itemId, status);
         List<Customer> customers = customerService.findAllActive();
         List<Item> items = itemService.findAllActive();
 
-        model.addAttribute("orders", orders);
         model.addAttribute("customers", customers);
         model.addAttribute("items", items);
         model.addAttribute("statuses", OrderStatus.values());
         return "order/list";
+    }
+
+    @GetMapping("/search")
+    @ResponseBody
+    public ResponseEntity<List<OrderDto>> search(@RequestParam(required = false) String orderNumber,
+                                               @RequestParam(required = false) String orderDateFrom,
+                                               @RequestParam(required = false) String orderDateTo,
+                                               @RequestParam(required = false) Long customerId,
+                                               @RequestParam(required = false) Long itemId,
+                                               @RequestParam(required = false) OrderStatus status) {
+        List<OrderDto> orders = orderService.search(orderNumber, orderDateFrom, orderDateTo,
+                customerId, itemId, status);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/new")
