@@ -4,9 +4,6 @@
       layout:decorate="~{layout/layout}">
 <head>
     <title>受注一覧</title>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 </head>
 <body>
 <div layout:fragment="content">
@@ -288,29 +285,11 @@
 
 <!-- Additional scripts -->
 <th:block layout:fragment="scripts">
-    <!-- DataTables JS -->
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script type="text/javascript" src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
-    
     <script th:inline="javascript">
-        // DataTablesの初期化
         $(document).ready(function() {
+            // DataTablesの初期化
             const table = $('#orderTable').DataTable({
-                language: {
-                    url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Japanese.json"
-                },
                 order: [[1, 'desc']], // 受注日の降順でソート
-                pageLength: 50,
-                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "全件"]],
-                stateSave: true,
-                processing: true,
-                serverSide: false,
-                responsive: true,
-                dom: "<'row'<'col-sm-6'l><'col-sm-6'f>>" +
-                     "<'row'<'col-sm-12'tr>>" +
-                     "<'row'<'col-sm-5'i><'col-sm-7'p>>",
                 columnDefs: [
                     { orderable: false, targets: [6] }, // 操作列はソート不可
                     { searchable: false, targets: [6] }, // 操作列は検索対象外
@@ -320,8 +299,8 @@
                 drawCallback: function(settings) {
                     // ツールチップの再初期化
                     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                    tooltipTriggerList.map(function(tooltipTriggerEl) {
-                        return new bootstrap.Tooltip(tooltipTriggerEl, {
+                    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+                        new bootstrap.Tooltip(tooltipTriggerEl, {
                             trigger: 'hover'
                         });
                     });
@@ -332,11 +311,18 @@
             $('.search-form').on('submit', function() {
                 table.state.clear();
             });
+
+            // Select2の初期化
+            $('#customerId, #itemId, #status').select2({
+                placeholder: '選択してください',
+                allowClear: true
+            });
         });
 
         // フォームクリア
         function clearForm(form) {
             form.reset();
+            $('#customerId, #itemId, #status').val(null).trigger('change');
             form.submit();
         }
 
