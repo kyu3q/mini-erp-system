@@ -22,7 +22,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .headers(headers -> headers
                 .frameOptions(frame -> frame.disable())
-                .xssProtection(xss -> xss.enable())
+                .xssProtection(xss -> xss.disable())
                 .contentTypeOptions(Customizer.withDefaults())
                 .referrerPolicy(referrer -> referrer
                     .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
