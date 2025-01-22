@@ -49,29 +49,6 @@ BEGIN
     END IF;
 END $$;
 
--- 在庫テーブル
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'stocks') THEN
-        CREATE TABLE stocks (
-            id BIGSERIAL PRIMARY KEY,
-            created_at TIMESTAMP NOT NULL,
-            updated_at TIMESTAMP,
-            created_by VARCHAR(100),
-            updated_by VARCHAR(100),
-            deleted BOOLEAN DEFAULT FALSE,
-            warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),
-            item_id BIGINT NOT NULL REFERENCES items(id),
-            quantity INTEGER NOT NULL,
-            minimum_quantity INTEGER,
-            maximum_quantity INTEGER,
-            location VARCHAR(100),
-            notes TEXT,
-            CONSTRAINT uk_stocks_warehouse_item UNIQUE(warehouse_id, item_id, deleted)
-        );
-    END IF;
-END $$;
-
 -- 得意先テーブル
 DO $$
 BEGIN
@@ -152,19 +129,6 @@ BEGIN
             (CURRENT_TIMESTAMP, 'system', 'W001', '東京メイン倉庫', '東京都江東区豊洲1-1-1', 1000, 'ACTIVE', '主要保管施設'),
             (CURRENT_TIMESTAMP, 'system', 'W002', '大阪支店倉庫', '大阪府大阪市北区梅田2-2-2', 500, 'ACTIVE', '関西地域の配送拠点'),
             (CURRENT_TIMESTAMP, 'system', 'W003', '福岡物流センター', '福岡県福岡市博多区博多駅3-3-3', 300, 'ACTIVE', '九州地域の物流拠点');
-    END IF;
-
-    -- 在庫の初期データ
-    IF NOT EXISTS (SELECT 1 FROM stocks) THEN
-        INSERT INTO stocks (
-            created_at, created_by, warehouse_id, item_id, quantity, minimum_quantity, maximum_quantity, location, notes
-        ) VALUES
-            (CURRENT_TIMESTAMP, 'system', 1, 1, 50, 10, 100, 'A-1-1', 'ノートPC保管エリア'),
-            (CURRENT_TIMESTAMP, 'system', 1, 2, 30, 5, 50, 'A-1-2', 'デスクトップPC保管エリア'),
-            (CURRENT_TIMESTAMP, 'system', 1, 3, 200, 50, 500, 'B-1-1', 'USBメモリ保管棚'),
-            (CURRENT_TIMESTAMP, 'system', 2, 1, 25, 5, 50, 'A-1-1', '大阪ノートPC在庫'),
-            (CURRENT_TIMESTAMP, 'system', 2, 4, 100, 20, 200, 'B-2-1', 'マウス保管エリア'),
-            (CURRENT_TIMESTAMP, 'system', 3, 5, 40, 10, 80, 'C-1-1', 'モニター保管エリア');
     END IF;
 
     -- 得意先の初期データ
