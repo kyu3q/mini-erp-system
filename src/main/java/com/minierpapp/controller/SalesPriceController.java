@@ -99,7 +99,7 @@ public class SalesPriceController {
         return "redirect:/prices/sales";
     }
 
-    @PostMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public String delete(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes) {

@@ -162,7 +162,7 @@ public class PurchasePriceController {
         return "redirect:/prices/purchase";
     }
 
-    @PostMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public String delete(
             @PathVariable Long id,
             RedirectAttributes redirectAttributes) {
