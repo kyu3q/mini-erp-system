@@ -7,6 +7,9 @@ import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,9 +45,14 @@ public class CustomerService {
 
     @Transactional(readOnly = true)
     public CustomerResponse findByCustomerCode(String customerCode) {
-        return customerRepository.findByCustomerCodeAndDeletedFalse(customerCode)
-                .map(customerMapper::toResponse)
+        Customer customer = customerRepository.findByCustomerCodeAndDeletedFalse(customerCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "customerCode", customerCode));
+
+        if (!hasAccessToCustomer(customer)) {
+            throw new AccessDeniedException("Access denied");
+        }
+
+        return customerMapper.toResponse(customer);
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +75,14 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse create(CustomerRequest request) {
+        if (request.getCustomerCode() == null || request.getCustomerCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("得意先コードを入力してください");
+        }
+
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("得意先名は必須です");
+        }
+
         if (customerRepository.existsByCustomerCodeAndDeletedFalse(request.getCustomerCode())) {
             throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
         }
@@ -77,6 +93,14 @@ public class CustomerService {
 
     @Transactional
     public CustomerResponse update(Long id, CustomerRequest request) {
+        if (request.getCustomerCode() == null || request.getCustomerCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("得意先コードを入力してください");
+        }
+
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("得意先名は必須です");
+        }
+
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
 
@@ -97,5 +121,36 @@ public class CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
         customer.setDeleted(true);
         customerRepository.save(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CustomerResponse> search(String keyword, Pageable pageable) {
+        Page<Customer> customerPage = customerRepository.findByNameContainingAndDeletedFalse(keyword, pageable);
+        return customerPage.map(customerMapper::toResponse);
+    }
+
+    @Transactional
+    public List<CustomerResponse> bulkCreate(List<CustomerRequest> requests) {
+        return requests.stream()
+            .map(request -> {
+                if (request.getCustomerCode() == null || request.getCustomerCode().trim().isEmpty()) {
+                    throw new IllegalArgumentException("得意先コードを入力してください");
+                }
+                if (request.getName() == null || request.getName().trim().isEmpty()) {
+                    throw new IllegalArgumentException("得意先名は必須です");
+                }
+                if (customerRepository.existsByCustomerCodeAndDeletedFalse(request.getCustomerCode())) {
+                    throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
+                }
+                Customer customer = customerMapper.toEntity(request);
+                return customerMapper.toResponse(customerRepository.save(customer));
+            })
+            .collect(Collectors.toList());
+    }
+
+    public boolean hasAccessToCustomer(Customer customer) {
+        // TODO: 実際のセキュリティロジックを実装
+        // 例: 現在のユーザーが顧客にアクセスする権限があるかどうかをチェック
+        return true;
     }
 }
