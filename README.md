@@ -48,6 +48,41 @@
 mvn spring-boot:run
 ```
 
+### 4. ログイン情報
+
+#### 開発環境（dev）
+- ユーザー名: admin
+- パスワード: admin
+- プロファイル: dev（デフォルト）
+
+#### 本番環境（prod）
+- ユーザー名: admin （環境変数 ADMIN_USERNAME で変更可能）
+- パスワード: admin （環境変数 ADMIN_PASSWORD で変更可能）
+- プロファイル: prod
+
+```bash
+# 本番環境での実行例
+export ADMIN_USERNAME=prod_admin
+export ADMIN_PASSWORD=secure_password
+mvn spring-boot:run -Dspring.profiles.active=prod
+```
+
+#### テスト環境（test）
+- ユーザー名: test
+- パスワード: test
+- プロファイル: test
+
+```bash
+# テスト環境での実行例
+mvn spring-boot:run -Dspring.profiles.active=test
+```
+
+#### テストユーザー
+- ユーザー名: test_user
+- ロール: ROLE_USER
+- 用途: 一般ユーザー権限でのテスト用
+- 備考: このユーザーは主にAPIのテストで使用され、限定された権限（商品の参照など）のみを持ちます
+
 ## 開発環境
 
 ### ビルド方法
