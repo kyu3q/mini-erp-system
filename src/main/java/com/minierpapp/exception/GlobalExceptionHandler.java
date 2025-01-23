@@ -1,10 +1,12 @@
 package com.minierpapp.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -13,6 +15,7 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -65,7 +68,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Object handleNoResourceFoundException(NoResourceFoundException e, Model model) {
-        // 静的リソースが見つからない場合は、WARNレベルでログを出力
         logger.warn("Static resource not found: {}", e.getMessage());
         
         if (isApiRequest()) {
@@ -80,6 +82,97 @@ public class GlobalExceptionHandler {
         model.addAttribute("status", HttpStatus.NOT_FOUND.value());
         model.addAttribute("error", "Resource Not Found");
         model.addAttribute("message", "The requested resource was not found");
+        
+        return "error";
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Object handleValidationExceptions(MethodArgumentNotValidException e, Model model) {
+        Map<String, String> errors = e.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .collect(Collectors.toMap(
+                error -> error.getField(),
+                error -> error.getDefaultMessage()
+            ));
+
+        if (isApiRequest()) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.BAD_REQUEST.value());
+            body.put("error", "Validation Error");
+            body.put("errors", errors);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+
+        model.addAttribute("status", HttpStatus.BAD_REQUEST.value());
+        model.addAttribute("error", "Validation Error");
+        model.addAttribute("errors", errors);
+        
+        return "error";
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Object handleConstraintViolation(ConstraintViolationException e, Model model) {
+        Map<String, String> errors = e.getConstraintViolations()
+            .stream()
+            .collect(Collectors.toMap(
+                violation -> violation.getPropertyPath().toString(),
+                violation -> violation.getMessage()
+            ));
+
+        if (isApiRequest()) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.BAD_REQUEST.value());
+            body.put("error", "Validation Error");
+            body.put("errors", errors);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+
+        model.addAttribute("status", HttpStatus.BAD_REQUEST.value());
+        model.addAttribute("error", "Validation Error");
+        model.addAttribute("errors", errors);
+        
+        return "error";
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Object handleDuplicateResource(DuplicateResourceException e, Model model) {
+        if (isApiRequest()) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.BAD_REQUEST.value());
+            body.put("error", "Duplicate Resource");
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+
+        model.addAttribute("status", HttpStatus.BAD_REQUEST.value());
+        model.addAttribute("error", "Duplicate Resource");
+        model.addAttribute("message", e.getMessage());
+        
+        return "error";
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Object handleIllegalArgument(IllegalArgumentException e, Model model) {
+        if (isApiRequest()) {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("timestamp", LocalDateTime.now());
+            body.put("status", HttpStatus.BAD_REQUEST.value());
+            body.put("error", "Bad Request");
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        }
+
+        model.addAttribute("status", HttpStatus.BAD_REQUEST.value());
+        model.addAttribute("error", "Bad Request");
+        model.addAttribute("message", e.getMessage());
         
         return "error";
     }

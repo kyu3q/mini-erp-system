@@ -1,5 +1,6 @@
 package com.minierpapp.model.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
@@ -15,5 +16,15 @@ public enum Status {
     @JsonValue
     public String getDisplayName() {
         return displayName;
+    }
+
+    @JsonCreator
+    public static Status fromDisplayName(String displayName) {
+        for (Status status : Status.values()) {
+            if (status.displayName.equals(displayName)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Invalid status display name: " + displayName);
     }
 }
