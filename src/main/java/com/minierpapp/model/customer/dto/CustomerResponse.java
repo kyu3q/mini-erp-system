@@ -3,6 +3,8 @@ package com.minierpapp.model.customer.dto;
 import com.minierpapp.model.common.Status;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class CustomerResponse {
     private Long id;
@@ -18,4 +20,8 @@ public class CustomerResponse {
     private String paymentTerms;
     private Status status;
     private String notes;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private String createdBy;
+    private String updatedBy;
 }

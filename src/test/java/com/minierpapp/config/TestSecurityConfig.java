@@ -3,6 +3,7 @@ package com.minierpapp.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,9 +22,9 @@ public class TestSecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                 .requestMatchers(
-                    AntPathRequestMatcher.antMatcher("/api/customers/search/**"),
-                    AntPathRequestMatcher.antMatcher("/api/customers/code/**"),
-                    AntPathRequestMatcher.antMatcher("/api/customers")
+                    AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/customers/search/**"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/customers/code/**"),
+                    AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/customers")
                 ).hasAnyRole("USER", "ADMIN")
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/api/customers/**")).hasRole("ADMIN")
                 .anyRequest().authenticated()

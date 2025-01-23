@@ -13,18 +13,27 @@ public enum Status {
         this.displayName = displayName;
     }
 
-    @JsonValue
     public String getDisplayName() {
         return displayName;
     }
 
+    @JsonValue
+    public String getValue() {
+        return this.name();
+    }
+
     @JsonCreator
-    public static Status fromDisplayName(String displayName) {
-        for (Status status : Status.values()) {
-            if (status.displayName.equals(displayName)) {
-                return status;
+    public static Status fromString(String value) {
+        try {
+            return Status.valueOf(value);
+        } catch (IllegalArgumentException e) {
+            // 表示名からの変換を試みる
+            for (Status status : Status.values()) {
+                if (status.displayName.equals(value)) {
+                    return status;
+                }
             }
+            throw new IllegalArgumentException("Invalid status value: " + value);
         }
-        throw new IllegalArgumentException("Invalid status display name: " + displayName);
     }
 }
