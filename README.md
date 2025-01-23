@@ -28,7 +28,8 @@
 - Spring Boot 3.2.1
 - Spring Security
 - Spring Data JPA
-- MySQL 8.0
+- H2 Database (開発・テスト環境)
+- PostgreSQL (本番環境)
 - Maven
 - Lombok
 
@@ -37,7 +38,7 @@
 ### 1. 前提条件
 - JDK 17以上
 - Maven 3.6以上
-- MySQL 8.0以上
+- PostgreSQL 14以上（本番環境用）
 
 ### 2. データベースのセットアップ
 データベースのセットアップ手順は [database/README.md](database/README.md) を参照してください。

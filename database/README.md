@@ -1,27 +1,44 @@
 # Mini ERP System データベースセットアップ手順
 
-## 前提条件
-- MySQL 8.0以上がインストールされていること
-- MySQLのrootユーザーまたは同等の権限を持つユーザーでログインできること
+## 環境別のデータベース設定
 
-## セットアップ手順
+### 開発環境・テスト環境
+開発環境とテスト環境では、H2インメモリデータベースが使用されます。
+特別なセットアップは不要で、アプリケーション起動時に自動的にデータベースが作成されます。
+
+- データベース: H2 (インメモリ)
+- URL: jdbc:h2:mem:mini_erp_db (開発環境) / jdbc:h2:mem:testdb (テスト環境)
+- ユーザー名: sa
+- パスワード: なし
+
+H2コンソールへのアクセス:
+- URL: http://localhost:8080/h2-console
+- JDBC URL: 上記のURLを使用
+
+### 本番環境
+
+#### 前提条件
+- PostgreSQL 14以上がインストールされていること
+- PostgreSQLのスーパーユーザー権限を持つユーザーでログインできること
+
+#### セットアップ手順
 
 1. データベースとユーザーの作成
 ```bash
-mysql -u root -p < create_database.sql
+psql -U postgres -f create_database.sql
 ```
 
 2. テーブルの作成
 ```bash
-mysql -u root -p mini_erp_db < create_tables.sql
+psql -U postgres -d mini_erp_db -f create_tables.sql
 ```
 
-## 接続情報
+#### 接続情報
 - データベース名: mini_erp_db
 - ユーザー名: mini_erp_user
 - パスワード: mini_erp_pass
-- ホスト: localhost
-- ポート: 3306（デフォルト）
+- ホスト: db (Docker環境) または localhost (ローカル環境)
+- ポート: 5432（PostgreSQLデフォルト）
 
 ## テーブル構成
 
