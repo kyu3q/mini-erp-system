@@ -3,6 +3,8 @@ package com.minierpapp.model.customer;
 import com.minierpapp.model.common.BaseEntity;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +17,24 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Customer extends BaseEntity {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Customer customer)) return false;
+        if (!super.equals(o)) return false;
+        return getId() != null && getId().equals(customer.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getId() != null ? getId().hashCode() : 31;
+    }
+
+    @NotBlank
     @Column(name = "customer_code", nullable = false, length = 50)
     private String customerCode;
 
+    @NotBlank
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -45,6 +62,7 @@ public class Customer extends BaseEntity {
     @Column(name = "payment_terms", length = 100)
     private String paymentTerms;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Status status = Status.ACTIVE;
