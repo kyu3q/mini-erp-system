@@ -7,6 +7,8 @@ import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.service.CustomerService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,5 +58,12 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
     @Override
     protected List<CustomerResponse> searchEntities(String keyword) {
         return customerService.searchCustomers(keyword);
+    }
+
+    @GetMapping("/search/page")
+    public ResponseEntity<Page<CustomerResponse>> searchCustomersWithPagination(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        return ResponseEntity.ok(customerService.searchCustomersWithPagination(keyword, pageable));
     }
 }

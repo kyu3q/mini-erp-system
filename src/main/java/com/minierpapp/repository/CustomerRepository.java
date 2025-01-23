@@ -28,4 +28,6 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     List<Customer> findByCustomerCodeContainingOrNameContainingAndDeletedFalse(String customerCode, String name);
 
     Page<Customer> findByNameContainingAndDeletedFalse(String name, Pageable pageable);
+
+    Page<Customer> findByCustomerCodeContainingOrNameContainingAndDeletedFalse(String customerCode, String name, Pageable pageable);
 }

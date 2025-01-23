@@ -7,12 +7,16 @@ import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.repository.CustomerRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +40,13 @@ public class CustomerService {
         return customers.stream()
             .map(customerMapper::toResponse)
             .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CustomerResponse> searchCustomersWithPagination(String keyword, Pageable pageable) {
+        keyword = keyword != null ? keyword.trim() : "";
+        Page<Customer> customers = customerRepository.findByCustomerCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword, pageable);
+        return customers.map(customerMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
@@ -152,5 +163,112 @@ public class CustomerService {
         // TODO: 実際のセキュリティロジックを実装
         // 例: 現在のユーザーが顧客にアクセスする権限があるかどうかをチェック
         return true;
+    }
+
+    /**
+     * Excelファイルにデータを書き出す
+     */
+    public void writeToExcel(Workbook workbook, List<CustomerResponse> customers) {
+        Sheet sheet = workbook.createSheet("得意先");
+        
+        // ヘッダー行
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"顧客コード", "名前", "カナ名", "郵便番号", "住所", "電話番号", "メールアドレス"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+        
+        // データ行
+        int rowNum = 1;
+        for (CustomerResponse customer : customers) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(customer.getCustomerCode());
+            row.createCell(1).setCellValue(customer.getName());
+            row.createCell(2).setCellValue(customer.getNameKana());
+            row.createCell(3).setCellValue(customer.getPostalCode());
+            row.createCell(4).setCellValue(customer.getAddress());
+            row.createCell(5).setCellValue(customer.getPhone());
+            row.createCell(6).setCellValue(customer.getEmail());
+        }
+        
+        // 列幅の自動調整
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    /**
+     * 取込テンプレートを作成
+     */
+    public void createTemplate(Workbook workbook) {
+        Sheet sheet = workbook.createSheet("得意先");
+        
+        // ヘッダー行
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"顧客コード", "名前", "カナ名", "郵便番号", "住所", "電話番号", "メールアドレス"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+        
+        // 列幅の自動調整
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+    /**
+     * Excelファイルからデータを取り込む
+     */
+    public void importFromExcel(InputStream inputStream) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook(inputStream)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            
+            // ヘッダー行の検証
+            Row headerRow = sheet.getRow(0);
+            if (headerRow == null || !isValidHeader(headerRow)) {
+                throw new IllegalArgumentException("テンプレートの形式が不正です");
+            }
+            
+            // データ行の処理
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+                
+                CustomerRequest request = new CustomerRequest();
+                request.setCustomerCode(getCellValue(row.getCell(0)));
+                request.setName(getCellValue(row.getCell(1)));
+                request.setNameKana(getCellValue(row.getCell(2)));
+                request.setPostalCode(getCellValue(row.getCell(3)));
+                request.setAddress(getCellValue(row.getCell(4)));
+                request.setPhone(getCellValue(row.getCell(5)));
+                request.setEmail(getCellValue(row.getCell(6)));
+                
+                try {
+                    create(request);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException(String.format("行 %d: %s", i + 1, e.getMessage()));
+                }
+            }
+        }
+    }
+
+    private boolean isValidHeader(Row headerRow) {
+        String[] expectedHeaders = {"顧客コード", "名前", "カナ名", "郵便番号", "住所", "電話番号", "メールアドレス"};
+        for (int i = 0; i < expectedHeaders.length; i++) {
+            Cell cell = headerRow.getCell(i);
+            if (cell == null || !expectedHeaders[i].equals(cell.getStringCellValue())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        return switch (cell.getCellType()) {
+            case STRING -> cell.getStringCellValue();
+            case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
+            default -> "";
+        };
     }
 }
