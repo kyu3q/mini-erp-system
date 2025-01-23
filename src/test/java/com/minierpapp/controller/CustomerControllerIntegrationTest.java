@@ -5,6 +5,7 @@ import com.minierpapp.model.common.Status;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.service.CustomerService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,9 +16,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -35,6 +38,11 @@ class CustomerControllerIntegrationTest {
     @Autowired
     private CustomerService customerService;
 
+    @BeforeEach
+    void setUp() {
+        objectMapper.findAndRegisterModules();
+    }
+
     @Test
     @WithMockUser(roles = "USER")
     void whenGetAllCustomers_thenReturnCustomersList() throws Exception {
@@ -46,7 +54,7 @@ class CustomerControllerIntegrationTest {
 
         // then
         List<CustomerResponse> customers = objectMapper.readValue(
-                result.getResponse().getContentAsString(),
+                result.getResponse().getContentAsString(StandardCharsets.UTF_8),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, CustomerResponse.class)
         );
         assertThat(customers).isNotEmpty();
@@ -75,6 +83,7 @@ class CustomerControllerIntegrationTest {
         // when
         mockMvc.perform(post("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.name())
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.customerCode").value("CUST999"))
@@ -94,6 +103,7 @@ class CustomerControllerIntegrationTest {
         // when
         mockMvc.perform(put("/api/customers/{id}", existing.getId())
                 .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.name())
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.customerCode").value("CUST001"))
@@ -119,7 +129,7 @@ class CustomerControllerIntegrationTest {
     @WithMockUser(roles = "USER")
     void whenSearchCustomers_thenReturnFilteredCustomers() throws Exception {
         // when
-        mockMvc.perform(get("/api/customers/search")
+        mockMvc.perform(get("/api/customers/search/page")
                 .param("keyword", "テスト")
                 .param("page", "0")
                 .param("size", "10")
@@ -149,6 +159,7 @@ class CustomerControllerIntegrationTest {
         // when
         mockMvc.perform(post("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.name())
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden());
     }
@@ -165,6 +176,7 @@ class CustomerControllerIntegrationTest {
         // when
         mockMvc.perform(post("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.name())
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors").exists());
@@ -182,6 +194,7 @@ class CustomerControllerIntegrationTest {
         // when
         mockMvc.perform(post("/api/customers")
                 .contentType(MediaType.APPLICATION_JSON)
+                .characterEncoding(StandardCharsets.UTF_8.name())
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(containsString("は既に使用されています")));

@@ -29,6 +29,9 @@ class CustomerRepositoryTest {
         customer.setName("Test Customer");
         customer.setStatus(Status.ACTIVE);
         customer.setCreatedAt(LocalDateTime.now());
+        customer.setUpdatedAt(LocalDateTime.now());
+        customer.setCreatedBy("system");
+        customer.setUpdatedBy("system");
         entityManager.persist(customer);
         entityManager.flush();
 
@@ -58,6 +61,9 @@ class CustomerRepositoryTest {
         customer.setName("New Customer");
         customer.setStatus(Status.ACTIVE);
         customer.setCreatedAt(LocalDateTime.now());
+        customer.setUpdatedAt(LocalDateTime.now());
+        customer.setCreatedBy("system");
+        customer.setUpdatedBy("system");
 
         // when
         Customer saved = customerRepository.save(customer);

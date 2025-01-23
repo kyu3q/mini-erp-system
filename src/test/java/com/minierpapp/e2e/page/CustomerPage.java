@@ -1,15 +1,27 @@
 package com.minierpapp.e2e.page;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 得意先マスタ画面のページオブジェクト
@@ -67,6 +79,18 @@ public class CustomerPage {
 
     @FindBy(className = "alert-danger")
     private WebElement errorMessage;
+
+    @FindBy(id = "exportExcelButton")
+    private WebElement exportExcelButton;
+
+    @FindBy(id = "importExcelButton")
+    private WebElement importExcelButton;
+
+    @FindBy(id = "downloadTemplateButton")
+    private WebElement downloadTemplateButton;
+
+    @FindBy(id = "fileInput")
+    private WebElement fileInput;
 
     public CustomerPage(WebDriver driver) {
         this.driver = driver;
@@ -242,5 +266,100 @@ public class CustomerPage {
         public void setPhone(String phone) { this.phone = phone; }
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
+    }
+
+    /**
+     * Excel出力を実行
+     * @return ダウンロードされたファイルのパス
+     */
+    public String exportExcel() {
+        String downloadDir = System.getProperty("java.io.tmpdir");
+        String downloadPath = downloadDir + "/customers.xlsx";
+
+        // ダウンロードディレクトリの設定
+        ChromeOptions options = new ChromeOptions();
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("download.default_directory", downloadDir);
+        options.setExperimentalOption("prefs", prefs);
+
+        exportExcelButton.click();
+
+        // ダウンロード完了を待機
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(driver -> {
+            File file = new File(downloadPath);
+            return file.exists() && file.length() > 0;
+        });
+
+        return downloadPath;
+    }
+
+    /**
+     * 取込テンプレートをダウンロード
+     * @return ダウンロードされたファイルのパス
+     */
+    public String downloadTemplate() {
+        String downloadDir = System.getProperty("java.io.tmpdir");
+        String downloadPath = downloadDir + "/customer_template.xlsx";
+
+        // ダウンロードディレクトリの設定
+        ChromeOptions options = new ChromeOptions();
+        Map<String, Object> prefs = new HashMap<>();
+        prefs.put("download.default_directory", downloadDir);
+        options.setExperimentalOption("prefs", prefs);
+
+        downloadTemplateButton.click();
+
+        // ダウンロード完了を待機
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(driver -> {
+            File file = new File(downloadPath);
+            return file.exists() && file.length() > 0;
+        });
+
+        return downloadPath;
+    }
+
+    /**
+     * Excelファイルを取り込む
+     * @param filePath 取り込むファイルのパス
+     */
+    public void importExcel(String filePath) {
+        fileInput.sendKeys(filePath);
+        importExcelButton.click();
+        wait.until(ExpectedConditions.or(
+            ExpectedConditions.visibilityOf(successMessage),
+            ExpectedConditions.visibilityOf(errorMessage)
+        ));
+    }
+
+    /**
+     * Excelファイルの内容を検証
+     * @param filePath 検証するファイルのパス
+     * @return 検証結果のマップ（行番号 -> 顧客情報）
+     */
+    public Map<Integer, List<String>> verifyExcelContent(String filePath) throws IOException {
+        Map<Integer, List<String>> content = new HashMap<>();
+        
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // ヘッダーをスキップ
+                
+                List<String> rowData = new ArrayList<>();
+                for (Cell cell : row) {
+                    rowData.add(switch (cell.getCellType()) {
+                        case STRING -> cell.getStringCellValue();
+                        case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
+                        default -> "";
+                    });
+                }
+                content.put(row.getRowNum(), rowData);
+            }
+        }
+        
+        return content;
     }
 }

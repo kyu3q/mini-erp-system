@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,7 +65,7 @@ class CustomerRepositoryIntegrationTest {
 
         // then
         assertThat(customers).hasSize(3);
-        assertThat(customers).extracting(Customer::getDeleted)
+        assertThat(customers).extracting(Customer::isDeleted)
                 .containsOnly(false);
     }
 
@@ -75,6 +76,10 @@ class CustomerRepositoryIntegrationTest {
         newCustomer.setCustomerCode("CUST004");
         newCustomer.setName("テスト株式会社4");
         newCustomer.setStatus(Status.ACTIVE);
+        newCustomer.setCreatedAt(LocalDateTime.now());
+        newCustomer.setUpdatedAt(LocalDateTime.now());
+        newCustomer.setCreatedBy("system");
+        newCustomer.setUpdatedBy("system");
 
         // when
         Customer saved = customerRepository.save(newCustomer);
