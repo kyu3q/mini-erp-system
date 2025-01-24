@@ -2,7 +2,7 @@ package com.minierpapp.controller;
 
 import com.minierpapp.controller.base.BaseWebController;
 import com.minierpapp.model.customer.Customer;
-import com.minierpapp.model.customer.CustomerStatus;
+import com.minierpapp.model.common.Status;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
@@ -298,7 +298,7 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
                     String status = getStringCellValue(row.getCell(10));
                     if (status != null && !status.isEmpty()) {
                         try {
-                            customer.setStatus(CustomerStatus.valueOf(status.toUpperCase()));
+                            customer.setStatus(Status.valueOf(status.toUpperCase()));
                         } catch (IllegalArgumentException e) {
                             throw new IllegalArgumentException("無効なステータス値です: " + status + " (行: " + (i + 1) + ")");
                         }

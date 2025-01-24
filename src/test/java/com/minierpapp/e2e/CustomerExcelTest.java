@@ -43,6 +43,8 @@ class CustomerExcelTest {
         options.addArguments("--headless");
         options.addArguments("--width=1920");
         options.addArguments("--height=1080");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
         options.addPreference("network.http.phishy-userpass-length", 255);
         options.addPreference("browser.download.folderList", 2);
         options.addPreference("browser.download.dir", System.getProperty("java.io.tmpdir"));
@@ -51,7 +53,7 @@ class CustomerExcelTest {
         options.addPreference("browser.download.manager.focusWhenStarting", false);
         options.addPreference("browser.download.useDownloadDir", true);
         driver = new FirefoxDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
         driver.manage().window().setSize(new Dimension(1920, 1080));
         customerPage = new CustomerPage(driver);
 
