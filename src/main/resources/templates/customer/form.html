@@ -11,7 +11,7 @@
             <h1 class="mt-4" th:text="${customerId != null ? '得意先編集' : '得意先登録'}">得意先登録</h1>
 
             <form th:action="${customerId != null ? '/customers/' + customerId : '/customers'}"
-                  th:object="${customerRequest}"
+                  th:object="${customer}"
                   method="post"
                   class="needs-validation"
                   novalidate>

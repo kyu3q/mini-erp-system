@@ -271,4 +271,9 @@ public class CustomerService {
             default -> "";
         };
     }
+
+    @Transactional
+    public void deleteAll() {
+        customerRepository.deleteAll();
+    }
 }

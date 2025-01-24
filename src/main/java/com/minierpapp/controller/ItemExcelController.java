@@ -83,7 +83,7 @@ public class ItemExcelController {
         return "redirect:/items";
     }
 
-    @GetMapping("/template")
+    @GetMapping("/import/template")
     public ResponseEntity<byte[]> downloadImportTemplate() throws IOException {
         String filename = "item_import_template.xlsx";
 

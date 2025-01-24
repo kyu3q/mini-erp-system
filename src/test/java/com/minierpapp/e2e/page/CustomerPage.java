@@ -8,7 +8,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -32,19 +31,19 @@ public class CustomerPage {
     private final WebDriverWait wait;
 
     // ページ要素の定義
-    @FindBy(id = "customerListTable")
+    @FindBy(id = "customersTable")
     private WebElement customerTable;
 
-    @FindBy(id = "addCustomerButton")
+    @FindBy(xpath = "//a[contains(@href, '/customers/new')]")
     private WebElement addButton;
 
-    @FindBy(id = "searchCustomerCode")
+    @FindBy(id = "customerCode")
     private WebElement searchCustomerCodeInput;
 
-    @FindBy(id = "searchCustomerName")
+    @FindBy(id = "name")
     private WebElement searchCustomerNameInput;
 
-    @FindBy(id = "searchButton")
+    @FindBy(css = "button[type='submit']")
     private WebElement searchButton;
 
     @FindBy(id = "customerCode")
@@ -68,16 +67,16 @@ public class CustomerPage {
     @FindBy(id = "email")
     private WebElement emailInput;
 
-    @FindBy(id = "saveButton")
+    @FindBy(css = "button[type='submit']")
     private WebElement saveButton;
 
-    @FindBy(id = "cancelButton")
+    @FindBy(css = "button[type='button'][onclick*='clearForm']")
     private WebElement cancelButton;
 
     @FindBy(className = "alert-success")
     private WebElement successMessage;
 
-    @FindBy(className = "alert-danger")
+    @FindBy(className = "invalid-feedback")
     private WebElement errorMessage;
 
     @FindBy(id = "exportExcelButton")
@@ -94,15 +93,17 @@ public class CustomerPage {
 
     public CustomerPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
         PageFactory.initElements(driver, this);
     }
 
     /**
      * 得意先マスタ画面を開く
+     * @param baseUrl ベースURL（例：http://localhost:8080）
      */
-    public void open() {
-        driver.get("/customers");
+    public void open(String baseUrl) {
+        String url = baseUrl.replace("://", "://test:test@") + "/web/customers";
+        driver.get(url);
         wait.until(ExpectedConditions.visibilityOf(customerTable));
     }
 
@@ -154,7 +155,7 @@ public class CustomerPage {
         saveButton.click();
         wait.until(ExpectedConditions.or(
             ExpectedConditions.visibilityOf(successMessage),
-            ExpectedConditions.visibilityOf(errorMessage)
+            ExpectedConditions.presenceOfElementLocated(By.className("invalid-feedback"))
         ));
     }
 
@@ -171,7 +172,7 @@ public class CustomerPage {
      */
     public void clickEditButton(String customerCode) {
         WebElement editButton = driver.findElement(
-            By.xpath("//tr[contains(.,'" + customerCode + "')]//button[contains(@class,'edit-button')]")
+            By.xpath("//tr[contains(.,'" + customerCode + "')]//a[contains(@href, '/customers/') and contains(@href, '/edit')]")
         );
         editButton.click();
         wait.until(ExpectedConditions.visibilityOf(customerCodeInput));
@@ -182,7 +183,7 @@ public class CustomerPage {
      */
     public void clickDeleteButton(String customerCode) {
         WebElement deleteButton = driver.findElement(
-            By.xpath("//tr[contains(.,'" + customerCode + "')]//button[contains(@class,'delete-button')]")
+            By.xpath("//tr[contains(.,'" + customerCode + "')]//button[contains(@class,'btn-outline-danger')]")
         );
         deleteButton.click();
         wait.until(ExpectedConditions.alertIsPresent());
@@ -204,14 +205,14 @@ public class CustomerPage {
      * 成功メッセージを取得
      */
     public String getSuccessMessage() {
-        return wait.until(ExpectedConditions.visibilityOf(successMessage)).getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".alert"))).getText();
     }
 
     /**
      * エラーメッセージを取得
      */
     public String getErrorMessage() {
-        return wait.until(ExpectedConditions.visibilityOf(errorMessage)).getText();
+        return wait.until(ExpectedConditions.presenceOfElementLocated(By.className("invalid-feedback"))).getText();
     }
 
     /**
@@ -276,19 +277,19 @@ public class CustomerPage {
         String downloadDir = System.getProperty("java.io.tmpdir");
         String downloadPath = downloadDir + "/customers.xlsx";
 
-        // ダウンロードディレクトリの設定
-        ChromeOptions options = new ChromeOptions();
-        Map<String, Object> prefs = new HashMap<>();
-        prefs.put("download.default_directory", downloadDir);
-        options.setExperimentalOption("prefs", prefs);
+        // 既存のファイルを削除
+        File file = new File(downloadPath);
+        if (file.exists()) {
+            file.delete();
+        }
 
         exportExcelButton.click();
 
         // ダウンロード完了を待機
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         wait.until(driver -> {
-            File file = new File(downloadPath);
-            return file.exists() && file.length() > 0;
+            File downloadedFile = new File(downloadPath);
+            return downloadedFile.exists() && downloadedFile.length() > 0;
         });
 
         return downloadPath;
@@ -302,19 +303,19 @@ public class CustomerPage {
         String downloadDir = System.getProperty("java.io.tmpdir");
         String downloadPath = downloadDir + "/customer_template.xlsx";
 
-        // ダウンロードディレクトリの設定
-        ChromeOptions options = new ChromeOptions();
-        Map<String, Object> prefs = new HashMap<>();
-        prefs.put("download.default_directory", downloadDir);
-        options.setExperimentalOption("prefs", prefs);
+        // 既存のファイルを削除
+        File file = new File(downloadPath);
+        if (file.exists()) {
+            file.delete();
+        }
 
         downloadTemplateButton.click();
 
         // ダウンロード完了を待機
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         wait.until(driver -> {
-            File file = new File(downloadPath);
-            return file.exists() && file.length() > 0;
+            File downloadedFile = new File(downloadPath);
+            return downloadedFile.exists() && downloadedFile.length() > 0;
         });
 
         return downloadPath;
@@ -349,8 +350,9 @@ public class CustomerPage {
                 if (row.getRowNum() == 0) continue; // ヘッダーをスキップ
                 
                 List<String> rowData = new ArrayList<>();
-                for (Cell cell : row) {
-                    rowData.add(switch (cell.getCellType()) {
+                for (int i = 0; i < 9; i++) {  // 9列固定
+                    Cell cell = row.getCell(i);
+                    rowData.add(cell == null ? "" : switch (cell.getCellType()) {
                         case STRING -> cell.getStringCellValue();
                         case NUMERIC -> String.valueOf((int) cell.getNumericCellValue());
                         default -> "";

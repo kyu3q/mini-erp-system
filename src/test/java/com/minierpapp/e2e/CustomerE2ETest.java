@@ -1,14 +1,23 @@
 package com.minierpapp.e2e;
 
+import com.minierpapp.e2e.page.CustomerPage;
 import com.minierpapp.model.common.Status;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.repository.CustomerRepository;
 import com.minierpapp.service.CustomerService;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,21 +25,147 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 class CustomerE2ETest {
+
+    @LocalServerPort
+    private int port;
 
     @Autowired
     private CustomerService customerService;
 
     @Autowired
     private CustomerRepository customerRepository;
+
+    private WebDriver driver;
+    private CustomerPage customerPage;
+
+    @BeforeEach
+    void setUp() {
+        WebDriverManager.firefoxdriver().setup();
+        FirefoxOptions options = new FirefoxOptions();
+        options.addArguments("--headless");
+        options.addArguments("--width=1920");
+        options.addArguments("--height=1080");
+        options.addPreference("network.http.phishy-userpass-length", 255);
+        driver = new FirefoxDriver(options);
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.manage().window().setSize(new Dimension(1920, 1080));
+        customerPage = new CustomerPage(driver);
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = "ADMIN")
+    void testCustomerUIOperations() {
+        // 1. 得意先の新規作成
+        customerPage.open("http://localhost:" + port);
+        customerPage.clickAddButton();
+        customerPage.inputCustomerInfo(
+            "UI001",
+            "UIテスト株式会社",
+            "ユーアイテストカブシキガイシャ",
+            "100-0001",
+            "東京都千代田区1-1-1",
+            "03-1234-5678",
+            "ui-test@example.com"
+        );
+        customerPage.clickSaveButton();
+        assertThat(customerPage.getSuccessMessage()).contains("保存しました");
+        assertThat(customerPage.isCustomerDisplayed("UI001")).isTrue();
+
+        // 2. 得意先の検索
+        customerPage.searchCustomer("UI001", "");
+        assertThat(customerPage.getCustomerCodes()).contains("UI001");
+
+        // 3. 得意先の編集
+        customerPage.clickEditButton("UI001");
+        customerPage.inputCustomerInfo(
+            "UI001",
+            "UIテスト株式会社（更新）",
+            "ユーアイテストカブシキガイシャ",
+            "100-0001",
+            "東京都千代田区1-1-1",
+            "03-1234-5678",
+            "ui-test@example.com"
+        );
+        customerPage.clickSaveButton();
+        assertThat(customerPage.getSuccessMessage()).contains("保存しました");
+
+        CustomerPage.CustomerInfo info = customerPage.getCustomerInfo("UI001");
+        assertThat(info.getName()).isEqualTo("UIテスト株式会社（更新）");
+
+        // 4. 得意先の削除
+        customerPage.clickDeleteButton("UI001");
+        assertThat(customerPage.getSuccessMessage()).contains("削除しました");
+        assertThat(customerPage.isCustomerDisplayed("UI001")).isFalse();
+    }
+
+    @Test
+    @WithMockUser(username = "test", roles = "ADMIN")
+    void testCustomerUIValidation() {
+        customerPage.open("http://localhost:" + port);
+        customerPage.clickAddButton();
+
+        // 1. 必須項目が未入力の場合
+        customerPage.inputCustomerInfo(
+            "",  // 得意先コードが空
+            "",  // 得意先名が空
+            "",
+            "",
+            "",
+            "",
+            ""
+        );
+        customerPage.clickSaveButton();
+        assertThat(customerPage.getErrorMessage()).contains("得意先コードは必須です");
+
+        // 2. 重複する得意先コードの場合
+        // まず1件目を登録
+        customerPage.inputCustomerInfo(
+            "UI002",
+            "UIテスト株式会社2",
+            "ユーアイテストカブシキガイシャ2",
+            "100-0002",
+            "東京都千代田区2-2-2",
+            "03-2345-6789",
+            "ui-test2@example.com"
+        );
+        customerPage.clickSaveButton();
+        assertThat(customerPage.getSuccessMessage()).contains("保存しました");
+
+        // 同じ得意先コードで2件目を登録
+        customerPage.clickAddButton();
+        customerPage.inputCustomerInfo(
+            "UI002",  // 重複する得意先コード
+            "UIテスト株式会社3",
+            "ユーアイテストカブシキガイシャ3",
+            "100-0003",
+            "東京都千代田区3-3-3",
+            "03-3456-7890",
+            "ui-test3@example.com"
+        );
+        customerPage.clickSaveButton();
+        assertThat(customerPage.getErrorMessage()).contains("既に使用されています");
+
+        // クリーンアップ
+        customerPage.clickCancelButton();
+        customerPage.clickDeleteButton("UI002");
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")

@@ -20,13 +20,13 @@
                         <a th:href="@{/customers/new}" class="btn btn-outline-primary">
                             <i class="fas fa-plus"></i> 新規作成
                         </a>
-                        <a th:href="@{/customers/export}" class="btn btn-outline-success">
+                        <a th:href="@{/customers/export}" id="exportExcelButton" class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excel出力
                         </a>
-                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                        <button type="button" id="importExcelButton" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
                             <i class="fas fa-file-import"></i> 取込
                         </button>
-                        <a th:href="@{/customers/import/template}" class="btn btn-outline-secondary">
+                        <a th:href="@{/customers/import/template}" id="downloadTemplateButton" class="btn btn-outline-secondary">
                             <i class="fas fa-download"></i> 取込テンプレート
                         </a>
                     </div>
@@ -80,7 +80,7 @@
                 <input type="file" id="fileInput" name="file" accept=".xlsx">
             </form>
 
-            <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <div th:if="${message}" th:class="${'alert alert-' + (messageType ?: 'success')} + ' alert-dismissible fade show'" role="alert">
                 <span th:text="${message}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>

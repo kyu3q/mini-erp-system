@@ -108,8 +108,9 @@ public abstract class BaseWebController<E, D, Q, S> {
         return "redirect:/" + baseTemplate;
     }
 
-    protected void addSuccessMessage(RedirectAttributes redirectAttributes, String messageKey, Object... args) {
-        String message = messageSource.getMessage(messageKey, args, LocaleContextHolder.getLocale());
+    protected void addSuccessMessage(RedirectAttributes redirectAttributes, String messageKey) {
+        String entityDisplayName = messageSource.getMessage(entityName + ".name", null, LocaleContextHolder.getLocale());
+        String message = messageSource.getMessage(messageKey, new Object[]{entityDisplayName}, LocaleContextHolder.getLocale());
         redirectAttributes.addFlashAttribute("message", message);
         redirectAttributes.addFlashAttribute("messageType", "success");
     }
@@ -142,15 +143,15 @@ public abstract class BaseWebController<E, D, Q, S> {
     }
 
     protected String getCreateSuccessMessage() {
-        return entityName + ".created";
+        return "common.created";
     }
 
     protected String getUpdateSuccessMessage() {
-        return entityName + ".updated";
+        return "common.updated";
     }
 
     protected String getDeleteSuccessMessage() {
-        return entityName + ".deleted";
+        return "common.deleted";
     }
 
     protected abstract List<S> findAll();
