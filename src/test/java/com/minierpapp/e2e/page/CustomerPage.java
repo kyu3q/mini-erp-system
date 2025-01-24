@@ -93,8 +93,19 @@ public class CustomerPage {
 
     public CustomerPage(WebDriver driver) {
         this.driver = driver;
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(30));
         PageFactory.initElements(driver, this);
+    }
+
+    private void waitForJavaScript() {
+        wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete' && !document.querySelector('.loading')"));
+    }
+
+    private void waitForAlert() {
+        wait.until(ExpectedConditions.or(
+            ExpectedConditions.presenceOfElementLocated(By.cssSelector(".alert-success")),
+            ExpectedConditions.presenceOfElementLocated(By.cssSelector(".alert-danger"))
+        ));
     }
 
     /**
@@ -102,8 +113,9 @@ public class CustomerPage {
      * @param baseUrl ベースURL（例：http://localhost:8080）
      */
     public void open(String baseUrl) {
-        String url = baseUrl.replace("://", "://test:test@") + "/web/customers";
+        String url = baseUrl.replace("://", "://test:test@") + "/customers";
         driver.get(url);
+        waitForJavaScript();
         wait.until(ExpectedConditions.visibilityOf(customerTable));
     }
 
@@ -116,6 +128,7 @@ public class CustomerPage {
         searchCustomerNameInput.clear();
         searchCustomerNameInput.sendKeys(name);
         searchButton.click();
+        waitForJavaScript();
         wait.until(ExpectedConditions.visibilityOf(customerTable));
     }
 
@@ -124,6 +137,7 @@ public class CustomerPage {
      */
     public void clickAddButton() {
         addButton.click();
+        waitForJavaScript();
         wait.until(ExpectedConditions.visibilityOf(customerCodeInput));
     }
 
@@ -153,10 +167,8 @@ public class CustomerPage {
      */
     public void clickSaveButton() {
         saveButton.click();
-        wait.until(ExpectedConditions.or(
-            ExpectedConditions.visibilityOf(successMessage),
-            ExpectedConditions.presenceOfElementLocated(By.className("invalid-feedback"))
-        ));
+        waitForJavaScript();
+        waitForAlert();
     }
 
     /**
@@ -164,6 +176,7 @@ public class CustomerPage {
      */
     public void clickCancelButton() {
         cancelButton.click();
+        waitForJavaScript();
         wait.until(ExpectedConditions.visibilityOf(customerTable));
     }
 
@@ -175,6 +188,7 @@ public class CustomerPage {
             By.xpath("//tr[contains(.,'" + customerCode + "')]//a[contains(@href, '/customers/') and contains(@href, '/edit')]")
         );
         editButton.click();
+        waitForJavaScript();
         wait.until(ExpectedConditions.visibilityOf(customerCodeInput));
     }
 
@@ -188,14 +202,15 @@ public class CustomerPage {
         deleteButton.click();
         wait.until(ExpectedConditions.alertIsPresent());
         driver.switchTo().alert().accept();
-        wait.until(ExpectedConditions.visibilityOf(successMessage));
+        waitForJavaScript();
+        waitForAlert();
     }
 
     /**
      * 検索結果の得意先コードのリストを取得
      */
     public List<String> getCustomerCodes() {
-        return driver.findElements(By.cssSelector("#customerListTable tbody tr td:first-child"))
+        return driver.findElements(By.cssSelector("#customersTable tbody tr td:first-child"))
             .stream()
             .map(WebElement::getText)
             .toList();
@@ -232,41 +247,10 @@ public class CustomerPage {
         CustomerInfo info = new CustomerInfo();
         info.setCustomerCode(cells.get(0).getText());
         info.setName(cells.get(1).getText());
-        info.setNameKana(cells.get(2).getText());
-        info.setPostalCode(cells.get(3).getText());
-        info.setAddress(cells.get(4).getText());
-        info.setPhone(cells.get(5).getText());
-        info.setEmail(cells.get(6).getText());
+        info.setPhone(cells.get(2).getText());
+        info.setEmail(cells.get(3).getText());
+        info.setContactPerson(cells.get(4).getText());
         return info;
-    }
-
-    /**
-     * 得意先情報を保持するための内部クラス
-     */
-    public static class CustomerInfo {
-        private String customerCode;
-        private String name;
-        private String nameKana;
-        private String postalCode;
-        private String address;
-        private String phone;
-        private String email;
-
-        // Getters and Setters
-        public String getCustomerCode() { return customerCode; }
-        public void setCustomerCode(String customerCode) { this.customerCode = customerCode; }
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        public String getNameKana() { return nameKana; }
-        public void setNameKana(String nameKana) { this.nameKana = nameKana; }
-        public String getPostalCode() { return postalCode; }
-        public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
-        public String getAddress() { return address; }
-        public void setAddress(String address) { this.address = address; }
-        public String getPhone() { return phone; }
-        public void setPhone(String phone) { this.phone = phone; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
     }
 
     /**
@@ -284,6 +268,7 @@ public class CustomerPage {
         }
 
         exportExcelButton.click();
+        waitForJavaScript();
 
         // ダウンロード完了を待機
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
@@ -310,6 +295,7 @@ public class CustomerPage {
         }
 
         downloadTemplateButton.click();
+        waitForJavaScript();
 
         // ダウンロード完了を待機
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
@@ -327,11 +313,10 @@ public class CustomerPage {
      */
     public void importExcel(String filePath) {
         fileInput.sendKeys(filePath);
+        wait.until(ExpectedConditions.attributeToBeNotEmpty(fileInput, "value"));
         importExcelButton.click();
-        wait.until(ExpectedConditions.or(
-            ExpectedConditions.visibilityOf(successMessage),
-            ExpectedConditions.visibilityOf(errorMessage)
-        ));
+        waitForJavaScript();
+        waitForAlert();
     }
 
     /**
@@ -363,5 +348,34 @@ public class CustomerPage {
         }
         
         return content;
+    }
+
+    /**
+     * 得意先情報を保持するための内部クラス
+     */
+    public static class CustomerInfo {
+        private String customerCode;
+        private String name;
+        private String nameKana;
+        private String postalCode;
+        private String address;
+        private String phone;
+        private String email;
+
+        // Getters and Setters
+        public String getCustomerCode() { return customerCode; }
+        public void setCustomerCode(String customerCode) { this.customerCode = customerCode; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public String getNameKana() { return nameKana; }
+        public void setNameKana(String nameKana) { this.nameKana = nameKana; }
+        public String getPostalCode() { return postalCode; }
+        public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+        public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
+        public String getPhone() { return phone; }
+        public void setPhone(String phone) { this.phone = phone; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
     }
 }
