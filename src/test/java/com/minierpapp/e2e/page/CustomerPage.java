@@ -99,6 +99,11 @@ public class CustomerPage {
 
     private void waitForJavaScript() {
         wait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete' && !document.querySelector('.loading')"));
+        try {
+            Thread.sleep(1000); // JavaScriptの実行完了を待機
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     private void waitForAlert() {
@@ -106,6 +111,29 @@ public class CustomerPage {
             ExpectedConditions.presenceOfElementLocated(By.cssSelector(".alert-success")),
             ExpectedConditions.presenceOfElementLocated(By.cssSelector(".alert-danger"))
         ));
+        try {
+            Thread.sleep(1000); // アラートの表示を待機
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void waitForElement(WebElement element) {
+        wait.until(ExpectedConditions.visibilityOf(element));
+        try {
+            Thread.sleep(1000); // 要素の表示を待機
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private void waitForElementToBeClickable(WebElement element) {
+        wait.until(ExpectedConditions.elementToBeClickable(element));
+        try {
+            Thread.sleep(1000); // 要素がクリック可能になるのを待機
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**
@@ -116,7 +144,7 @@ public class CustomerPage {
         String url = baseUrl.replace("://", "://test:test@") + "/customers";
         driver.get(url);
         waitForJavaScript();
-        wait.until(ExpectedConditions.visibilityOf(customerTable));
+        waitForElement(customerTable);
     }
 
     /**
@@ -127,18 +155,20 @@ public class CustomerPage {
         searchCustomerCodeInput.sendKeys(code);
         searchCustomerNameInput.clear();
         searchCustomerNameInput.sendKeys(name);
+        waitForElementToBeClickable(searchButton);
         searchButton.click();
         waitForJavaScript();
-        wait.until(ExpectedConditions.visibilityOf(customerTable));
+        waitForElement(customerTable);
     }
 
     /**
      * 新規登録ボタンをクリック
      */
     public void clickAddButton() {
+        waitForElementToBeClickable(addButton);
         addButton.click();
         waitForJavaScript();
-        wait.until(ExpectedConditions.visibilityOf(customerCodeInput));
+        waitForElement(customerCodeInput);
     }
 
     /**
@@ -166,6 +196,7 @@ public class CustomerPage {
      * 保存ボタンをクリック
      */
     public void clickSaveButton() {
+        waitForElementToBeClickable(saveButton);
         saveButton.click();
         waitForJavaScript();
         waitForAlert();
@@ -175,9 +206,10 @@ public class CustomerPage {
      * キャンセルボタンをクリック
      */
     public void clickCancelButton() {
+        waitForElementToBeClickable(cancelButton);
         cancelButton.click();
         waitForJavaScript();
-        wait.until(ExpectedConditions.visibilityOf(customerTable));
+        waitForElement(customerTable);
     }
 
     /**
@@ -187,9 +219,10 @@ public class CustomerPage {
         WebElement editButton = driver.findElement(
             By.xpath("//tr[contains(.,'" + customerCode + "')]//a[contains(@href, '/customers/') and contains(@href, '/edit')]")
         );
+        waitForElementToBeClickable(editButton);
         editButton.click();
         waitForJavaScript();
-        wait.until(ExpectedConditions.visibilityOf(customerCodeInput));
+        waitForElement(customerCodeInput);
     }
 
     /**
@@ -199,6 +232,7 @@ public class CustomerPage {
         WebElement deleteButton = driver.findElement(
             By.xpath("//tr[contains(.,'" + customerCode + "')]//button[contains(@class,'btn-outline-danger')]")
         );
+        waitForElementToBeClickable(deleteButton);
         deleteButton.click();
         wait.until(ExpectedConditions.alertIsPresent());
         driver.switchTo().alert().accept();
@@ -267,6 +301,7 @@ public class CustomerPage {
             file.delete();
         }
 
+        waitForElementToBeClickable(exportExcelButton);
         exportExcelButton.click();
         waitForJavaScript();
 
@@ -294,6 +329,7 @@ public class CustomerPage {
             file.delete();
         }
 
+        waitForElementToBeClickable(downloadTemplateButton);
         downloadTemplateButton.click();
         waitForJavaScript();
 
@@ -314,6 +350,7 @@ public class CustomerPage {
     public void importExcel(String filePath) {
         fileInput.sendKeys(filePath);
         wait.until(ExpectedConditions.attributeToBeNotEmpty(fileInput, "value"));
+        waitForElementToBeClickable(importExcelButton);
         importExcelButton.click();
         waitForJavaScript();
         waitForAlert();
@@ -361,6 +398,7 @@ public class CustomerPage {
         private String address;
         private String phone;
         private String email;
+        private String contactPerson;
 
         // Getters and Setters
         public String getCustomerCode() { return customerCode; }
@@ -377,5 +415,7 @@ public class CustomerPage {
         public void setPhone(String phone) { this.phone = phone; }
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
+        public String getContactPerson() { return contactPerson; }
+        public void setContactPerson(String contactPerson) { this.contactPerson = contactPerson; }
     }
 }
