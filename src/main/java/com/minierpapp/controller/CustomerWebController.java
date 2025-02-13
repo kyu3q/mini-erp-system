@@ -2,7 +2,6 @@ package com.minierpapp.controller;
 
 import com.minierpapp.controller.base.BaseWebController;
 import com.minierpapp.model.customer.Customer;
-import com.minierpapp.model.common.Status;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
@@ -12,18 +11,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -269,93 +265,6 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
             sheet.addMergedRegion(new CellRangeAddress(3, 3, 0, headers.length - 1));
 
             workbook.write(response.getOutputStream());
-        }
-    }
-
-    @PostMapping("/import")
-    public String importExcel(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
-        try {
-            List<CustomerRequest> customers = new ArrayList<>();
-            try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
-                Sheet sheet = workbook.getSheetAt(0);
-
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
-                    Row row = sheet.getRow(i);
-                    if (row == null || isEmptyRow(row)) continue;
-
-                    CustomerRequest customer = new CustomerRequest();
-                    customer.setCustomerCode(getStringCellValue(row.getCell(0)));
-                    customer.setName(getStringCellValue(row.getCell(1)));
-                    customer.setNameKana(getStringCellValue(row.getCell(2)));
-                    customer.setPostalCode(getStringCellValue(row.getCell(3)));
-                    customer.setAddress(getStringCellValue(row.getCell(4)));
-                    customer.setPhone(getStringCellValue(row.getCell(5)));
-                    customer.setFax(getStringCellValue(row.getCell(6)));
-                    customer.setEmail(getStringCellValue(row.getCell(7)));
-                    customer.setContactPerson(getStringCellValue(row.getCell(8)));
-                    customer.setPaymentTerms(getStringCellValue(row.getCell(9)));
-                    
-                    String status = getStringCellValue(row.getCell(10));
-                    if (status != null && !status.isEmpty()) {
-                        try {
-                            customer.setStatus(Status.valueOf(status.toUpperCase()));
-                        } catch (IllegalArgumentException e) {
-                            throw new IllegalArgumentException("無効なステータス値です: " + status + " (行: " + (i + 1) + ")");
-                        }
-                    }
-                    
-                    customer.setNotes(getStringCellValue(row.getCell(11)));
-
-                    // 必須項目のバリデーション
-                    if (customer.getCustomerCode() == null || customer.getCustomerCode().isEmpty()) {
-                        throw new IllegalArgumentException("得意先コードは必須です (行: " + (i + 1) + ")");
-                    }
-                    if (customer.getName() == null || customer.getName().isEmpty()) {
-                        throw new IllegalArgumentException("得意先名は必須です (行: " + (i + 1) + ")");
-                    }
-                    if (customer.getStatus() == null) {
-                        throw new IllegalArgumentException("ステータスは必須です (行: " + (i + 1) + ")");
-                    }
-
-                    customers.add(customer);
-                }
-            }
-
-            customerService.bulkCreate(customers);
-            redirectAttributes.addFlashAttribute("message", "取り込みが完了しました");
-            redirectAttributes.addFlashAttribute("messageType", "success");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "取り込みに失敗しました: " + e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "danger");
-        }
-
-        return "redirect:/customers";
-    }
-
-    private boolean isEmptyRow(Row row) {
-        if (row == null) return true;
-        for (int i = 0; i < 12; i++) {
-            if (getStringCellValue(row.getCell(i)) != null && !getStringCellValue(row.getCell(i)).isEmpty()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private String getStringCellValue(Cell cell) {
-        if (cell == null) return "";
-        switch (cell.getCellType()) {
-            case STRING:
-                return cell.getStringCellValue();
-            case NUMERIC:
-                if (DateUtil.isCellDateFormatted(cell)) {
-                    return cell.getLocalDateTimeCellValue().toString();
-                }
-                return String.valueOf((int) cell.getNumericCellValue());
-            case BOOLEAN:
-                return String.valueOf(cell.getBooleanCellValue());
-            default:
-                return "";
         }
     }
 }

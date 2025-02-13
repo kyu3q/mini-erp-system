@@ -23,8 +23,8 @@
                         <a th:href="@{/customers/export}" id="exportExcelButton" class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excel出力
                         </a>
-                        <button type="button" id="importExcelButton" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
-                            <i class="fas fa-file-import"></i> 取込
+                        <button type="button" id="importExcelButton" class="btn btn-outline-primary">
+                            <i class="fas fa-file-import"></i> Excel取込
                         </button>
                         <a th:href="@{/customers/import/template}" id="downloadTemplateButton" class="btn btn-outline-secondary">
                             <i class="fas fa-download"></i> 取込テンプレート
@@ -79,7 +79,7 @@
             <form id="importForm" th:action="@{/customers/import}" method="post" enctype="multipart/form-data" style="display: none;">
                 <input type="file" id="fileInput" name="file" accept=".xlsx">
             </form>
-
+            
             <div th:if="${message}" th:class="${'alert alert-' + (messageType ?: 'success')} + ' alert-dismissible fade show'" role="alert">
                 <span th:text="${message}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -147,16 +147,84 @@
         </div>
     </div>
 
-    <script th:inline="javascript">
-        $(document).ready(function() {
-            $('#customersTable').DataTable({
-                language: {
-                    url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Japanese.json"
-                },
-                order: [[0, 'asc']],
-                pageLength: 25
+    <th:block layout:fragment="scripts">
+        <script th:inline="javascript">
+            $(document).ready(function() {
+                // CSRFトークンの取得
+                const token = $("meta[name='_csrf']").attr("content");
+                const header = $("meta[name='_csrf_header']").attr("content");
+
+                // Excel取込ボタンのクリックイベント
+                $('#importExcelButton').on('click', function() {
+                    $('#fileInput').click();
+                });
+
+                // ファイル選択のイベントリスナー
+                $('#fileInput').on('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    // ファイル形式の検証
+                    if (!file.name.toLowerCase().endsWith('.xlsx')) {
+                        alert('Excelファイル（.xlsx）を選択してください。');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    // CSRFヘッダーの設定
+                    const headers = {};
+                    headers[header] = token;
+
+                    fetch('/api/customers/import', {
+                        method: 'POST',
+                        headers: headers,
+                        body: formData
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error(text || 'サーバーエラーが発生しました');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        let message = `処理結果:\n`;
+                        message += `処理件数: ${result.totalCount}件\n`;
+                        message += `成功件数: ${result.successCount}件\n`;
+                        message += `失敗件数: ${result.errorCount}件\n\n`;
+
+                        if (result.errors && result.errors.length > 0) {
+                            message += `エラー内容:\n`;
+                            result.errors.forEach(error => {
+                                message += `${error.rowNum}行目: ${error.message}\n`;
+                            });
+                        }
+
+                        alert(message);
+                        if (result.successCount > 0) {
+                            location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('エラーが発生しました：' + error.message);
+                    })
+                    .finally(() => {
+                        e.target.value = ''; // ファイル選択をリセット
+                    });
+                });
+
+                // フォームクリア機能
+                window.clearForm = function(form) {
+                    form.reset();
+                    form.submit();
+                };
             });
-        });
-    </script>
+        </script>
+    </th:block>
+
 </body>
 </html>
