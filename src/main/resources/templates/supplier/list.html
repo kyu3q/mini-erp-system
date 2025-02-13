@@ -20,13 +20,13 @@
                         <a th:href="@{/suppliers/new}" class="btn btn-outline-primary">
                             <i class="fas fa-plus"></i> 新規作成
                         </a>
-                        <a th:href="@{/suppliers/export}" class="btn btn-outline-success">
+                        <a th:href="@{/suppliers/export}" id="exportExcelButton" class="btn btn-outline-success">
                             <i class="fas fa-file-excel"></i> Excel出力
                         </a>
-                        <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                        <button type="button" id="importExcelButton" class="btn btn-outline-primary">
                             <i class="fas fa-file-import"></i> 取込
                         </button>
-                        <a th:href="@{/suppliers/import/template}" class="btn btn-outline-secondary">
+                        <a th:href="@{/suppliers/import/template}" id="downloadTemplateButton" class="btn btn-outline-secondary">
                             <i class="fas fa-download"></i> 取込テンプレート
                         </a>
                     </div>
@@ -158,5 +158,39 @@
                 });
             });
     </script>
+
+    <th:block layout:fragment="scripts">
+        <script th:src="@{/js/excel-import.js}"></script>
+        <script th:inline="javascript">
+            $(document).ready(function() {
+                // Excelインポーターの初期化
+                const importer = new ExcelImporter({
+                    importButtonId: 'importExcelButton',
+                    fileInputId: 'fileInput',
+                    apiEndpoint: '/api/suppliers/import',
+                    onSuccess: (result) => {
+                        let message = `処理結果:\n`;
+                        message += `処理件数: ${result.totalCount}件\n`;
+                        message += `成功件数: ${result.successCount}件\n`;
+                        message += `新規作成: ${result.createCount}件\n`;
+                        message += `更新: ${result.updateCount}件\n`;
+                        message += `失敗件数: ${result.errorCount}件\n\n`;
+
+                        if (result.errors && result.errors.length > 0) {
+                            message += `エラー内容:\n`;
+                            result.errors.forEach(error => {
+                                message += `${error.rowNum}行目: ${error.message}\n`;
+                            });
+                        }
+
+                        alert(message);
+                        if (result.successCount > 0) {
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        </script>
+    </th:block>
 </body>
 </html>

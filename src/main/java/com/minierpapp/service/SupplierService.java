@@ -101,4 +101,8 @@ public class SupplierService {
         return supplierRepository.findBySupplierCodeAndDeletedFalse(supplierCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "supplierCode", supplierCode));
     }
+
+    public void bulkCreate(List<SupplierRequest> suppliers) {
+        suppliers.forEach(this::create);
+    }
 }
