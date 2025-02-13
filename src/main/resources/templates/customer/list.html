@@ -147,58 +147,20 @@
         </div>
     </div>
 
+    <th:block layout:fragment="styles">
+        <script th:src="@{/js/excel-import.js}"></script>
+    </th:block>
+
     <th:block layout:fragment="scripts">
         <script th:inline="javascript">
             $(document).ready(function() {
-                // CSRFトークンの取得
-                const token = $("meta[name='_csrf']").attr("content");
-                const header = $("meta[name='_csrf_header']").attr("content");
-
-                // Excel取込ボタンのクリックイベント
-                $('#importExcelButton').on('click', function() {
-                    $('#fileInput').click();
-                });
-
-                // ファイル選択のイベントリスナー
-                $('#fileInput').on('change', function(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    // ファイル形式の検証
-                    if (!file.name.toLowerCase().endsWith('.xlsx')) {
-                        alert('Excelファイル（.xlsx）を選択してください。');
-                        return;
-                    }
-
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    // CSRFトークンをFormDataに追加
-                    formData.append('_csrf', token);
-
-                    fetch('/api/customers/import', {
-                        method: 'POST',
-                        headers: {
-                            [header]: token,
-                            // Content-Typeヘッダーは自動的に設定されるため削除
-                        },
-                        credentials: 'same-origin', // CSRFトークンのために追加
-                        body: formData
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.text().then(text => {
-                                try {
-                                    const error = JSON.parse(text);
-                                    throw new Error(error.message || 'サーバーエラーが発生しました');
-                                } catch (e) {
-                                    throw new Error(text || 'サーバーエラーが発生しました');
-                                }
-                            });
-                        }
-                        return response.json();
-                    })
-                    .then(result => {
+                // Excelインポーターの初期化
+                const importer = new ExcelImporter({
+                    importButtonId: 'importExcelButton',
+                    fileInputId: 'fileInput',
+                    apiEndpoint: '/api/customers/import',
+                    onSuccess: (result) => {
+                        // カスタムの成功処理を追加できます
                         let message = `処理結果:\n`;
                         message += `処理件数: ${result.totalCount}件\n`;
                         message += `成功件数: ${result.successCount}件\n`;
@@ -217,14 +179,12 @@
                         if (result.successCount > 0) {
                             location.reload();
                         }
-                    })
-                    .catch(error => {
+                    },
+                    onError: (error) => {
+                        // カスタムのエラー処理を追加できます
                         console.error('Error:', error);
                         alert('エラーが発生しました：' + error.message);
-                    })
-                    .finally(() => {
-                        e.target.value = ''; // ファイル選択をリセット
-                    });
+                    }
                 });
 
                 // フォームクリア機能
