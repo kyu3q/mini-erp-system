@@ -9,6 +9,8 @@ import lombok.Data;
 
 @Data
 public class CustomerRequest {
+    private Long id;
+
     @NotBlank(message = "得意先コードは必須です")
     @Size(max = 50, message = "得意先コードは50文字以内で入力してください")
     private String customerCode;

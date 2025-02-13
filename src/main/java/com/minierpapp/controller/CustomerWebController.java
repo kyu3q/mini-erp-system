@@ -242,7 +242,7 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
             String[] sampleData = {
                 "CUST001", "株式会社サンプル", "カブシキガイシャサンプル", "123-4567",
                 "東京都千代田区...", "03-1234-5678", "03-1234-5679", "contact@example.com",
-                "山田太郎", "月末締め翌月末払い", "ACTIVE", "備考欄"
+                "山田太郎", "月末締め翌月末払い", "有効", "備考欄"
             };
 
             for (int i = 0; i < sampleData.length; i++) {
@@ -254,7 +254,7 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
             // 注意書き行の追加
             Row noteRow = sheet.createRow(3);
             Cell noteCell = noteRow.createCell(0);
-            noteCell.setCellValue("注意: *は必須項目です。ステータスは「ACTIVE」または「INACTIVE」を入力してください。");
+            noteCell.setCellValue("注意: *は必須項目です。ステータスは「有効」または「無効」を入力してください。");
             CellStyle noteStyle = workbook.createCellStyle();
             Font noteFont = workbook.createFont();
             noteFont.setColor(IndexedColors.RED.getIndex());

@@ -43,9 +43,13 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
         List<Map<String, Object>> errors = new ArrayList<>();
         int successCount = 0;
         int errorCount = 0;
+        int updateCount = 0;
+        int createCount = 0;
 
         try {
-            List<CustomerRequest> customers = new ArrayList<>();
+            List<CustomerRequest> customersToCreate = new ArrayList<>();
+            List<CustomerRequest> customersToUpdate = new ArrayList<>();
+
             try (Workbook workbook = new XSSFWorkbook(file.getInputStream())) {
                 Sheet sheet = workbook.getSheetAt(0);
 
@@ -55,7 +59,14 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
                         if (row == null || isEmptyRow(row)) continue;
 
                         CustomerRequest customer = new CustomerRequest();
-                        customer.setCustomerCode(getStringCellValue(row.getCell(0)));
+                        String customerCode = getStringCellValue(row.getCell(0));
+                        
+                        // 必須項目のバリデーション
+                        if (customerCode == null || customerCode.isEmpty()) {
+                            throw new IllegalArgumentException("得意先コードは必須です (行: " + (i + 1) + ")");
+                        }
+
+                        customer.setCustomerCode(customerCode);
                         customer.setName(getStringCellValue(row.getCell(1)));
                         customer.setNameKana(getStringCellValue(row.getCell(2)));
                         customer.setPostalCode(getStringCellValue(row.getCell(3)));
@@ -65,55 +76,91 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
                         customer.setEmail(getStringCellValue(row.getCell(7)));
                         customer.setContactPerson(getStringCellValue(row.getCell(8)));
                         customer.setPaymentTerms(getStringCellValue(row.getCell(9)));
-                        
+
+                        // ステータスの処理
                         String status = getStringCellValue(row.getCell(10));
                         if (status != null && !status.isEmpty()) {
                             try {
-                                customer.setStatus(Status.valueOf(status.toUpperCase()));
-                            } catch (IllegalArgumentException e) {
-                                throw new IllegalArgumentException("無効なステータス値です: " + status + " (行: " + (i + 1) + ")");
+                                switch (status.trim()) {
+                                    case "有効":
+                                        customer.setStatus(Status.ACTIVE);
+                                        break;
+                                    case "無効":
+                                        customer.setStatus(Status.INACTIVE);
+                                        break;
+                                    default:
+                                        try {
+                                            customer.setStatus(Status.valueOf(status.toUpperCase()));
+                                        } catch (IllegalArgumentException e) {
+                                            throw new IllegalArgumentException("無効なステータス値です。'有効' または '無効' を入力してください。: " + status + " (行: " + (i + 1) + ")");
+                                        }
                             }
+                        } catch (IllegalArgumentException e) {
+                            throw new IllegalArgumentException("無効なステータス値です。'有効' または '無効' を入力してください。: " + status + " (行: " + (i + 1) + ")");
                         }
-                        
-                        customer.setNotes(getStringCellValue(row.getCell(11)));
+                    } else {
+                        throw new IllegalArgumentException("ステータスは必須です (行: " + (i + 1) + ")");
+                    }
 
-                        // 必須項目のバリデーション
-                        if (customer.getCustomerCode() == null || customer.getCustomerCode().isEmpty()) {
-                            throw new IllegalArgumentException("得意先コードは必須です (行: " + (i + 1) + ")");
-                        }
-                        if (customer.getName() == null || customer.getName().isEmpty()) {
-                            throw new IllegalArgumentException("得意先名は必須です (行: " + (i + 1) + ")");
-                        }
-                        if (customer.getStatus() == null) {
-                            throw new IllegalArgumentException("ステータスは必須です (行: " + (i + 1) + ")");
-                        }
+                    customer.setNotes(getStringCellValue(row.getCell(11)));
 
-                        customers.add(customer);
+                    // その他の必須項目のバリデーション
+                    if (customer.getName() == null || customer.getName().isEmpty()) {
+                        throw new IllegalArgumentException("得意先名は必須です (行: " + (i + 1) + ")");
+                    }
+
+                    // 既存データの確認
+                    try {
+                        CustomerResponse existingCustomer = customerService.findByCustomerCode(customerCode);
+                        if (existingCustomer != null) {
+                            // 既存データがある場合は更新リストに追加
+                            customer.setId(existingCustomer.getId());
+                            customersToUpdate.add(customer);
+                        } else {
+                            // 新規データの場合は作成リストに追加
+                            customersToCreate.add(customer);
+                        }
                         successCount++;
                     } catch (Exception e) {
-                        Map<String, Object> error = new HashMap<>();
-                        error.put("rowNum", i + 1);
-                        error.put("message", e.getMessage());
-                        errors.add(error);
-                        errorCount++;
+                        throw new IllegalArgumentException("データの検証中にエラーが発生しました (行: " + (i + 1) + "): " + e.getMessage());
                     }
+
+                } catch (Exception e) {
+                    Map<String, Object> error = new HashMap<>();
+                    error.put("rowNum", i + 1);
+                    error.put("message", e.getMessage());
+                    errors.add(error);
+                    errorCount++;
                 }
             }
-
-            if (successCount > 0) {
-                customerService.bulkCreate(customers);
-            }
-
-            result.put("totalCount", successCount + errorCount);
-            result.put("successCount", successCount);
-            result.put("errorCount", errorCount);
-            result.put("errors", errors);
-
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException("ファイルの処理中にエラーが発生しました: " + e.getMessage());
         }
+
+        // 一括更新と作成の実行
+        if (!customersToUpdate.isEmpty()) {
+            for (CustomerRequest customer : customersToUpdate) {
+                customerService.update(customer.getId(), customer);
+                updateCount++;
+            }
+        }
+
+        if (!customersToCreate.isEmpty()) {
+            customerService.bulkCreate(customersToCreate);
+            createCount = customersToCreate.size();
+        }
+
+        result.put("totalCount", successCount + errorCount);
+        result.put("successCount", successCount);
+        result.put("createCount", createCount);
+        result.put("updateCount", updateCount);
+        result.put("errorCount", errorCount);
+        result.put("errors", errors);
+
+        return result;
+
+    } catch (Exception e) {
+        throw new RuntimeException("ファイルの処理中にエラーが発生しました: " + e.getMessage());
     }
+}
 
     // ユーティリティメソッドも移動
     private boolean isEmptyRow(Row row) {
