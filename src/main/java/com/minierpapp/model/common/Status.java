@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
     ACTIVE("有効"),
-    INACTIVE("無効");
+    INACTIVE("無効"),
+    PENDING("保留"),
+    DELETED("削除済");
 
     private final String displayName;
 

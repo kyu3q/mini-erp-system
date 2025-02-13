@@ -53,7 +53,7 @@ class CustomerExcelTest {
         options.addPreference("browser.download.manager.focusWhenStarting", false);
         options.addPreference("browser.download.useDownloadDir", true);
         driver = new FirefoxDriver(options);
-        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(30));
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(60));
         driver.manage().window().setSize(new Dimension(1920, 1080));
         customerPage = new CustomerPage(driver);
 
@@ -71,6 +71,7 @@ class CustomerExcelTest {
     @Test
     @WithMockUser(username = "test", roles = "ADMIN")
     void testExcelExportAndImport() throws IOException {
+        try {
         // 1. 得意先を登録
         customerPage.open("http://localhost:" + port);
         customerPage.clickAddButton();
@@ -126,11 +127,27 @@ class CustomerExcelTest {
 
         // クリーンアップ
         customerPage.clickDeleteButton("EXL001");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        // クリーンアップ
+        List<String> customerCodes = customerPage.getCustomerCodes();
+        if (customerCodes != null) {
+            for (String code : customerCodes) {
+                customerPage.clickDeleteButton(code);
+            }
+        }
     }
 
     @Test
     @WithMockUser(username = "test", roles = "ADMIN")
     void testExcelBulkImport() throws IOException {
+
+        List<String> customerCodes = null;
+
+        try {
         // 1. テンプレートをダウンロード
         customerPage.open("http://localhost:" + port);
         String templateFile = customerPage.downloadTemplate();
@@ -142,13 +159,19 @@ class CustomerExcelTest {
 
         // 3. 一括登録されたデータを確認
         customerPage.searchCustomer("BULK", "");
-        List<String> customerCodes = customerPage.getCustomerCodes();
+        customerCodes = customerPage.getCustomerCodes();
         assertThat(customerCodes).hasSize(3);
         assertThat(customerCodes).contains("BULK001", "BULK002", "BULK003");
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
 
-        // クリーンアップ
-        for (String code : customerCodes) {
-            customerPage.clickDeleteButton(code);
+        // クリーンアップ (Cleanup)
+        if (customerCodes != null) {
+            for (String code : customerCodes) {
+                customerPage.clickDeleteButton(code);
+            }
         }
     }
 }

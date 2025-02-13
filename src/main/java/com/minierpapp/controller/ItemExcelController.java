@@ -56,12 +56,13 @@ public class ItemExcelController {
     @PostMapping("/import")
     public String importFromExcel(@RequestParam("file") MultipartFile file,
                               RedirectAttributes redirectAttributes) {
-        if (file.isEmpty()) {
+        String filename = file.getOriginalFilename();
+        if (file.isEmpty() || filename == null) {
             redirectAttributes.addFlashAttribute("error", "ファイルを選択してください。");
             return "redirect:/items";
         }
 
-        if (!file.getOriginalFilename().toLowerCase().endsWith(".xlsx")) {
+        if (!filename.toLowerCase().endsWith(".xlsx")) {
             redirectAttributes.addFlashAttribute("error", "Excelファイル(.xlsx)を選択してください。");
             return "redirect:/items";
         }
