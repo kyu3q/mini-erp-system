@@ -33,7 +33,6 @@ public class ItemDto {
     private Integer minimumStock;
     private Integer maximumStock;
     private Integer reorderPoint;
-    private Long version;
 
     private LocalDateTime createdAt;
     private String createdBy;

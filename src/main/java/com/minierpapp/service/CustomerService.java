@@ -29,7 +29,7 @@ public class CustomerService {
     public List<CustomerResponse> findAll(String customerCode, String name) {
         return customerRepository.findByCustomerCodeAndName(customerCode, name)
                 .stream()
-                .map(customerMapper::toResponse)
+                .map(customerMapper::entityToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -38,7 +38,7 @@ public class CustomerService {
         keyword = keyword != null ? keyword.trim() : "";
         List<Customer> customers = customerRepository.findByCustomerCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword);
         return customers.stream()
-            .map(customerMapper::toResponse)
+            .map(customerMapper::entityToResponse)
             .toList();
     }
 
@@ -46,7 +46,7 @@ public class CustomerService {
     public Page<CustomerResponse> searchCustomersWithPagination(String keyword, Pageable pageable) {
         keyword = keyword != null ? keyword.trim() : "";
         Page<Customer> customers = customerRepository.findByCustomerCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword, pageable);
-        return customers.map(customerMapper::toResponse);
+        return customers.map(customerMapper::entityToResponse);
     }
 
     @Transactional(readOnly = true)
@@ -63,13 +63,13 @@ public class CustomerService {
             throw new AccessDeniedException("Access denied");
         }
 
-        return customerMapper.toResponse(customer);
+        return customerMapper.entityToResponse(customer);
     }
 
     @Transactional(readOnly = true)
     public CustomerResponse findById(Long id) {
         return customerRepository.findById(id)
-                .map(customerMapper::toResponse)
+                .map(customerMapper::entityToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
     }
 
@@ -98,8 +98,9 @@ public class CustomerService {
             throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
         }
 
-        Customer customer = customerMapper.toEntity(request);
-        return customerMapper.toResponse(customerRepository.save(customer));
+        Customer customer = customerMapper.requestToEntity(request);
+        customer = customerRepository.save(customer);
+        return customerMapper.entityToResponse(customer);
     }
 
     @Transactional
@@ -122,8 +123,9 @@ public class CustomerService {
                     }
                 });
 
-        customerMapper.updateEntity(request, customer);
-        return customerMapper.toResponse(customerRepository.save(customer));
+        customerMapper.updateEntityFromRequest(request, customer);
+        customer = customerRepository.save(customer);
+        return customerMapper.entityToResponse(customer);
     }
 
     @Transactional
@@ -137,7 +139,7 @@ public class CustomerService {
     @Transactional(readOnly = true)
     public Page<CustomerResponse> search(String keyword, Pageable pageable) {
         Page<Customer> customerPage = customerRepository.findByNameContainingAndDeletedFalse(keyword, pageable);
-        return customerPage.map(customerMapper::toResponse);
+        return customerPage.map(customerMapper::entityToResponse);
     }
 
     @Transactional
@@ -153,8 +155,8 @@ public class CustomerService {
                 if (customerRepository.existsByCustomerCodeAndDeletedFalse(request.getCustomerCode())) {
                     throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " は既に使用されています");
                 }
-                Customer customer = customerMapper.toEntity(request);
-                return customerMapper.toResponse(customerRepository.save(customer));
+                Customer customer = customerMapper.requestToEntity(request);
+                return customerMapper.entityToResponse(customerRepository.save(customer));
             })
             .collect(Collectors.toList());
     }
@@ -275,5 +277,26 @@ public class CustomerService {
     @Transactional
     public void deleteAll() {
         customerRepository.deleteAll();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Customer> findAllEntities() {
+        return customerRepository.findByDeletedFalse();
+    }
+
+    @Transactional(readOnly = true)
+    public Customer findEntityById(Long id) {
+        return customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer", "id", id));
+    }
+
+    @Transactional
+    public Customer save(Customer customer) {
+        return customerRepository.save(customer);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Customer> findAll(Pageable pageable) {
+        return customerRepository.findByDeletedFalse(pageable);
     }
 }

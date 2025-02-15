@@ -1,6 +1,6 @@
 package com.minierpapp.model.item;
 
-import com.minierpapp.model.common.BaseEntity;
+import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.common.Constants;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;

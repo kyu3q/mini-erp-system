@@ -37,7 +37,54 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
         this.customerService = customerService;
     }
 
-     @PostMapping("/import")
+    @GetMapping("/code/{customerCode}")
+    public ResponseEntity<CustomerResponse> findByCustomerCode(@PathVariable String customerCode) {
+        return ResponseEntity.ok(customerService.findByCustomerCode(customerCode));
+    }
+
+    @Override
+    protected List<Customer> findAllEntities() {
+        return customerService.findAllEntities();
+    }
+
+    @Override
+    protected Customer findEntityById(Long id) {
+        return customerService.findEntityById(id);
+    }
+
+    @Override
+    protected void deleteEntity(Long id) {
+        customerService.delete(id);
+    }
+
+    @Override
+    protected List<CustomerResponse> searchEntities(String keyword) {
+        return customerService.searchCustomers(keyword);
+    }
+
+    @GetMapping("/search/page")
+    public ResponseEntity<Page<CustomerResponse>> searchCustomersWithPagination(
+            @RequestParam(required = false) String keyword,
+            Pageable pageable) {
+        return ResponseEntity.ok(customerService.searchCustomersWithPagination(keyword, pageable));
+    }
+
+    @Override
+    protected Page<Customer> findAllEntities(Pageable pageable) {
+        return customerService.findAll(pageable);
+    }
+
+    @Override
+    protected Customer createEntity(Customer entity) {
+        return customerService.save(entity);
+    }
+
+    @Override
+    protected Customer updateEntity(Customer entity) {
+        return customerService.save(entity);
+    }
+
+    @PostMapping("/import")
     public Map<String, Object> importExcel(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> errors = new ArrayList<>();
@@ -188,47 +235,5 @@ public class CustomerController extends BaseRestController<Customer, CustomerDto
             default:
                 return "";
         }
-    }
-
-    @GetMapping("/code/{customerCode}")
-    public ResponseEntity<CustomerResponse> findByCustomerCode(@PathVariable String customerCode) {
-        return ResponseEntity.ok(customerService.findByCustomerCode(customerCode));
-    }
-
-    @Override
-    protected List<CustomerResponse> findAllEntities() {
-        return customerService.findAll(null, null);
-    }
-
-    @Override
-    protected CustomerResponse findEntityById(Long id) {
-        return customerService.findById(id);
-    }
-
-    @Override
-    protected CustomerResponse createEntity(CustomerRequest request) {
-        return customerService.create(request);
-    }
-
-    @Override
-    protected CustomerResponse updateEntity(Long id, CustomerRequest request) {
-        return customerService.update(id, request);
-    }
-
-    @Override
-    protected void deleteEntity(Long id) {
-        customerService.delete(id);
-    }
-
-    @Override
-    protected List<CustomerResponse> searchEntities(String keyword) {
-        return customerService.searchCustomers(keyword);
-    }
-
-    @GetMapping("/search/page")
-    public ResponseEntity<Page<CustomerResponse>> searchCustomersWithPagination(
-            @RequestParam(required = false) String keyword,
-            Pageable pageable) {
-        return ResponseEntity.ok(customerService.searchCustomersWithPagination(keyword, pageable));
     }
 }

@@ -4,8 +4,8 @@ import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.common.Status;
 import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
-import com.minierpapp.model.warehouse.dto.WarehouseDto;
 import com.minierpapp.model.warehouse.dto.WarehouseRequest;
+import com.minierpapp.model.warehouse.dto.WarehouseResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -40,8 +40,7 @@ public class ExcelImportService {
                     if (request != null) {
                         // 倉庫コードで既存の倉庫を検索
                         try {
-                            WarehouseDto existingWarehouse = warehouseService.findByWarehouseCode(request.getWarehouseCode());
-                            // 既存の倉庫が見つかった場合は更新、見つからない場合は新規作成
+                            WarehouseResponse existingWarehouse = warehouseService.findByWarehouseCode(request.getWarehouseCode());
                             if (existingWarehouse != null) {
                                 warehouseService.update(existingWarehouse.getId(), request);
                             } else {

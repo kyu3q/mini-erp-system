@@ -1,45 +1,45 @@
 package com.minierpapp.model.warehouse.mapper;
 
+import com.minierpapp.model.base.BaseMapper;
 import com.minierpapp.model.warehouse.Warehouse;
 import com.minierpapp.model.warehouse.dto.WarehouseDto;
 import com.minierpapp.model.warehouse.dto.WarehouseRequest;
 import com.minierpapp.model.warehouse.dto.WarehouseResponse;
-import org.springframework.stereotype.Component;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Component
-public class WarehouseMapper {
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
+public interface WarehouseMapper extends BaseMapper<Warehouse, WarehouseDto, WarehouseRequest, WarehouseResponse> {
+    @Override
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    Warehouse toEntity(WarehouseDto dto);
 
-    public WarehouseDto toDto(Warehouse warehouse) {
-        return WarehouseDto.builder()
-                .id(warehouse.getId())
-                .warehouseCode(warehouse.getWarehouseCode())
-                .name(warehouse.getName())
-                .address(warehouse.getAddress())
-                .capacity(warehouse.getCapacity())
-                .status(warehouse.getStatus())
-                .description(warehouse.getDescription())
-                .build();
-    }
+    @Override
+    WarehouseDto toDto(Warehouse entity);
 
-    public Warehouse toEntity(WarehouseRequest request) {
-        Warehouse warehouse = new Warehouse();
-        warehouse.setWarehouseCode(request.getWarehouseCode());
-        warehouse.setName(request.getName());
-        warehouse.setAddress(request.getAddress());
-        warehouse.setCapacity(request.getCapacity());
-        warehouse.setDescription(request.getDescription());
-        return warehouse;
-    }
+    @Override
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
+    Warehouse requestToEntity(WarehouseRequest request);
 
-    public WarehouseResponse toResponse(WarehouseDto dto) {
-        return WarehouseResponse.builder()
-                .id(dto.getId())
-                .warehouseCode(dto.getWarehouseCode())
-                .name(dto.getName())
-                .address(dto.getAddress())
-                .capacity(dto.getCapacity())
-                .status(dto.getStatus())
-                .description(dto.getDescription())
-                .build();
-    }
+    @Override
+    WarehouseResponse entityToResponse(Warehouse entity);
+
+    @Override
+    void updateEntityFromRequest(WarehouseRequest request, @MappingTarget Warehouse entity);
+
+    @Override
+    void updateEntity(WarehouseDto dto, @MappingTarget Warehouse entity);
 }

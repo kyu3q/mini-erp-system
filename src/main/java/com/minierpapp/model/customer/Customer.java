@@ -1,6 +1,6 @@
 package com.minierpapp.model.customer;
 
-import com.minierpapp.model.common.BaseEntity;
+import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

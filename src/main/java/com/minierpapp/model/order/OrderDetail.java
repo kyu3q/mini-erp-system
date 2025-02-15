@@ -1,6 +1,6 @@
 package com.minierpapp.model.order;
 
-import com.minierpapp.model.common.BaseEntity;
+import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
 import jakarta.persistence.*;

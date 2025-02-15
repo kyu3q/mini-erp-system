@@ -1,4 +1,4 @@
-package com.minierpapp.model.common;
+package com.minierpapp.model.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

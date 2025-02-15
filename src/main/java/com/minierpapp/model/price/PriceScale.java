@@ -1,11 +1,12 @@
 package com.minierpapp.model.price;
 
-import com.minierpapp.model.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
+
+import com.minierpapp.model.base.BaseEntity;
 
 @Entity
 @Table(name = "price_scales")

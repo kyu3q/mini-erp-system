@@ -1,41 +1,34 @@
 package com.minierpapp.model.customer.mapper;
 
-import com.minierpapp.model.common.mapper.BaseMapper;
+import com.minierpapp.model.base.BaseMapper;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
 public interface CustomerMapper extends BaseMapper<Customer, CustomerDto, CustomerRequest, CustomerResponse> {
     @Override
-    CustomerDto toDto(Customer customer);
+    Customer toEntity(CustomerDto dto);
 
     @Override
-    CustomerResponse toResponse(Customer customer);
+    CustomerDto toDto(Customer entity);
 
     @Override
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    Customer toEntity(CustomerRequest request);
+    Customer requestToEntity(CustomerRequest request);
 
     @Override
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    void updateEntity(CustomerRequest request, @MappingTarget Customer customer);
+    CustomerResponse entityToResponse(Customer entity);
 
     @Override
-    CustomerRequest toRequest(CustomerDto dto);
+    void updateEntityFromRequest(CustomerRequest request, @MappingTarget Customer entity);
+
+    @Override
+    void updateEntity(CustomerDto dto, @MappingTarget Customer entity);
 }

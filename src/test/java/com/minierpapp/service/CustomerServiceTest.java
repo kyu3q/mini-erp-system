@@ -85,7 +85,7 @@ class CustomerServiceTest {
         // given
         given(customerRepository.findByCustomerCodeAndDeletedFalse("CUST001"))
             .willReturn(Optional.of(testCustomer));
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -100,11 +100,11 @@ class CustomerServiceTest {
     @Test
     void whenCreateCustomer_thenReturnSavedCustomer() {
         // given
-        given(customerMapper.toEntity(testCustomerRequest))
+        given(customerMapper.requestToEntity(testCustomerRequest))
             .willReturn(testCustomer);
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -165,7 +165,7 @@ class CustomerServiceTest {
         
         given(customerRepository.findByNameContainingAndDeletedFalse("Test", pageable))
             .willReturn(customerPage);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -182,11 +182,11 @@ class CustomerServiceTest {
     void whenBulkCreateCustomers_thenAllCustomersAreSaved() {
         // given
         List<CustomerRequest> requests = Arrays.asList(testCustomerRequest);
-        given(customerMapper.toEntity(testCustomerRequest))
+        given(customerMapper.requestToEntity(testCustomerRequest))
             .willReturn(testCustomer);
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -204,7 +204,7 @@ class CustomerServiceTest {
         List<Customer> customers = Arrays.asList(testCustomer);
         given(customerRepository.findByCustomerCodeAndName("CUST001", "Test"))
             .willReturn(customers);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -235,7 +235,7 @@ class CustomerServiceTest {
         List<Customer> customers = Arrays.asList(testCustomer);
         given(customerRepository.findByCustomerCodeContainingOrNameContainingAndDeletedFalse("", ""))
             .willReturn(customers);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -282,7 +282,7 @@ class CustomerServiceTest {
             .willReturn(Optional.of(testCustomer));
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -291,7 +291,7 @@ class CustomerServiceTest {
         // then
         assertThat(result).isNotNull();
         assertThat(result.getCustomerCode()).isEqualTo("CUST001");
-        verify(customerMapper).updateEntity(testCustomerRequest, testCustomer);
+        verify(customerMapper).updateEntityFromRequest(testCustomerRequest, testCustomer);
     }
 
     @Test
@@ -348,11 +348,11 @@ class CustomerServiceTest {
         // given
         String maxLengthCode = "C".repeat(50);
         testCustomerRequest.setCustomerCode(maxLengthCode);
-        given(customerMapper.toEntity(testCustomerRequest))
+        given(customerMapper.requestToEntity(testCustomerRequest))
             .willReturn(testCustomer);
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -367,11 +367,11 @@ class CustomerServiceTest {
     void whenCreateCustomer_withSpecialCharactersInName_thenSuccess() {
         // given
         testCustomerRequest.setName("テスト株式会社 ★☆♪");
-        given(customerMapper.toEntity(testCustomerRequest))
+        given(customerMapper.requestToEntity(testCustomerRequest))
             .willReturn(testCustomer);
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -387,11 +387,11 @@ class CustomerServiceTest {
     void whenCreateCustomer_withFullWidthCharactersInCode_thenSuccess() {
         // given
         testCustomerRequest.setCustomerCode("テスト１２３");
-        given(customerMapper.toEntity(testCustomerRequest))
+        given(customerMapper.requestToEntity(testCustomerRequest))
             .willReturn(testCustomer);
         given(customerRepository.save(testCustomer))
             .willReturn(testCustomer);
-        given(customerMapper.toResponse(testCustomer))
+        given(customerMapper.entityToResponse(testCustomer))
             .willReturn(testCustomerResponse);
 
         // when
@@ -471,7 +471,7 @@ class CustomerServiceTest {
             })
             .collect(Collectors.toList());
 
-        given(customerMapper.toEntity(any(CustomerRequest.class)))
+        given(customerMapper.requestToEntity(any(CustomerRequest.class)))
             .willAnswer(invocation -> {
                 CustomerRequest req = invocation.getArgument(0);
                 Customer customer = new Customer();
@@ -484,7 +484,7 @@ class CustomerServiceTest {
         given(customerRepository.save(any(Customer.class)))
             .willAnswer(invocation -> invocation.getArgument(0));
 
-        given(customerMapper.toResponse(any(Customer.class)))
+        given(customerMapper.entityToResponse(any(Customer.class)))
             .willAnswer(invocation -> {
                 Customer customer = invocation.getArgument(0);
                 CustomerResponse response = new CustomerResponse();
@@ -524,7 +524,7 @@ class CustomerServiceTest {
         given(customerRepository.findByNameContainingAndDeletedFalse("Search", pageable))
             .willReturn(customerPage);
 
-        given(customerMapper.toResponse(any(Customer.class)))
+        given(customerMapper.entityToResponse(any(Customer.class)))
             .willAnswer(invocation -> {
                 Customer customer = invocation.getArgument(0);
                 CustomerResponse response = new CustomerResponse();

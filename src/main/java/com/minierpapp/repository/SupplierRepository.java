@@ -1,6 +1,8 @@
 package com.minierpapp.repository;
 
 import com.minierpapp.model.supplier.Supplier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +26,8 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     List<Supplier> findBySupplierCodeContainingOrNameContainingAndDeletedFalse(String supplierCode, String name);
 
     List<Supplier> findByDeletedFalseOrderBySupplierCodeAsc();
+
+    List<Supplier> findByDeletedFalse();
+
+    Page<Supplier> findByDeletedFalse(Pageable pageable);
 }

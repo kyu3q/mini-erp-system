@@ -1,41 +1,34 @@
 package com.minierpapp.model.supplier.mapper;
 
-import com.minierpapp.model.common.mapper.BaseMapper;
+import com.minierpapp.model.base.BaseMapper;
 import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.model.supplier.dto.SupplierDto;
 import com.minierpapp.model.supplier.dto.SupplierRequest;
 import com.minierpapp.model.supplier.dto.SupplierResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
 public interface SupplierMapper extends BaseMapper<Supplier, SupplierDto, SupplierRequest, SupplierResponse> {
     @Override
-    SupplierDto toDto(Supplier supplier);
+    Supplier toEntity(SupplierDto dto);
 
     @Override
-    SupplierResponse toResponse(Supplier supplier);
+    SupplierDto toDto(Supplier entity);
 
     @Override
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    Supplier toEntity(SupplierRequest request);
+    Supplier requestToEntity(SupplierRequest request);
 
     @Override
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
-    void updateEntity(SupplierRequest request, @MappingTarget Supplier supplier);
+    SupplierResponse entityToResponse(Supplier entity);
 
     @Override
-    SupplierRequest toRequest(SupplierDto dto);
+    void updateEntityFromRequest(SupplierRequest request, @MappingTarget Supplier entity);
+
+    @Override
+    void updateEntity(SupplierDto dto, @MappingTarget Supplier entity);
 }

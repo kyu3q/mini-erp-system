@@ -20,13 +20,13 @@
                     <a th:href="@{/warehouses/new}" class="btn btn-outline-primary">
                         <i class="fas fa-plus"></i> 新規作成
                     </a>
-                    <a th:href="@{/warehouses/export}" class="btn btn-outline-success">
+                    <a th:href="@{/warehouses/export}" id="exportExcelButton" class="btn btn-outline-success">
                         <i class="fas fa-file-excel"></i> Excel出力
                     </a>
-                    <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                    <button type="button" id="importExcelButton" class="btn btn-outline-primary">
                         <i class="fas fa-file-import"></i> 取込
                     </button>
-                    <a th:href="@{/warehouses/import/template}" class="btn btn-outline-secondary">
+                    <a th:href="@{/warehouses/import/template}" id="downloadTemplateButton" class="btn btn-outline-secondary">
                         <i class="fas fa-download"></i> 取込テンプレート
                     </a>
                 </div>
@@ -222,5 +222,18 @@
             document.getElementById('importForm').submit();
         }
 </script>
+
+<th:block layout:fragment="scripts">
+    <script th:src="@{/js/excel-import.js}"></script>
+    <script th:inline="javascript">
+        $(document).ready(function() {
+            const importer = new ExcelImporter({
+                importButtonId: 'importExcelButton',
+                fileInputId: 'fileInput',
+                apiEndpoint: '/api/warehouses/import'
+            });
+        });
+    </script>
+</th:block>
 </body>
 </html>

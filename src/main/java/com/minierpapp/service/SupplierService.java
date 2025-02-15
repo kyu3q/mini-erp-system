@@ -7,6 +7,8 @@ import com.minierpapp.model.supplier.dto.SupplierResponse;
 import com.minierpapp.model.supplier.mapper.SupplierMapper;
 import com.minierpapp.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +24,7 @@ public class SupplierService {
     public List<SupplierResponse> findAll(String supplierCode, String name) {
         return supplierRepository.findBySupplierCodeAndName(supplierCode, name)
                 .stream()
-                .map(supplierMapper::toResponse)
+                .map(supplierMapper::entityToResponse)
                 .collect(Collectors.toList());
     }
 
@@ -30,7 +32,7 @@ public class SupplierService {
     public List<SupplierResponse> findAllActive() {
         return supplierRepository.findByDeletedFalseOrderBySupplierCodeAsc()
                 .stream()
-                .map(supplierMapper::toResponse)
+                .map(supplierMapper::entityToResponse)
                 .toList();
     }
 
@@ -39,21 +41,21 @@ public class SupplierService {
         keyword = keyword != null ? keyword.trim() : "";
         List<Supplier> suppliers = supplierRepository.findBySupplierCodeContainingOrNameContainingAndDeletedFalse(keyword, keyword);
         return suppliers.stream()
-            .map(supplierMapper::toResponse)
+            .map(supplierMapper::entityToResponse)
             .toList();
     }
 
     @Transactional(readOnly = true)
     public SupplierResponse findBySupplierCode(String supplierCode) {
         return supplierRepository.findBySupplierCodeAndDeletedFalse(supplierCode)
-                .map(supplierMapper::toResponse)
+                .map(supplierMapper::entityToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "supplierCode", supplierCode));
     }
 
     @Transactional(readOnly = true)
     public SupplierResponse findById(Long id) {
         return supplierRepository.findById(id)
-                .map(supplierMapper::toResponse)
+                .map(supplierMapper::entityToResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
     }
 
@@ -63,8 +65,9 @@ public class SupplierService {
             throw new IllegalArgumentException("仕入先コード " + request.getSupplierCode() + " は既に使用されています");
         }
 
-        Supplier supplier = supplierMapper.toEntity(request);
-        return supplierMapper.toResponse(supplierRepository.save(supplier));
+        Supplier supplier = supplierMapper.requestToEntity(request);
+        supplier = supplierRepository.save(supplier);
+        return supplierMapper.entityToResponse(supplier);
     }
 
     @Transactional
@@ -79,8 +82,9 @@ public class SupplierService {
                     }
                 });
 
-        supplierMapper.updateEntity(request, supplier);
-        return supplierMapper.toResponse(supplierRepository.save(supplier));
+        supplierMapper.updateEntityFromRequest(request, supplier);
+        supplier = supplierRepository.save(supplier);
+        return supplierMapper.entityToResponse(supplier);
     }
 
     @Transactional
@@ -91,7 +95,7 @@ public class SupplierService {
         supplierRepository.save(supplier);
     }
 
-        @Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public boolean existsByCode(String supplierCode) {
         return supplierRepository.existsBySupplierCodeAndDeletedFalse(supplierCode);
     }
@@ -104,5 +108,22 @@ public class SupplierService {
 
     public void bulkCreate(List<SupplierRequest> suppliers) {
         suppliers.forEach(this::create);
+    }
+
+    public Page<Supplier> findAll(Pageable pageable) {
+        return supplierRepository.findByDeletedFalse(pageable);
+    }
+
+    public Supplier save(Supplier supplier) {
+        return supplierRepository.save(supplier);
+    }
+
+    public List<Supplier> findAllEntities() {
+        return supplierRepository.findByDeletedFalse();
+    }
+
+    public Supplier findByCode(Long id) {
+        return supplierRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier", "id", id));
     }
 }

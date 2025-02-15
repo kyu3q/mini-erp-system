@@ -1,6 +1,6 @@
 package com.minierpapp.controller.base;
 
-import com.minierpapp.model.common.mapper.BaseMapper;
+import com.minierpapp.model.base.BaseMapper;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;

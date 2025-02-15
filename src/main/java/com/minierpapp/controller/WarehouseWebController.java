@@ -5,8 +5,12 @@ import com.minierpapp.model.warehouse.dto.WarehouseRequest;
 import com.minierpapp.service.ExcelExportService;
 import com.minierpapp.service.ExcelImportService;
 import com.minierpapp.service.WarehouseService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellRangeAddressList;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,14 +30,27 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import com.minierpapp.model.warehouse.mapper.WarehouseMapper;
+import com.minierpapp.model.warehouse.Warehouse;
+
 @Controller
 @RequestMapping("/warehouses")
-@RequiredArgsConstructor
 public class WarehouseWebController {
 
     private final WarehouseService warehouseService;
+    private final WarehouseMapper warehouseMapper;
     private final ExcelExportService excelExportService;
     private final ExcelImportService excelImportService;
+
+    public WarehouseWebController(WarehouseService warehouseService, 
+                                 WarehouseMapper warehouseMapper,
+                                 ExcelExportService excelExportService,
+                                 ExcelImportService excelImportService) {
+        this.warehouseService = warehouseService;
+        this.warehouseMapper = warehouseMapper;
+        this.excelExportService = excelExportService;
+        this.excelImportService = excelImportService;
+    }
 
     @GetMapping
     public String list(@RequestParam(required = false) String warehouseCode,
@@ -76,15 +93,16 @@ public class WarehouseWebController {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        WarehouseDto warehouse = warehouseService.findById(id);
+        Warehouse warehouse = warehouseService.findById(id);
+        WarehouseDto warehouseDto = warehouseMapper.toDto(warehouse);
         WarehouseRequest request = new WarehouseRequest();
-        request.setId(id);  // IDを設定
-        request.setWarehouseCode(warehouse.getWarehouseCode());
-        request.setName(warehouse.getName());
-        request.setAddress(warehouse.getAddress());
-        request.setCapacity(warehouse.getCapacity());
-        request.setStatus(warehouse.getStatus());
-        request.setDescription(warehouse.getDescription());
+        request.setId(id);
+        request.setWarehouseCode(warehouseDto.getWarehouseCode());
+        request.setName(warehouseDto.getName());
+        request.setAddress(warehouseDto.getAddress());
+        request.setCapacity(warehouseDto.getCapacity());
+        request.setStatus(warehouseDto.getStatus());
+        request.setDescription(warehouseDto.getDescription());
         model.addAttribute("warehouse", request);
         return "warehouse/form";
     }
@@ -131,15 +149,88 @@ public class WarehouseWebController {
     }
 
     @GetMapping("/import/template")
-    public ResponseEntity<ByteArrayResource> downloadTemplate() throws IOException {
-        byte[] data = excelImportService.createWarehouseImportTemplate();
-        ByteArrayResource resource = new ByteArrayResource(data);
+    public void generateTemplate(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=warehouse_template.xlsx");
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=warehouse_import_template.xlsx")
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .contentLength(data.length)
-                .body(resource);
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("倉庫データ");
+
+            // ヘッダー行の作成
+            Row headerRow = sheet.createRow(0);
+            String[] headers = {
+                "倉庫コード*", "倉庫名*", "フリガナ", "郵便番号", "住所",
+                "電話番号", "FAX", "管理者", "ステータス*", "備考"
+            };
+
+            // ヘッダースタイルの設定
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerStyle.setFont(headerFont);
+
+            // ヘッダーの作成
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 256 * 20);  // 20文字分の幅
+            }
+
+            // サンプルデータ行のスタイル
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            // サンプルデータ行の追加
+            Row sampleRow = sheet.createRow(1);
+            String[] sampleData = {
+                "WH001", "第一倉庫", "ダイイチソウコ", "123-4567",
+                "東京都千代田区...", "03-1234-5678", "03-1234-5679",
+                "山田太郎", "有効", "備考欄"
+            };
+
+            for (int i = 0; i < sampleData.length; i++) {
+                Cell cell = sampleRow.createCell(i);
+                cell.setCellValue(sampleData[i]);
+                cell.setCellStyle(dataStyle);
+            }
+
+            // 注意書き行の追加
+            Row noteRow = sheet.createRow(3);
+            Cell noteCell = noteRow.createCell(0);
+            noteCell.setCellValue("注意: *は必須項目です。ステータスは「有効」または「無効」を入力してください。");
+            CellStyle noteStyle = workbook.createCellStyle();
+            Font noteFont = workbook.createFont();
+            noteFont.setColor(IndexedColors.RED.getIndex());
+            noteStyle.setFont(noteFont);
+            noteCell.setCellStyle(noteStyle);
+
+            // セルの結合（注意書き用）
+            sheet.addMergedRegion(new CellRangeAddress(3, 3, 0, headers.length - 1));
+
+            // 入力規則の設定（ステータス列）
+            DataValidationHelper validationHelper = sheet.getDataValidationHelper();
+            CellRangeAddressList statusRange = new CellRangeAddressList(1, 1000, 8, 8);
+            DataValidationConstraint statusConstraint = validationHelper.createExplicitListConstraint(new String[]{"有効", "無効"});
+            DataValidation statusValidation = validationHelper.createValidation(statusConstraint, statusRange);
+            statusValidation.setShowErrorBox(true);
+            statusValidation.setErrorStyle(DataValidation.ErrorStyle.STOP);
+            statusValidation.createErrorBox("入力エラー", "「有効」または「無効」を選択してください。");
+            sheet.addValidationData(statusValidation);
+
+            workbook.write(response.getOutputStream());
+        }
     }
 
     @PostMapping("/import")

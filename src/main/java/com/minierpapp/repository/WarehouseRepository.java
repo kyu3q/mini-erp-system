@@ -1,6 +1,7 @@
 package com.minierpapp.repository;
 
 import com.minierpapp.model.warehouse.Warehouse;
+import com.minierpapp.model.common.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,8 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, Long> {
                          Pageable pageable);
 
     List<Warehouse> findByDeletedFalse();
+
+    List<Warehouse> findByWarehouseCodeContainingIgnoreCaseOrNameContainingIgnoreCase(String keyword, String sameKeyword);
+
+    List<Warehouse> findByStatusAndDeletedFalse(Status status);
 }

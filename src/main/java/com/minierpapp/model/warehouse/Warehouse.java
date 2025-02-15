@@ -1,6 +1,7 @@
 package com.minierpapp.model.warehouse;
 
-import com.minierpapp.model.common.BaseEntity;
+import com.minierpapp.model.base.BaseEntity;
+import com.minierpapp.model.common.Constants;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,7 +43,8 @@ public class Warehouse extends BaseEntity {
     @Column(name = "status", nullable = false)
     private Status status = Status.ACTIVE;
 
-    @Column(name = "description")
+    @Size(max = Constants.DESCRIPTION_LENGTH)
+    @Column(name = "description", length = Constants.DESCRIPTION_LENGTH)
     private String description;
 
     @Column(name = "deleted", nullable = false)

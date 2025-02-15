@@ -13,6 +13,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,23 +42,13 @@ public class SupplierController extends BaseRestController<Supplier, SupplierDto
     }
 
     @Override
-    protected List<SupplierResponse> findAllEntities() {
-        return supplierService.findAll(null, null);
+    protected List<Supplier> findAllEntities() {
+        return supplierService.findAllEntities();
     }
 
     @Override
-    protected SupplierResponse findEntityById(Long id) {
-        return supplierService.findById(id);
-    }
-
-    @Override
-    protected SupplierResponse createEntity(SupplierRequest request) {
-        return supplierService.create(request);
-    }
-
-    @Override
-    protected SupplierResponse updateEntity(Long id, SupplierRequest request) {
-        return supplierService.update(id, request);
+    protected Supplier findEntityById(Long id) {
+        return supplierService.findByCode(id);
     }
 
     @Override
@@ -69,6 +61,21 @@ public class SupplierController extends BaseRestController<Supplier, SupplierDto
         return supplierService.searchSuppliers(keyword);
     }
 
+    @Override
+    protected Page<Supplier> findAllEntities(Pageable pageable) {
+        return supplierService.findAll(pageable);
+    }
+
+    @Override
+    protected Supplier createEntity(Supplier entity) {
+        return supplierService.save(entity);
+    }
+
+    @Override
+    protected Supplier updateEntity(Supplier entity) {
+        return supplierService.save(entity);
+    }
+    
     @PostMapping("/import")
     public Map<String, Object> importExcel(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();

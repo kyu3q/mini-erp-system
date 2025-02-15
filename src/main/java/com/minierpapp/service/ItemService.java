@@ -3,6 +3,7 @@ package com.minierpapp.service;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
+import com.minierpapp.model.item.dto.ItemDto;
 import com.minierpapp.model.item.mapper.ItemMapper;
 import com.minierpapp.repository.ItemRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,7 +45,7 @@ public class ItemService {
         keyword = keyword != null ? keyword.trim() : "";
         List<Item> items = itemRepository.findByItemCodeContainingOrItemNameContainingAndDeletedFalse(keyword, keyword);
         return items.stream()
-            .map(itemMapper::toResponse)
+            .map(itemMapper::entityToResponse)
             .toList();
     }
 
@@ -62,12 +63,12 @@ public class ItemService {
     @Transactional(readOnly = true)
     public ItemResponse findByItemCode(String itemCode) {
         return itemRepository.findByItemCodeAndDeletedFalse(itemCode)
-                .map(itemMapper::toResponse)
+                .map(itemMapper::entityToResponse)
                 .orElseThrow(() -> new EntityNotFoundException("Item not found with code: " + itemCode));
     }
 
     @Transactional
-    public Item create(ItemRequest request) {
+    public ItemDto create(ItemRequest request) {
         // 品目コードの重複チェック
         if (itemRepository.existsByItemCodeAndDeletedFalse(request.getItemCode())) {
             throw new IllegalArgumentException("品目コード「" + request.getItemCode() + "」は既に使用されています");
@@ -77,13 +78,14 @@ public class ItemService {
         validateStockLevels(request);
 
         // 新規品目の作成
-        Item item = itemMapper.toEntity(request);
+        Item item = itemMapper.requestToEntity(request);
         item.setCreatedAt(LocalDateTime.now());
-        return itemRepository.save(item);
+        Item savedItem = itemRepository.save(item);
+        return itemMapper.toDto(savedItem);
     }
 
     @Transactional
-    public Item update(Long id, ItemRequest request) {
+    public ItemDto update(Long id, ItemRequest request) {
         Item existingItem = findById(id);
 
         // 品目コードの変更は不可
@@ -95,10 +97,11 @@ public class ItemService {
         validateStockLevels(request);
 
         // 品目情報の更新
-        itemMapper.updateEntity(request, existingItem);
+        itemMapper.updateEntityFromRequest(request, existingItem);
         existingItem.setUpdatedAt(LocalDateTime.now());
 
-        return itemRepository.save(existingItem);
+        Item updatedItem = itemRepository.save(existingItem);
+        return itemMapper.toDto(updatedItem);
     }
 
     private void validateStockLevels(ItemRequest request) {
@@ -137,5 +140,20 @@ public class ItemService {
         item.setDeleted(true);
         item.setUpdatedAt(LocalDateTime.now());
         itemRepository.save(item);
+    }
+
+    @Transactional
+    public void bulkCreate(List<Item> items) {
+        items.forEach(this::create);
+    }
+
+    @Transactional
+    public Item create(Item item) {
+        return itemRepository.save(item);
+    }
+
+    @Transactional
+    public Item update(Item item) {
+        return itemRepository.save(item);
     }
 }

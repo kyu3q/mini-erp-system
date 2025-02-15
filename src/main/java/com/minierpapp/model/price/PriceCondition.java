@@ -1,6 +1,6 @@
 package com.minierpapp.model.price;
 
-import com.minierpapp.model.common.BaseEntity;
+import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.common.Status;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.customer.Customer;
