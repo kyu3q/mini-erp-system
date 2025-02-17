@@ -27,25 +27,38 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.List;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import com.minierpapp.service.ExcelExportService;
+import com.minierpapp.service.ExcelImportService;
 
 @Controller
 @RequestMapping("/items")
 public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequest, ItemResponse> {
 
     private final ItemService itemService;
+    private final ExcelExportService excelExportService;
+    private final ExcelImportService excelImportService;
 
-    public ItemWebController(ItemMapper mapper, MessageSource messageSource, ItemService itemService) {
+    public ItemWebController(
+            ItemService itemService,
+            ExcelExportService excelExportService,
+            ExcelImportService excelImportService,
+            ItemMapper mapper,
+            MessageSource messageSource) {
         super(mapper, messageSource, "item", "Item");
         this.itemService = itemService;
+        this.excelExportService = excelExportService;
+        this.excelImportService = excelImportService;
     }
 
     @Override
@@ -80,19 +93,8 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
     }
 
     @Override
-    protected ItemRequest findById(Long id) {
-        Item item = itemService.findById(id);
-        ItemRequest request = new ItemRequest();
-        request.setId(id);
-        request.setItemCode(item.getItemCode());
-        request.setItemName(item.getItemName());
-        request.setDescription(item.getDescription());
-        request.setUnit(item.getUnit());
-        request.setStatus(item.getStatus());
-        request.setMinimumStock(item.getMinimumStock());
-        request.setMaximumStock(item.getMaximumStock());
-        request.setReorderPoint(item.getReorderPoint());
-        return request;
+    protected ItemResponse findById(Long id) {
+        return itemService.findById(id);
     }
 
     @Override
@@ -108,6 +110,34 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
     @Override
     protected void deleteEntity(Long id) {
         itemService.delete(id);
+    }
+
+    @GetMapping("/excel/export")
+    public void exportToExcel(HttpServletResponse response, 
+                            @RequestParam(required = false) String searchParam1,
+                            @RequestParam(required = false) String searchParam2) throws IOException {
+        excelExportService.exportItems(response, searchParam1, searchParam2);
+    }
+
+    @GetMapping("/excel/template")
+    public void downloadTemplate(HttpServletResponse response) throws IOException {
+        excelExportService.downloadItemTemplate(response);
+    }
+
+    @PostMapping("/import")
+    public String importFile(@RequestParam("file") MultipartFile file,
+                           RedirectAttributes redirectAttributes) {
+        try {
+            List<String> errors = excelImportService.importItems(file);
+            if (errors.isEmpty()) {
+                addSuccessMessage(redirectAttributes, "common.imported");
+            } else {
+                addErrorMessage(redirectAttributes, "error.import", String.join(", ", errors));
+            }
+        } catch (Exception e) {
+            addErrorMessage(redirectAttributes, "error.import.failed", e.getMessage());
+        }
+        return getRedirectToList();
     }
 
     @Override
@@ -207,16 +237,5 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
 
             workbook.write(response.getOutputStream());
         }
-    }
-
-    @GetMapping("/new")
-    public String newItem(Model model) {
-        return "items/form";
-    }
-
-    @GetMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, Model model) {
-        // ...
-        return "items/form";
     }
 }

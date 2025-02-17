@@ -1,5 +1,7 @@
 package com.minierpapp.model.warehouse.dto;
 
+import java.time.LocalDateTime;
+
 import com.minierpapp.model.common.Status;
 import lombok.Data;
 import lombok.Builder;
@@ -14,4 +16,10 @@ public class WarehouseDto {
     private Integer capacity;
     private Status status;
     private String description;
+
+    private LocalDateTime createdAt;
+    private String createdBy;
+    private LocalDateTime updatedAt;
+    private String updatedBy;
+    private boolean deleted;
 }

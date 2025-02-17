@@ -24,7 +24,9 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderDto> findAll() {
-        return orderMapper.toDtoList(orderRepository.findAllActive());
+        return orderRepository.findAllActive().stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -32,14 +34,16 @@ public class OrderService {
                                Long customerId, Long itemId, OrderStatus status) {
         LocalDate fromDate = orderDateFrom != null ? LocalDate.parse(orderDateFrom) : null;
         LocalDate toDate = orderDateTo != null ? LocalDate.parse(orderDateTo) : null;
-        return orderMapper.toDtoList(orderRepository.search(orderNumber, fromDate, toDate,
-                customerId, itemId, status));
+        return orderRepository.search(orderNumber, fromDate, toDate, customerId, itemId, status).stream()
+                .map(orderMapper::toDto)
+                .toList();
     }
 
     @Transactional(readOnly = true)
     public OrderDto findById(Long id) {
-        return orderMapper.toDto(orderRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id)));
+        return orderRepository.findActiveById(id)
+                .map(orderMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
     }
 
     @Transactional
@@ -47,28 +51,26 @@ public class OrderService {
         if (request.getOrderNumber() == null || request.getOrderNumber().isEmpty()) {
             request.setOrderNumber(generateOrderNumber());
         }
-        Order order = orderMapper.toEntity(request);
+        Order order = orderMapper.requestToEntity(request);
         order.setStatus(OrderStatus.DRAFT);
-        return orderMapper.toResponse(orderRepository.save(order));
+        order = orderRepository.save(order);
+        return orderMapper.entityToResponse(order);
     }
 
     @Transactional
     public OrderResponse update(Long id, OrderRequest request) {
         Order order = orderRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         
-        Order updatedOrder = orderMapper.toEntity(request);
-        updatedOrder.setId(order.getId());
-        updatedOrder.setCreatedAt(order.getCreatedAt());
-        updatedOrder.setCreatedBy(order.getCreatedBy());
-        
-        return orderMapper.toResponse(orderRepository.save(updatedOrder));
+        orderMapper.updateEntityFromRequest(request, order);
+        order = orderRepository.save(order);
+        return orderMapper.entityToResponse(order);
     }
 
     @Transactional
     public void delete(Long id) {
         Order order = orderRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         order.setDeleted(true);
         orderRepository.save(order);
     }
@@ -76,9 +78,10 @@ public class OrderService {
     @Transactional
     public OrderResponse updateStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findActiveById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "id", id));
         order.setStatus(status);
-        return orderMapper.toResponse(orderRepository.save(order));
+        order = orderRepository.save(order);
+        return orderMapper.entityToResponse(order);
     }
 
     private String generateOrderNumber() {

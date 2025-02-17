@@ -1,5 +1,6 @@
 package com.minierpapp.model.order.mapper;
 
+import com.minierpapp.model.base.BaseMapper;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.order.Order;
@@ -12,30 +13,26 @@ import org.mapstruct.*;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
-public interface OrderMapper {
+@Mapper(
+    componentModel = "spring", 
+    unmappedTargetPolicy = ReportingPolicy.IGNORE
+)
+public interface OrderMapper extends BaseMapper<Order, OrderDto, OrderRequest, OrderResponse> {
 
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
+    @Override
     @Mapping(target = "customer", source = "customerId")
     @Mapping(target = "orderDetails", source = "orderDetails")
-    Order toEntity(OrderRequest request);
+    Order requestToEntity(OrderRequest request);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "order", ignore = true)
-    @Mapping(target = "item", ignore = true)
-    @Mapping(target = "warehouse", source = "warehouseId")
-    OrderDetail toEntity(OrderRequest.OrderDetailRequest request);
-
+    @Override
     @Mapping(target = "customerId", source = "customer.id")
     @Mapping(target = "customerName", source = "customer.name")
     OrderDto toDto(Order order);
+
+    @Override
+    @Mapping(target = "customerId", source = "customer.id")
+    @Mapping(target = "customerName", source = "customer.name")
+    OrderResponse entityToResponse(Order order);
 
     @Mapping(target = "itemId", source = "item.id")
     @Mapping(target = "itemName", source = "item.itemName")
@@ -43,10 +40,6 @@ public interface OrderMapper {
     @Mapping(target = "warehouseId", source = "warehouse.id")
     @Mapping(target = "warehouseName", source = "warehouse.name")
     OrderDto.OrderDetailDto toDto(OrderDetail orderDetail);
-
-    @Mapping(target = "customerId", source = "customer.id")
-    @Mapping(target = "customerName", source = "customer.name")
-    OrderResponse toResponse(Order order);
 
     @Mapping(target = "itemId", source = "item.id")
     @Mapping(target = "itemName", source = "item.itemName")
@@ -67,6 +60,7 @@ public interface OrderMapper {
         return customer;
     }
 
+    @Named("itemFromId")
     default Item itemFromId(Long id) {
         if (id == null) {
             return null;
@@ -76,6 +70,7 @@ public interface OrderMapper {
         return item;
     }
 
+    @Named("warehouseFromId")
     default Warehouse warehouseFromId(Long id) {
         if (id == null) {
             return null;
@@ -84,4 +79,10 @@ public interface OrderMapper {
         warehouse.setId(id);
         return warehouse;
     }
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "order", ignore = true)
+    OrderDetail toOrderDetail(OrderRequest.OrderDetailRequest request);
+
+    List<OrderDetail> toOrderDetails(List<OrderRequest.OrderDetailRequest> requests);
 }

@@ -70,22 +70,8 @@ public class SupplierWebController extends BaseWebController<Supplier, SupplierD
     }
 
     @Override
-    protected SupplierRequest findById(Long id) {
-        SupplierResponse supplierResponse = supplierService.findById(id);
-        SupplierRequest request = new SupplierRequest();
-        request.setSupplierCode(supplierResponse.getSupplierCode());
-        request.setName(supplierResponse.getName());
-        request.setNameKana(supplierResponse.getNameKana());
-        request.setPostalCode(supplierResponse.getPostalCode());
-        request.setAddress(supplierResponse.getAddress());
-        request.setPhone(supplierResponse.getPhone());
-        request.setEmail(supplierResponse.getEmail());
-        request.setFax(supplierResponse.getFax());
-        request.setContactPerson(supplierResponse.getContactPerson());
-        request.setPaymentTerms(supplierResponse.getPaymentTerms());
-        request.setStatus(supplierResponse.getStatus());
-        request.setNotes(supplierResponse.getNotes());
-        return request;
+    protected SupplierResponse findById(Long id) {
+        return supplierService.findById(id);
     }
 
     @Override

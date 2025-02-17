@@ -1,6 +1,8 @@
 package com.minierpapp.model.base;
 
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Mappings;
 
 /**
  * 基本的なマッピング操作を定義するインターフェース
@@ -11,9 +13,13 @@ import org.mapstruct.MappingTarget;
  * @param <R> レスポンスの型
  */
 public interface BaseMapper<E, D, Q, R> {
-    /**
-     * DTOからエンティティへの変換
-     */
+    @Mappings({
+        @Mapping(target = "createdAt", ignore = true),
+        @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
+        @Mapping(target = "updatedBy", ignore = true),
+        @Mapping(target = "deleted", ignore = true)
+    })
     E toEntity(D dto);
 
     /**
@@ -31,6 +37,10 @@ public interface BaseMapper<E, D, Q, R> {
      */
     R entityToResponse(E entity);
 
+    /**
+     * レスポンスからリクエストへの変換
+     */
+    Q responseToRequest(R response);
     /**
      * リクエストからエンティティの更新
      */

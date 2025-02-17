@@ -1,5 +1,6 @@
 package com.minierpapp.service;
 
+import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
@@ -55,9 +56,10 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public Item findById(Long id) {
-        return itemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Item not found with id: " + id));
+    public ItemResponse findById(Long id) {
+       return itemRepository.findById(id)
+                .map(itemMapper::entityToResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Item", "id", id));
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +88,8 @@ public class ItemService {
 
     @Transactional
     public ItemDto update(Long id, ItemRequest request) {
-        Item existingItem = findById(id);
+        Item existingItem = itemRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Item", "id", id));
 
         // 品目コードの変更は不可
         if (!existingItem.getItemCode().equals(request.getItemCode())) {
@@ -136,7 +139,9 @@ public class ItemService {
 
     @Transactional
     public void delete(Long id) {
-        Item item = findById(id);
+        Item item = itemRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Item", "id", id));
+
         item.setDeleted(true);
         item.setUpdatedAt(LocalDateTime.now());
         itemRepository.save(item);

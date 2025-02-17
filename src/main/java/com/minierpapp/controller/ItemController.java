@@ -58,7 +58,8 @@ public class ItemController extends BaseRestController<Item, ItemDto, ItemReques
 
     @Override
     protected Item findEntityById(Long id) {
-        return itemService.findById(id);
+        ItemResponse response = itemService.findById(id);
+        return response != null ? mapper.requestToEntity(mapper.responseToRequest(response)) : null;
     }
 
     @Override

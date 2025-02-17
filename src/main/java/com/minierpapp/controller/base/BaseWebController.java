@@ -1,5 +1,6 @@
 package com.minierpapp.controller.base;
 
+import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.base.BaseMapper;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
@@ -11,13 +12,13 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-public abstract class BaseWebController<E, D, Q, S> {
-    protected final BaseMapper<E, D, Q, S> mapper;
+public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
+    protected final BaseMapper<E, D, Q, R> mapper;
     protected final MessageSource messageSource;
     protected final String baseTemplate;
     protected final String entityName;
 
-    protected BaseWebController(BaseMapper<E, D, Q, S> mapper, MessageSource messageSource, 
+    protected BaseWebController(BaseMapper<E, D, Q, R> mapper, MessageSource messageSource, 
                               String baseTemplate, String entityName) {
         this.mapper = mapper;
         this.messageSource = messageSource;
@@ -61,7 +62,7 @@ public abstract class BaseWebController<E, D, Q, S> {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model) {
-        prepareForm(model, findById(id));
+        prepareForm(model, mapper.responseToRequest(findById(id)));
         return getFormTemplate();
     }
 
@@ -154,9 +155,9 @@ public abstract class BaseWebController<E, D, Q, S> {
         return "common.deleted";
     }
 
-    protected abstract List<S> findAll();
+    protected abstract List<R> findAll();
     protected abstract Q createNewRequest();
-    protected abstract Q findById(Long id);
+    protected abstract R findById(Long id);
     protected abstract void createEntity(Q request);
     protected abstract void updateEntity(Long id, Q request);
     protected abstract void deleteEntity(Long id);

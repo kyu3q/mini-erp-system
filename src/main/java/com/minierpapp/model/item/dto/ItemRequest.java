@@ -8,7 +8,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import java.math.BigDecimal;
 
 @Data
 public class ItemRequest {
@@ -42,9 +41,4 @@ public class ItemRequest {
 
     @Min(value = 0, message = "発注点は0以上の数値を入力してください")
     private Integer reorderPoint;
-
-    private String nameKana;
-    private String model;
-    private BigDecimal unitPrice;
-    private String notes;
 }

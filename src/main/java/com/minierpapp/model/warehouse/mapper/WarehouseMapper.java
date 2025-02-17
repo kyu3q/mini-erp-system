@@ -6,32 +6,23 @@ import com.minierpapp.model.warehouse.dto.WarehouseDto;
 import com.minierpapp.model.warehouse.dto.WarehouseRequest;
 import com.minierpapp.model.warehouse.dto.WarehouseResponse;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import java.util.Collections;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {Collections.class}
 )
 public interface WarehouseMapper extends BaseMapper<Warehouse, WarehouseDto, WarehouseRequest, WarehouseResponse> {
     @Override
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     Warehouse toEntity(WarehouseDto dto);
 
     @Override
     WarehouseDto toDto(Warehouse entity);
 
     @Override
-    @Mapping(target = "createdAt", ignore = true)
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "deleted", ignore = true)
     Warehouse requestToEntity(WarehouseRequest request);
 
     @Override
@@ -42,4 +33,7 @@ public interface WarehouseMapper extends BaseMapper<Warehouse, WarehouseDto, War
 
     @Override
     void updateEntity(WarehouseDto dto, @MappingTarget Warehouse entity);
+
+    @Override
+    WarehouseRequest responseToRequest(WarehouseResponse response);
 }

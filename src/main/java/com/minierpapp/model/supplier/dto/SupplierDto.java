@@ -1,5 +1,7 @@
 package com.minierpapp.model.supplier.dto;
 
+import java.time.LocalDateTime;
+
 import com.minierpapp.model.common.Status;
 import lombok.Data;
 
@@ -18,4 +20,10 @@ public class SupplierDto {
     private String paymentTerms;
     private Status status;
     private String notes;
+
+    private LocalDateTime createdAt;
+    private String createdBy;
+    private LocalDateTime updatedAt;
+    private String updatedBy;
+    private boolean deleted;
 }

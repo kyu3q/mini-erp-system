@@ -58,22 +58,8 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     }
 
     @Override
-    protected CustomerRequest findById(Long id) {
-        CustomerResponse customerResponse = customerService.findById(id);
-        CustomerRequest request = new CustomerRequest();
-        request.setCustomerCode(customerResponse.getCustomerCode());
-        request.setName(customerResponse.getName());
-        request.setNameKana(customerResponse.getNameKana());
-        request.setPostalCode(customerResponse.getPostalCode());
-        request.setAddress(customerResponse.getAddress());
-        request.setPhone(customerResponse.getPhone());
-        request.setEmail(customerResponse.getEmail());
-        request.setFax(customerResponse.getFax());
-        request.setContactPerson(customerResponse.getContactPerson());
-        request.setPaymentTerms(customerResponse.getPaymentTerms());
-        request.setStatus(customerResponse.getStatus());
-        request.setNotes(customerResponse.getNotes());
-        return request;
+    protected CustomerResponse findById(Long id) {
+        return customerService.findById(id);
     }
 
     @Override

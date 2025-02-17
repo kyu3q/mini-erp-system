@@ -14,8 +14,9 @@ import com.minierpapp.repository.ItemRepository;
 import com.minierpapp.repository.SupplierRepository;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {})
+@Mapper(componentModel = "spring")
 public abstract class PriceMapper {
     @Autowired
     private ItemRepository itemRepository;
@@ -53,6 +54,7 @@ public abstract class PriceMapper {
     @Mapping(target = "supplierName", source = "supplier.name")
     @Mapping(target = "expired", expression = "java(priceCondition.isExpired())")
     @Mapping(target = "expiringSoon", expression = "java(priceCondition.isExpiringSoon())")
+    @Mapping(target = "priceScales", expression = "java(toPriceScaleResponses(priceCondition.getPriceScales()))")
     public abstract PriceConditionResponse toResponse(PriceCondition priceCondition);
 
     @Mapping(target = "createdAt", ignore = true)
@@ -101,4 +103,7 @@ public abstract class PriceMapper {
         if (id == null) return null;
         return supplierRepository.findById(id).orElse(null);
     }
+
+    abstract List<PriceScaleResponse> toPriceScaleResponses(List<PriceScale> priceScales);
+    abstract List<PriceScale> toPriceScales(List<PriceScaleRequest> requests);
 }

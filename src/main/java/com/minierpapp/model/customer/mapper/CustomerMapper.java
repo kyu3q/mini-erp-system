@@ -5,13 +5,16 @@ import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.customer.dto.CustomerDto;
 import com.minierpapp.model.customer.dto.CustomerRequest;
 import com.minierpapp.model.customer.dto.CustomerResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import java.util.Collections;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {Collections.class}
 )
 public interface CustomerMapper extends BaseMapper<Customer, CustomerDto, CustomerRequest, CustomerResponse> {
     @Override
@@ -31,4 +34,7 @@ public interface CustomerMapper extends BaseMapper<Customer, CustomerDto, Custom
 
     @Override
     void updateEntity(CustomerDto dto, @MappingTarget Customer entity);
+
+    @Override
+    CustomerRequest responseToRequest(CustomerResponse response);
 }

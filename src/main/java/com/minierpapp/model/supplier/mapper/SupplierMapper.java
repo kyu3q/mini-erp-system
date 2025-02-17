@@ -5,13 +5,16 @@ import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.model.supplier.dto.SupplierDto;
 import com.minierpapp.model.supplier.dto.SupplierRequest;
 import com.minierpapp.model.supplier.dto.SupplierResponse;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import java.util.Collections;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {Collections.class}
 )
 public interface SupplierMapper extends BaseMapper<Supplier, SupplierDto, SupplierRequest, SupplierResponse> {
     @Override
@@ -31,4 +34,7 @@ public interface SupplierMapper extends BaseMapper<Supplier, SupplierDto, Suppli
 
     @Override
     void updateEntity(SupplierDto dto, @MappingTarget Supplier entity);
+
+    @Override
+    SupplierRequest responseToRequest(SupplierResponse response);
 }

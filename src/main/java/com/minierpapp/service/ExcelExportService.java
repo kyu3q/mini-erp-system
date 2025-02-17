@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -188,5 +189,17 @@ public class ExcelExportService {
             workbook.write(outputStream);
             return outputStream.toByteArray();
         }
+    }
+
+    public void exportItems(HttpServletResponse response, String searchParam1, String searchParam2) throws IOException {
+        // エクスポートロジックの実装
+        // 例：
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=items.xlsx");
+        // ... エクセルファイル生成ロジック
+    }
+
+    public void downloadItemTemplate(HttpServletResponse response) throws IOException {
+        // テンプレートダウンロードロジックの実装
     }
 }
