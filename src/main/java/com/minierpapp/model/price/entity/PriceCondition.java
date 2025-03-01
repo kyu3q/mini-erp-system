@@ -3,6 +3,7 @@ package com.minierpapp.model.price.entity;
 import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
+import com.minierpapp.model.price.entity.PriceType;
 import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
@@ -15,40 +16,51 @@ import java.util.List;
 
 @Entity
 @Table(name = "price_conditions")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "price_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
 @Setter
 public class PriceCondition extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
-    @Column(name = "price_type", nullable = false)
+    @Column(name = "price_type", insertable = false, updatable = false)
     private PriceType priceType;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", nullable = false)
-    private Item item;
+    @Column(name = "item_id")
+    private Long itemId;
     
-    @Column(name = "item_code", nullable = false)
+    @Column(name = "item_code")
     private String itemCode;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+    @JoinColumn(name = "item_id", insertable = false, updatable = false)
+    private Item item;
+    
+    @Column(name = "customer_id")
+    private Long customerId;
     
     @Column(name = "customer_code")
     private String customerCode;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supplier_id")
-    private Supplier supplier;
+    @JoinColumn(name = "customer_id", insertable = false, updatable = false)
+    private Customer customer;
+    
+    @Column(name = "supplier_id")
+    private Long supplierId;
     
     @Column(name = "supplier_code")
     private String supplierCode;
     
-    @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id", insertable = false, updatable = false)
+    private Supplier supplier;
+    
+    @Column(name = "base_price", nullable = false)
     private BigDecimal basePrice;
     
-    @Column(name = "currency_code", nullable = false)
-    private String currencyCode = "JPY";
+    @Column(name = "currency_code", length = 3)
+    private String currencyCode;
     
     @Column(name = "valid_from_date", nullable = false)
     private LocalDate validFromDate;
@@ -56,73 +68,24 @@ public class PriceCondition extends BaseEntity {
     @Column(name = "valid_to_date", nullable = false)
     private LocalDate validToDate;
     
-    @Column(name = "status", nullable = false)
-    private Status status = Status.ACTIVE;
+    @Column(name = "status", length = 20)
+    private String status;
     
+    // 親クラスでのpriceScalesの定義を確認
     @OneToMany(mappedBy = "priceCondition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PriceScale> priceScales = new ArrayList<>();
-    
-    // ヘルパーメソッド
-    public void addPriceScale(PriceScale priceScale) {
-        priceScales.add(priceScale);
-        priceScale.setPriceCondition(this);
-    }
-    
-    public void removePriceScale(PriceScale priceScale) {
-        priceScales.remove(priceScale);
-        priceScale.setPriceCondition(null);
-    }
-    
-    // 価格計算メソッド
-    public BigDecimal calculatePrice(BigDecimal quantity) {
-        if (priceScales.isEmpty()) {
-            return basePrice;
-        }
-        
-        // 数量に適用可能なスケールを検索
-        return priceScales.stream()
-            .filter(scale -> scale.getFromQuantity().compareTo(quantity) <= 0 && 
-                   (scale.getToQuantity() == null || scale.getToQuantity().compareTo(quantity) >= 0))
-            .map(PriceScale::getScalePrice)
-            .findFirst()
-            .orElse(basePrice);
-    }
-    
-    // 販売価格かどうかを判定
-    public boolean isSalesPrice() {
-        return PriceType.SALES.equals(priceType);
-    }
-    
-    // 仕入価格かどうかを判定
-    public boolean isPurchasePrice() {
-        return PriceType.PURCHASE.equals(priceType);
-    }
-    
-    // 特定顧客向けの価格かどうかを判定
-    public boolean isCustomerSpecific() {
-        return customer != null;
-    }
-    
-    // 特定仕入先向けの価格かどうかを判定
-    public boolean isSupplierSpecific() {
-        return supplier != null;
-    }
-    
-    // 価格が現在有効かどうかを判定
+
     public boolean isCurrentlyValid() {
         LocalDate today = LocalDate.now();
-        return !isDeleted() && 
-               "ACTIVE".equals(status.name()) && 
-               !validFromDate.isAfter(today) && 
-               !validToDate.isBefore(today);
+        return validFromDate.compareTo(today) <= 0 && validToDate.compareTo(today) >= 0;
     }
 
     public Status getStatus() {
-        return status;
+        return Status.valueOf(status);
     }
 
     public void setStatus(Status status) {
-        this.status = status;
+        this.status = status.name();
     }
 
     public void setItemId(Long itemId) {
@@ -139,5 +102,60 @@ public class PriceCondition extends BaseEntity {
             supplier.setId(supplierId);
             this.supplier = supplier;
         }
+    }
+
+    public void setCustomerId(Long customerId) {
+        if (this.customer == null) {
+            Customer customer = new Customer();
+            customer.setId(customerId);
+            this.customer = customer;
+        }
+    }
+
+    /**
+     * 仕入価格かどうかを判定
+     */
+    public boolean isPurchasePrice() {
+        return PriceType.PURCHASE.equals(priceType);
+    }
+
+    /**
+     * 販売価格かどうかを判定
+     */
+    public boolean isSalesPrice() {
+        return PriceType.SALES.equals(priceType);
+    }
+
+    /**
+     * 数量に基づいて価格を計算
+     */
+    public BigDecimal calculatePrice(BigDecimal quantity) {
+        if (priceScales == null || priceScales.isEmpty()) {
+            return basePrice;
+        }
+        
+        // 数量に適用可能なスケールを検索
+        return priceScales.stream()
+            .filter(scale -> scale.getFromQuantity().compareTo(quantity) <= 0 && 
+                   (scale.getToQuantity() == null || scale.getToQuantity().compareTo(quantity) >= 0))
+            .map(PriceScale::getScalePrice)
+            .findFirst()
+            .orElse(basePrice);
+    }
+
+    /**
+     * 価格スケールを追加
+     */
+    public void addPriceScale(PriceScale priceScale) {
+        priceScales.add(priceScale);
+        priceScale.setPriceCondition(this);
+    }
+
+    /**
+     * 価格スケールを削除
+     */
+    public void removePriceScale(PriceScale priceScale) {
+        priceScales.remove(priceScale);
+        priceScale.setPriceCondition(null);
     }
 }

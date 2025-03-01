@@ -6,19 +6,16 @@ import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.model.price.entity.PriceCondition;
 import org.mapstruct.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {PriceScaleMapper.class})
+@Mapper(componentModel = "spring", uses = {PriceScaleMapper.class}, imports = {LocalDate.class})
 public interface PurchasePriceMapper extends BaseMapper<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
     
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "supplierId", source = "supplier.id")
-    @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
     @Mapping(target = "priceScales", source = "priceScales")
     PurchasePriceDto toDto(PriceCondition entity);
     
@@ -61,11 +58,6 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "supplierId", source = "supplier.id")
-    @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
-    @Mapping(target = "validityStatus", expression = "java(getValidityStatus(entity))")
     @Mapping(target = "priceScales", source = "priceScales")
     PurchasePriceResponse entityToResponse(PriceCondition entity);
     
@@ -107,6 +99,10 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
     
     @Override
     default PurchasePriceRequest responseToRequest(PurchasePriceResponse response) {
+        if (response == null) {
+            return null;
+        }
+        
         PurchasePriceRequest request = new PurchasePriceRequest();
         request.setId(response.getId());
         request.setItemId(response.getItemId());
@@ -122,13 +118,6 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
     }
     
     default String getValidityStatus(PriceCondition entity) {
-        LocalDate today = LocalDate.now();
-        if (entity.getValidToDate().isBefore(today)) {
-            return "期限切れ";
-        } else if (entity.getValidToDate().minusDays(30).isBefore(today)) {
-            return "期限切れ間近";
-        } else {
-            return "有効";
-        }
+        return "有効";
     }
 } 

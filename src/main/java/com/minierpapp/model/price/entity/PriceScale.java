@@ -13,17 +13,20 @@ import java.math.BigDecimal;
 public class PriceScale extends BaseEntity {
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "price_condition_id", nullable = false)
+    @JoinColumn(name = "price_condition_id")
     private PriceCondition priceCondition;
     
-    @Column(name = "from_quantity", nullable = false, precision = 12, scale = 3)
+    @Column(name = "from_quantity", nullable = false)
     private BigDecimal fromQuantity;
     
-    @Column(name = "to_quantity", precision = 12, scale = 3)
+    @Column(name = "to_quantity")
     private BigDecimal toQuantity;
     
-    @Column(name = "scale_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "scale_price", nullable = false)
     private BigDecimal scalePrice;
+    
+    @Column(name = "currency_code", length = 3)
+    private String currencyCode;
     
     // 割引率を計算（基本価格との差をパーセンテージで）
     public BigDecimal calculateDiscountPercentage() {

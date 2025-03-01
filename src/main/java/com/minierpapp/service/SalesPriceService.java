@@ -2,9 +2,7 @@ package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.customer.Customer;
-import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.item.Item;
-import com.minierpapp.model.price.dto.SalesPriceDto;
 import com.minierpapp.model.price.dto.SalesPriceRequest;
 import com.minierpapp.model.price.dto.SalesPriceResponse;
 import com.minierpapp.model.price.entity.PriceCondition;

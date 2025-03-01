@@ -5,11 +5,8 @@ import com.minierpapp.model.price.dto.PriceConditionDto;
 import com.minierpapp.model.price.dto.PriceConditionRequest;
 import com.minierpapp.model.price.dto.PriceConditionResponse;
 import com.minierpapp.model.price.entity.PriceCondition;
-import com.minierpapp.model.price.dto.PriceScaleRequest;
 import org.mapstruct.*;
-
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {PriceScaleMapper.class})
 public interface PriceConditionMapper extends BaseMapper<PriceCondition, PriceConditionDto, PriceConditionRequest, PriceConditionResponse> {
@@ -18,10 +15,8 @@ public interface PriceConditionMapper extends BaseMapper<PriceCondition, PriceCo
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "customerId", source = "customer.id")
-    @Mapping(target = "supplierId", source = "supplier.id")
-    @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(java.time.LocalDate.now()) && entity.getValidToDate().isAfter(java.time.LocalDate.now()))")
+    // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
+    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
     PriceConditionDto toDto(PriceCondition entity);
     
     List<PriceConditionDto> toDtoList(List<PriceCondition> entities);
@@ -90,17 +85,20 @@ public interface PriceConditionMapper extends BaseMapper<PriceCondition, PriceCo
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "customerId", source = "customer.id")
-    @Mapping(target = "supplierId", source = "supplier.id")
-    @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(java.time.LocalDate.now()) && entity.getValidToDate().isAfter(java.time.LocalDate.now()))")
-    @Mapping(target = "expired", expression = "java(entity.getValidToDate().isBefore(java.time.LocalDate.now()))")
+    // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
+    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
+    // @Mapping(target = "partnerName", expression = "java(entity.getCustomer() != null ? entity.getCustomer().getName() : (entity.getSupplier() != null ? entity.getSupplier().getName() : null))")
+    // @Mapping(target = "partnerType", expression = "java(entity.getCustomer() != null ? \"顧客\" : (entity.getSupplier() != null ? \"仕入先\" : null))")
     PriceConditionResponse entityToResponse(PriceCondition entity);
     
     List<PriceConditionResponse> toResponseList(List<PriceCondition> entities);
     
     @Override
     default PriceConditionRequest responseToRequest(PriceConditionResponse response) {
+        if (response == null) {
+            return null;
+        }
+        
         PriceConditionRequest request = new PriceConditionRequest();
         request.setId(response.getId());
         request.setItemId(response.getItemId());
@@ -116,61 +114,30 @@ public interface PriceConditionMapper extends BaseMapper<PriceCondition, PriceCo
         request.setStatus(response.getStatus());
         return request;
     }
-
-    default PriceConditionRequest toRequest(PriceCondition entity) {
-        if (entity == null) {
-            return null;
-        }
-        
-        PriceConditionRequest request = new PriceConditionRequest();
-        request.setId(entity.getId());
-        request.setItemId(entity.getItem().getId());
-        request.setCustomerId(entity.getCustomer() != null ? entity.getCustomer().getId() : null);
-        request.setSupplierId(entity.getSupplier() != null ? entity.getSupplier().getId() : null);
-        request.setBasePrice(entity.getBasePrice());
-        request.setCurrencyCode(entity.getCurrencyCode());
-        request.setValidFromDate(entity.getValidFromDate());
-        request.setValidToDate(entity.getValidToDate());
-        request.setStatus(entity.getStatus());
-        
-        if (entity.getPriceScales() != null) {
-            request.setPriceScales(entity.getPriceScales().stream()
-                .map(scale -> {
-                    PriceScaleRequest scaleRequest = new PriceScaleRequest();
-                    scaleRequest.setQuantity(scale.getFromQuantity());
-                    scaleRequest.setPrice(scale.getScalePrice());
-                    return scaleRequest;
-                })
-                .collect(Collectors.toList()));
-        }
-        
-        return request;
-    }
-
-    /**
-     * レスポンスリストからエンティティリストへの変換
-     */
+    
+    // エンティティのリストをレスポンスのリストに変換するヘルパーメソッド
     default List<PriceCondition> responsesToEntities(List<PriceConditionResponse> responses) {
         if (responses == null) {
             return null;
         }
+        
         return responses.stream()
-            .map(this::responseToEntity)
-            .collect(Collectors.toList());
+            .map(response -> {
+                PriceCondition entity = new PriceCondition();
+                entity.setId(response.getId());
+                entity.setItemId(response.getItemId());
+                entity.setItemCode(response.getItemCode());
+                entity.setCustomerId(response.getCustomerId());
+                entity.setCustomerCode(response.getCustomerCode());
+                entity.setSupplierId(response.getSupplierId());
+                entity.setSupplierCode(response.getSupplierCode());
+                entity.setBasePrice(response.getBasePrice());
+                entity.setCurrencyCode(response.getCurrencyCode());
+                entity.setValidFromDate(response.getValidFromDate());
+                entity.setValidToDate(response.getValidToDate());
+                entity.setStatus(response.getStatus());
+                return entity;
+            })
+            .toList();
     }
-
-    /**
-     * レスポンスからエンティティへの変換
-     */
-    @Mappings({
-        @Mapping(target = "deleted", constant = "false"),
-        @Mapping(target = "item", ignore = true),
-        @Mapping(target = "customer", ignore = true),
-        @Mapping(target = "supplier", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true)
-    })
-    PriceCondition responseToEntity(PriceConditionResponse response);
 } 

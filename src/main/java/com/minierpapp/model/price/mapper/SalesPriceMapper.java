@@ -6,7 +6,6 @@ import com.minierpapp.model.price.dto.SalesPriceRequest;
 import com.minierpapp.model.price.dto.SalesPriceResponse;
 import com.minierpapp.model.price.entity.PriceCondition;
 import org.mapstruct.*;
-import java.time.LocalDate;
 import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {PriceScaleMapper.class})
@@ -15,10 +14,8 @@ public interface SalesPriceMapper extends BaseMapper<PriceCondition, SalesPriceD
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "customerId", source = "customer.id")
     // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
+    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
     @Mapping(target = "priceScales", source = "priceScales")
     SalesPriceDto toDto(PriceCondition entity);
     
@@ -61,10 +58,8 @@ public interface SalesPriceMapper extends BaseMapper<PriceCondition, SalesPriceD
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
-    @Mapping(target = "itemId", source = "item.id")
-    @Mapping(target = "customerId", source = "customer.id")
     // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
+    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
     // @Mapping(target = "validityStatus", expression = "java(getValidityStatus(entity))")
     @Mapping(target = "priceScales", source = "priceScales")
     SalesPriceResponse entityToResponse(PriceCondition entity);
@@ -107,6 +102,10 @@ public interface SalesPriceMapper extends BaseMapper<PriceCondition, SalesPriceD
     
     @Override
     default SalesPriceRequest responseToRequest(SalesPriceResponse response) {
+        if (response == null) {
+            return null;
+        }
+        
         SalesPriceRequest request = new SalesPriceRequest();
         request.setId(response.getId());
         request.setItemId(response.getItemId());
@@ -122,13 +121,6 @@ public interface SalesPriceMapper extends BaseMapper<PriceCondition, SalesPriceD
     }
     
     default String getValidityStatus(PriceCondition entity) {
-        LocalDate today = LocalDate.now();
-        if (entity.getValidToDate().isBefore(today)) {
-            return "期限切れ";
-        } else if (entity.getValidToDate().minusDays(30).isBefore(today)) {
-            return "期限切れ間近";
-        } else {
-            return "有効";
-        }
+        return "有効";
     }
 }
