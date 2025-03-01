@@ -3,18 +3,20 @@ package com.minierpapp.service.excel;
 import com.minierpapp.dto.excel.ImportResult;
 import com.minierpapp.dto.excel.PriceExcelRow;
 import com.minierpapp.model.common.Status;
-import com.minierpapp.model.price.PriceCondition;
-import com.minierpapp.model.price.PriceScale;
-import com.minierpapp.model.price.PriceType;
+import com.minierpapp.model.price.entity.PriceScale;
+import com.minierpapp.model.price.entity.PriceType;
+import com.minierpapp.model.price.entity.PriceCondition;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.ItemService;
 import com.minierpapp.service.PriceService;
 import com.minierpapp.service.SupplierService;
+import com.minierpapp.model.price.mapper.PriceConditionMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import com.minierpapp.model.price.dto.PriceConditionResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -462,6 +464,12 @@ public class PriceExcelService {
             Cell cell = row.createCell(colNum);
             cell.setCellValue(value);
             cell.setCellStyle(style);
+        }
+    }
+
+    private void createCell(Row row, int colNum, Status value) {
+        if (value != null) {
+            row.createCell(colNum).setCellValue(value.name());
         }
     }
 

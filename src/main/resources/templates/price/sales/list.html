@@ -28,11 +28,11 @@
                 <button type="button" class="btn btn-success" onclick="exportToExcel()">
                     <i class="fas fa-file-excel"></i> Excel出力
                 </button>
+                <button type="button" class="btn btn-warning" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-file-import"></i> 取込
+                </button>
                 <button type="button" class="btn btn-info" onclick="downloadTemplate()">
                     <i class="fas fa-download"></i> 取込テンプレート
-                </button>
-                <button type="button" class="btn btn-warning" onclick="document.getElementById('fileInput').click()">
-                    <i class="fas fa-upload"></i> Excel取込
                 </button>
                 <input type="file" id="fileInput" style="display: none" accept=".xlsx" onchange="importFromExcel(this)">
             </div>

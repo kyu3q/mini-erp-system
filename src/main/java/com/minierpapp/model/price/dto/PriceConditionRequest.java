@@ -1,7 +1,7 @@
 package com.minierpapp.model.price.dto;
 
 import com.minierpapp.model.common.Status;
-import com.minierpapp.model.price.PriceType;
+import com.minierpapp.model.price.entity.PriceType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Data;

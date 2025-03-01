@@ -202,4 +202,12 @@ public class ExcelExportService {
     public void downloadItemTemplate(HttpServletResponse response) throws IOException {
         // テンプレートダウンロードロジックの実装
     }
+
+    public void exportSalesPrices(HttpServletResponse response, String searchParam1, String searchParam2) throws IOException {
+        // 実装
+    }
+
+    public void downloadSalesPriceTemplate(HttpServletResponse response) throws IOException {
+        // 実装
+    }
 }

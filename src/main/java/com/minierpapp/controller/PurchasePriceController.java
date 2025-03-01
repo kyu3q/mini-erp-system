@@ -1,179 +1,170 @@
 package com.minierpapp.controller;
 
-import com.minierpapp.model.price.PriceType;
-import com.minierpapp.model.price.dto.PriceConditionRequest;
+import com.minierpapp.controller.base.BaseWebController;
+import com.minierpapp.dto.excel.ImportResult;
+import com.minierpapp.model.price.entity.PriceCondition;
+import com.minierpapp.model.price.dto.PurchasePriceDto;
+import com.minierpapp.model.price.dto.PurchasePriceRequest;
+import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.ItemService;
 import com.minierpapp.service.PriceService;
+import com.minierpapp.service.PurchasePriceService;
 import com.minierpapp.service.SupplierService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import com.minierpapp.service.excel.PriceExcelService;
+import com.minierpapp.model.price.mapper.PriceConditionMapper;
+import com.minierpapp.model.price.mapper.PurchasePriceMapper;
+
+import org.springframework.context.MessageSource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/prices/purchase")
-@RequiredArgsConstructor
-public class PurchasePriceController {
+public class PurchasePriceController extends BaseWebController<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
+    private final PurchasePriceService purchasePriceService;
     private final PriceService priceService;
     private final ItemService itemService;
     private final SupplierService supplierService;
     private final CustomerService customerService;
+    private final PriceExcelService priceExcelService;
+    private final PriceConditionMapper priceConditionMapper;
 
-    @GetMapping
-    public String list(
-            @RequestParam(required = false) Long itemId,
-            @RequestParam(required = false) Long supplierId,
-            @RequestParam(required = false) Long customerId,
-            Model model) {
-        model.addAttribute("prices", priceService.findPurchasePrices(itemId, supplierId, customerId));
+    public PurchasePriceController(
+            PurchasePriceService purchasePriceService,
+            PriceService priceService,
+            ItemService itemService,
+            SupplierService supplierService,
+            CustomerService customerService,
+            PurchasePriceMapper mapper,
+            MessageSource messageSource,
+            PriceExcelService priceExcelService,
+            PriceConditionMapper priceConditionMapper) {
+        super(mapper, messageSource, "prices/purchase", "PurchasePrice");
+        this.purchasePriceService = purchasePriceService;
+        this.priceService = priceService;
+        this.itemService = itemService;
+        this.supplierService = supplierService;
+        this.customerService = customerService;
+        this.priceExcelService = priceExcelService;
+        this.priceConditionMapper = priceConditionMapper;
+    }
+
+    @Override
+    protected List<PurchasePriceResponse> findAll() {
+        return purchasePriceService.findAll();
+    }
+
+    @Override
+    protected PurchasePriceRequest createNewRequest() {
+        PurchasePriceRequest request = new PurchasePriceRequest();
+        request.setPriceScales(new ArrayList<>());
+        return request;
+    }
+
+    @Override
+    protected PurchasePriceResponse findById(Long id) {
+        return purchasePriceService.findById(id);
+    }
+
+    @Override
+    protected void createEntity(PurchasePriceRequest request) {
+        purchasePriceService.create(request);
+    }
+
+    @Override
+    protected void updateEntity(Long id, PurchasePriceRequest request) {
+        purchasePriceService.update(id, request);
+    }
+
+    @Override
+    protected void deleteEntity(Long id) {
+        purchasePriceService.delete(id);
+    }
+
+    @Override
+    protected void prepareForm(Model model, PurchasePriceRequest request) {
+        super.prepareForm(model, request);
+        
+        // フォーム用の追加データを準備
         model.addAttribute("items", itemService.findAllActive());
         model.addAttribute("suppliers", supplierService.findAllActive());
-        model.addAttribute("customers", customerService.findAllActive());
+        
+        // 編集時に関連エンティティの情報を追加
+        if (request.getId() != null) {
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getSupplierId() != null) {
+                model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
+            }
+        }
+    }
+
+    @GetMapping("/search")
+    public String search(
+            @RequestParam(required = false) Long itemId,
+            @RequestParam(required = false) Long supplierId,
+            Model model) {
+        model.addAttribute("prices", purchasePriceService.search(itemId, supplierId));
+        model.addAttribute("items", itemService.findAllActive());
+        model.addAttribute("suppliers", supplierService.findAllActive());
         model.addAttribute("selectedItemId", itemId);
         model.addAttribute("selectedSupplierId", supplierId);
-        model.addAttribute("selectedCustomerId", customerId);
-        return "price/purchase/list";
+        return getListTemplate();
     }
 
-    @GetMapping("/new")
-    public String create(Model model) {
+    @GetMapping("/excel/export")
+    public ResponseEntity<ByteArrayResource> exportPurchasePrices() {
         try {
-            var request = new PriceConditionRequest();
-            request.setPriceType(PriceType.PURCHASE);
-            request.setPriceScales(new ArrayList<>());
-            model.addAttribute("priceRequest", request);
-            // デバッグ情報を追加
-            System.out.println("Debug - Creating new price request: " + request);
-            System.out.println("Debug - Model attributes: " + model.asMap().keySet());
-            return "price/purchase/form";
+            List<PriceCondition> prices = priceConditionMapper.responsesToEntities(
+                priceService.findAllPurchasePrices());
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            priceExcelService.exportPurchasePrices(prices, out);
+
+            String filename = "purchase_price_" + 
+                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
+
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new ByteArrayResource(out.toByteArray()));
         } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            return ResponseEntity.internalServerError().build();
         }
     }
 
-    @GetMapping("/{id}/edit")
-    public String edit(@PathVariable Long id, Model model) {
-        var price = priceService.getPrice(id);
-        model.addAttribute("priceRequest", price);
-        if (price.getItemId() != null) {
-            model.addAttribute("item", itemService.findById(price.getItemId()));
-        }
-        if (price.getSupplierId() != null) {
-            model.addAttribute("supplier", supplierService.findById(price.getSupplierId()));
-        }
-        if (price.getCustomerId() != null) {
-            model.addAttribute("customer", customerService.findById(price.getCustomerId()));
-        }
-        return "price/purchase/form";
+    @PostMapping("/excel/import")
+    @ResponseBody
+    public ImportResult importPurchasePrices(@RequestParam("file") MultipartFile file) {
+        return priceExcelService.importPurchasePrices(file);
     }
 
-    @PostMapping
-    public String save(
-            @Valid @ModelAttribute("priceRequest") PriceConditionRequest request,
-            BindingResult result,
-            Model model,
-            RedirectAttributes redirectAttributes) {
-        // コードの存在チェックとIDの設定
-        if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
-            try {
-                var item = itemService.findByItemCode(request.getItemCode());
-                request.setItemId(item.getId());
-            } catch (Exception e) {
-                result.rejectValue("itemCode", "error.itemCode", 
-                    String.format("品目コード '%s' は存在しません。", request.getItemCode()));
-            }
-        }
-
-        if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
-            try {
-                var supplier = supplierService.findBySupplierCode(request.getSupplierCode());
-                request.setSupplierId(supplier.getId());
-            } catch (Exception e) {
-                result.rejectValue("supplierCode", "error.supplierCode", 
-                    String.format("仕入先コード '%s' は存在しません。", request.getSupplierCode()));
-            }
-        }
-
-        if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
-            try {
-                var customer = customerService.findByCustomerCode(request.getCustomerCode());
-                request.setCustomerId(customer.getId());
-            } catch (Exception e) {
-                result.rejectValue("customerCode", "error.customerCode", 
-                    String.format("得意先コード '%s' は存在しません。", request.getCustomerCode()));
-            }
-        }
-
-        // 必須項目のチェック
-        if (request.getItemId() == null) {
-            result.rejectValue("itemCode", "error.required", "品目は必須です。");
-        }
-
-        if (request.getSupplierId() == null) {
-            result.rejectValue("supplierCode", "error.required", "仕入先は必須です。");
-        }
-
-        if (result.hasErrors()) {
-            // エラー時に既存の選択値を保持
-            if (request.getItemId() != null) {
-                model.addAttribute("item", itemService.findById(request.getItemId()));
-            }
-            if (request.getSupplierId() != null) {
-                model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
-            }
-            if (request.getCustomerId() != null) {
-                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
-            }
-            return "price/purchase/form";
-        }
-
+    @GetMapping("/excel/template")
+    public ResponseEntity<ByteArrayResource> downloadPurchaseTemplate() {
         try {
-            if (request.getId() == null) {
-                priceService.createPrice(request);
-                redirectAttributes.addFlashAttribute("message", "購買単価を登録しました。");
-                redirectAttributes.addFlashAttribute("messageType", "success");
-            } else {
-                priceService.updatePrice(request.getId(), request);
-                redirectAttributes.addFlashAttribute("message", "購買単価を更新しました。");
-                redirectAttributes.addFlashAttribute("messageType", "success");
-            }
-        } catch (Exception e) {
-            model.addAttribute("message", e.getMessage());
-            model.addAttribute("messageType", "danger");
-            if (request.getItemId() != null) {
-                model.addAttribute("item", itemService.findById(request.getItemId()));
-            }
-            if (request.getSupplierId() != null) {
-                model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
-            }
-            if (request.getCustomerId() != null) {
-                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
-            }
-            return "price/purchase/form";
-        }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            priceExcelService.exportPurchasePrices(List.of(), out);
 
-        return "redirect:/prices/purchase";
-    }
-
-    @DeleteMapping("/{id}")
-    public String delete(
-            @PathVariable Long id,
-            RedirectAttributes redirectAttributes) {
-        try {
-            priceService.deletePrice(id);
-            redirectAttributes.addFlashAttribute("message", "購買単価を削除しました。");
-            redirectAttributes.addFlashAttribute("messageType", "success");
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=purchase_price_template.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new ByteArrayResource(out.toByteArray()));
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", e.getMessage());
-            redirectAttributes.addFlashAttribute("messageType", "danger");
+            return ResponseEntity.internalServerError().build();
         }
-        return "redirect:/prices/purchase";
     }
 }

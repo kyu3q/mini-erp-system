@@ -134,15 +134,10 @@ public class WarehouseController extends BaseRestController<Warehouse, Warehouse
 
                         warehouse.setWarehouseCode(warehouseCode);
                         warehouse.setName(getStringCellValue(row.getCell(1)));
-                        warehouse.setNameKana(getStringCellValue(row.getCell(2)));
-                        warehouse.setPostalCode(getStringCellValue(row.getCell(3)));
-                        warehouse.setAddress(getStringCellValue(row.getCell(4)));
-                        warehouse.setPhone(getStringCellValue(row.getCell(5)));
-                        warehouse.setFax(getStringCellValue(row.getCell(6)));
-                        warehouse.setManager(getStringCellValue(row.getCell(7)));
+                        warehouse.setAddress(getStringCellValue(row.getCell(2)));
 
                         // ステータスの処理
-                        String status = getStringCellValue(row.getCell(8));
+                        String status = getStringCellValue(row.getCell(3));
                         if (status != null && !status.isEmpty()) {
                             try {
                                 switch (status.trim()) {
@@ -162,7 +157,7 @@ public class WarehouseController extends BaseRestController<Warehouse, Warehouse
                             throw new IllegalArgumentException("ステータスは必須です (行: " + (i + 1) + ")");
                         }
 
-                        warehouse.setDescription(getStringCellValue(row.getCell(9)));
+                        warehouse.setDescription(getStringCellValue(row.getCell(4)));
 
                         if (warehouse.getName() == null || warehouse.getName().isEmpty()) {
                             throw new IllegalArgumentException("倉庫名は必須です (行: " + (i + 1) + ")");

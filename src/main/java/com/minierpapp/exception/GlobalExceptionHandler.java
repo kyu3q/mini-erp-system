@@ -187,10 +187,9 @@ public class GlobalExceptionHandler {
     }
 
     private boolean isApiRequest() {
-        String requestURI = org.springframework.web.context.request.RequestContextHolder
+        Object path = org.springframework.web.context.request.RequestContextHolder
                 .currentRequestAttributes()
-                .getAttribute("org.springframework.web.servlet.HandlerMapping.pathWithinHandlerMapping", 0)
-                .toString();
-        return requestURI.startsWith("/api/");
+                .getAttribute("org.springframework.web.servlet.HandlerMapping.pathWithinHandlerMapping", 0);
+        return path != null && path.toString().startsWith("/api/");
     }
 }

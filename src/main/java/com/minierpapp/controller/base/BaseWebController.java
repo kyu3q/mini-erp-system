@@ -1,3 +1,4 @@
+
 package com.minierpapp.controller.base;
 
 import com.minierpapp.model.base.BaseEntity;
@@ -15,14 +16,13 @@ import java.util.List;
 public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     protected final BaseMapper<E, D, Q, R> mapper;
     protected final MessageSource messageSource;
-    protected final String baseTemplate;
+    protected final String viewPath;
     protected final String entityName;
 
-    protected BaseWebController(BaseMapper<E, D, Q, R> mapper, MessageSource messageSource, 
-                              String baseTemplate, String entityName) {
+    protected BaseWebController(BaseMapper<E, D, Q, R> mapper, MessageSource messageSource, String viewPath, String entityName) {
         this.mapper = mapper;
         this.messageSource = messageSource;
-        this.baseTemplate = baseTemplate;
+        this.viewPath = viewPath;
         this.entityName = entityName;
     }
 
@@ -98,15 +98,15 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     }
 
     protected String getListTemplate() {
-        return baseTemplate + "/list";
+        return viewPath + "/list";
     }
 
     protected String getFormTemplate() {
-        return baseTemplate + "/form";
+        return viewPath + "/form";
     }
 
     protected String getRedirectToList() {
-        return "redirect:/" + baseTemplate;
+        return "redirect:/" + viewPath;
     }
 
     protected void addSuccessMessage(RedirectAttributes redirectAttributes, String messageKey) {
@@ -132,7 +132,7 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     }
 
     protected String getListAttributeName() {
-        return baseTemplate;
+        return viewPath;
     }
 
     protected void prepareForm(Model model, Q request) {

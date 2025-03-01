@@ -254,7 +254,6 @@ BEGIN
             from_quantity DECIMAL(12,3) NOT NULL,
             to_quantity DECIMAL(12,3),
             scale_price DECIMAL(12,2) NOT NULL,
-            currency_code VARCHAR(3) NOT NULL DEFAULT 'JPY',
             CONSTRAINT uk_price_scales_condition_quantity_not_deleted 
                 UNIQUE (price_condition_id, from_quantity, deleted)
         );

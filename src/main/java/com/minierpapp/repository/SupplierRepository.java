@@ -30,4 +30,6 @@ public interface SupplierRepository extends JpaRepository<Supplier, Long> {
     List<Supplier> findByDeletedFalse();
 
     Page<Supplier> findByDeletedFalse(Pageable pageable);
+
+    Optional<Supplier> findBySupplierCode(String supplierCode);
 }
