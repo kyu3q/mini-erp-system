@@ -13,6 +13,8 @@ public class PurchasePriceRequest {
     private String itemCode;
     private Long supplierId;
     private String supplierCode;
+    private Long customerId;
+    private String customerCode;
     private BigDecimal basePrice;
     private String currencyCode = "JPY";
     private LocalDate validFromDate;

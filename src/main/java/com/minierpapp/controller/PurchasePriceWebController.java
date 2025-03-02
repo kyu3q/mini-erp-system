@@ -33,7 +33,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/prices/purchase")
-public class PurchasePriceController extends BaseWebController<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
+public class PurchasePriceWebController extends BaseWebController<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
     private final PurchasePriceService purchasePriceService;
     private final PriceService priceService;
     private final ItemService itemService;
@@ -42,7 +42,7 @@ public class PurchasePriceController extends BaseWebController<PriceCondition, P
     private final PriceExcelService priceExcelService;
     private final PriceConditionMapper priceConditionMapper;
 
-    public PurchasePriceController(
+    public PurchasePriceWebController(
             PurchasePriceService purchasePriceService,
             PriceService priceService,
             ItemService itemService,
@@ -52,7 +52,7 @@ public class PurchasePriceController extends BaseWebController<PriceCondition, P
             MessageSource messageSource,
             PriceExcelService priceExcelService,
             PriceConditionMapper priceConditionMapper) {
-        super(mapper, messageSource, "prices/purchase", "PurchasePrice");
+        super(mapper, messageSource, "price/purchase", "PurchasePrice");
         this.purchasePriceService = purchasePriceService;
         this.priceService = priceService;
         this.itemService = itemService;

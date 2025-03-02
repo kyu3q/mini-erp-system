@@ -47,7 +47,7 @@ public class SalesPriceWebController extends BaseWebController<PriceCondition, S
             MessageSource messageSource,
             PriceExcelService priceExcelService,
             PriceConditionMapper priceConditionMapper) {
-        super(mapper, messageSource, "prices/sales", "SalesPrice");
+        super(mapper, messageSource, "price/sales", "SalesPrice");
         this.salesPriceService = salesPriceService;
         this.priceService = priceService;
         this.priceExcelService = priceExcelService;

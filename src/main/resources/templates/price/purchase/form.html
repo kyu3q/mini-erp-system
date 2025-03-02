@@ -3,7 +3,7 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
-    <title th:text="${priceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></title>
+    <title th:text="${purchasePriceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></title>
     <style>
         .required::after {
             content: " *";
@@ -30,9 +30,9 @@
 <body>
 <div layout:fragment="content">
     <div class="container-fluid" style="max-width: 1400px;">
-        <h2 th:text="${priceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></h2>
+        <h2 th:text="${purchasePriceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></h2>
 
-        <form th:action="@{/prices/purchase}" method="post" th:object="${priceRequest}" id="priceForm" class="needs-validation" novalidate>
+        <form th:action="@{/prices/purchase}" method="post" th:object="${purchasePriceRequest}" id="priceForm" class="needs-validation" novalidate>
             <input type="hidden" name="id" th:field="*{id}">
             <input type="hidden" name="priceType" th:field="*{priceType}">
             
@@ -44,10 +44,10 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="itemCode"
                                        th:field="*{itemCode}"
-                                       th:disabled="${priceRequest.id != null}"
+                                       th:disabled="${purchasePriceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
-                                        th:disabled="${priceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('itemCode')}"
@@ -72,10 +72,10 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="supplierCode"
                                        th:field="*{supplierCode}"
-                                       th:disabled="${priceRequest.id != null}"
+                                       th:disabled="${purchasePriceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
-                                        th:disabled="${priceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('supplierCode')}"
@@ -97,10 +97,10 @@
                             <div class="input-group">
                                 <input type="text" class="form-control" id="customerCode"
                                        th:field="*{customerCode}"
-                                       th:disabled="${priceRequest.id != null}"
+                                       th:disabled="${purchasePriceRequest.id != null}"
                                        th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
-                                        th:disabled="${priceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback" th:if="${#fields.hasErrors('customerCode')}"
@@ -121,13 +121,13 @@
                 <div class="col-md-4">
                     <label for="validFromDate" class="form-label required">有効開始日</label>
                     <input type="date" class="form-control" id="validFromDate" name="validFromDate"
-                           th:value="${priceRequest.validFromDate}" required>
+                           th:value="${purchasePriceRequest.validFromDate}" required>
                     <div class="invalid-feedback">有効開始日を入力してください。</div>
                 </div>
                 <div class="col-md-4">
                     <label for="validToDate" class="form-label required">有効終了日</label>
                     <input type="date" class="form-control" id="validToDate" name="validToDate"
-                           th:value="${priceRequest.validToDate}" required>
+                           th:value="${purchasePriceRequest.validToDate}" required>
                     <div class="invalid-feedback">有効終了日を入力してください。</div>
                 </div>
                 <div class="col-md-4">
@@ -136,7 +136,7 @@
                         <option th:each="status : ${T(com.minierpapp.model.common.Status).values()}"
                                 th:value="${status}"
                                 th:text="${status.displayName}"
-                                th:selected="${status == priceRequest.status}">
+                                th:selected="${status == purchasePriceRequest.status}">
                         </option>
                     </select>
                     <div class="invalid-feedback">ステータスを選択してください。</div>
@@ -147,15 +147,15 @@
                 <div class="col-md-6">
                     <label for="basePrice" class="form-label required">基本価格</label>
                     <input type="number" class="form-control amount-text" id="basePrice" name="basePrice"
-                           th:value="${priceRequest.basePrice}" required step="0.01" min="0">
+                           th:value="${purchasePriceRequest.basePrice}" required step="0.01" min="0">
                     <div class="invalid-feedback">基本価格を入力してください。</div>
                 </div>
                 <div class="col-md-6">
                     <label for="currencyCode" class="form-label required">通貨</label>
                     <select class="form-select" id="currencyCode" name="currencyCode" required>
-                        <option value="JPY" th:selected="${priceRequest.currencyCode == 'JPY'}">JPY - 日本円</option>
-                        <option value="USD" th:selected="${priceRequest.currencyCode == 'USD'}">USD - 米ドル</option>
-                        <option value="EUR" th:selected="${priceRequest.currencyCode == 'EUR'}">EUR - ユーロ</option>
+                        <option value="JPY" th:selected="${purchasePriceRequest.currencyCode == 'JPY'}">JPY - 日本円</option>
+                        <option value="USD" th:selected="${purchasePriceRequest.currencyCode == 'USD'}">USD - 米ドル</option>
+                        <option value="EUR" th:selected="${purchasePriceRequest.currencyCode == 'EUR'}">EUR - ユーロ</option>
                     </select>
                     <div class="invalid-feedback">通貨を選択してください。</div>
                 </div>
@@ -175,7 +175,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="scale, stat : ${priceRequest.priceScales}" class="scale-row">
+                    <tr th:each="scale, stat : ${purchasePriceRequest.priceScales}" class="scale-row">
                         <td class="text-center">
                             <i class="fas fa-grip-vertical drag-handle"></i>
                         </td>

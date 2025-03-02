@@ -16,6 +16,9 @@ public class PurchasePriceResponse {
     private Long supplierId;
     private String supplierCode;
     private String supplierName;
+    private Long customerId;
+    private String customerCode;
+    private String customerName;
     private BigDecimal basePrice;
     private String currencyCode;
     private LocalDate validFromDate;

@@ -3,7 +3,6 @@ package com.minierpapp.model.price.entity;
 import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
-import com.minierpapp.model.price.entity.PriceType;
 import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.model.common.Status;
 import jakarta.persistence.*;
