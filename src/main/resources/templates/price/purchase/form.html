@@ -32,10 +32,10 @@
     <div class="container-fluid" style="max-width: 1400px;">
         <h2 th:text="${purchasePriceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></h2>
 
-        <form th:action="@{/prices/purchase}" method="post" th:object="${purchasePriceRequest}" id="priceForm" class="needs-validation" novalidate>
-            <input type="hidden" name="id" th:field="*{id}">
-            <input type="hidden" name="priceType" th:field="*{priceType}">
-            
+        <form th:action="@{/prices/purchase}" method="post" id="priceForm" class="needs-validation" novalidate>
+            <input type="hidden" name="id" th:value="${purchasePriceRequest != null ? purchasePriceRequest.id : ''}">
+            <input type="hidden" name="priceType" value="PURCHASE">
+    
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label for="itemCode" class="form-label required">品目</label>
@@ -43,75 +43,75 @@
                         <div class="col-md-3">
                             <div class="input-group">
                                 <input type="text" class="form-control" id="itemCode"
-                                       th:field="*{itemCode}"
-                                       th:disabled="${purchasePriceRequest.id != null}"
-                                       th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'">
+                                       th:value="${item != null ? item.itemCode : ''}"
+                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
-                                        th:disabled="${purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('itemCode')}"
-                                     th:errors="*{itemCode}">品目を選択してください。</div>
+                                <div class="invalid-feedback">品目を選択してください。</div>
                             </div>
                         </div>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="itemName" readonly
                                    th:value="${item != null ? item.itemName : ''}"
                                    th:data-original-value="${item != null ? item.itemName : ''}">
-                            <input type="hidden" id="itemId" th:field="*{itemId}">
+                            <input type="hidden" id="itemId" name="itemId" 
+                                   th:value="${purchasePriceRequest != null ? purchasePriceRequest.itemId : ''}">
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="row mb-3">
-                <div class="col-md-6">
-                    <label for="supplierCode" class="form-label required">仕入先</label>
+                <div class="col-md-12">
+                    <label for="supplierCode" class="form-label">仕入先</label>
                     <div class="row g-2">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="supplierCode"
-                                       th:field="*{supplierCode}"
-                                       th:disabled="${purchasePriceRequest.id != null}"
-                                       th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'">
+                                <input type="text" class="form-control" id="supplierCode" name="supplierCode"
+                                       th:value="${supplier != null ? supplier.supplierCode : ''}"
+                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
-                                        th:disabled="${purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('supplierCode')}"
-                                     th:errors="*{supplierCode}">仕入先を選択してください。</div>
+                                <div class="invalid-feedback">仕入先を選択してください。</div>
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-9">
                             <input type="text" class="form-control" id="supplierName" readonly
                                    th:value="${supplier != null ? supplier.name : ''}"
                                    th:data-original-value="${supplier != null ? supplier.name : ''}">
-                            <input type="hidden" id="supplierId" th:field="*{supplierId}">
+                            <input type="hidden" id="supplierId" name="supplierId" 
+                                   th:value="${purchasePriceRequest != null ? purchasePriceRequest.supplierId : ''}">
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
                     <label for="customerCode" class="form-label">得意先</label>
                     <div class="row g-2">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="customerCode"
-                                       th:field="*{customerCode}"
-                                       th:disabled="${purchasePriceRequest.id != null}"
-                                       th:classappend="${#fields.hasErrors('customerCode')} ? 'is-invalid'">
+                                <input type="text" class="form-control" id="customerCode" name="customerCode"
+                                       th:value="${customer != null ? customer.customerCode : ''}"
+                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
-                                        th:disabled="${purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
-                                <div class="invalid-feedback" th:if="${#fields.hasErrors('customerCode')}"
-                                     th:errors="*{customerCode}">得意先を選択してください。</div>
+                                <div class="invalid-feedback">得意先を選択してください。</div>
                             </div>
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-9">
                             <input type="text" class="form-control" id="customerName" readonly
                                    th:value="${customer != null ? customer.name : ''}"
                                    th:data-original-value="${customer != null ? customer.name : ''}">
-                            <input type="hidden" id="customerId" th:field="*{customerId}">
+                            <input type="hidden" id="customerId" name="customerId" 
+                                   th:value="${customer != null ? customer.id : ''}">
                         </div>
                     </div>
                 </div>
