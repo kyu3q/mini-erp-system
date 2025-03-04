@@ -7,10 +7,11 @@ import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.model.price.entity.PriceCondition;
 import com.minierpapp.model.price.entity.PriceType;
 import com.minierpapp.model.price.entity.PriceScale;
+import com.minierpapp.model.price.entity.PurchasePrice;
 import com.minierpapp.model.price.mapper.PurchasePriceMapper;
 import com.minierpapp.model.supplier.Supplier;
 import com.minierpapp.repository.ItemRepository;
-import com.minierpapp.repository.PriceConditionRepository;
+import com.minierpapp.repository.PurchasePriceRepository;
 import com.minierpapp.repository.PriceScaleRepository;
 import com.minierpapp.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class PurchasePriceService {
-    private final PriceConditionRepository priceConditionRepository;
+    private final PurchasePriceRepository purchasePriceRepository;
     private final PriceScaleRepository priceScaleRepository;
     private final ItemRepository itemRepository;
     private final SupplierRepository supplierRepository;
@@ -33,33 +34,30 @@ public class PurchasePriceService {
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> findAll() {
         return purchasePriceMapper.toResponseList(
-            priceConditionRepository.findByPriceTypeAndDeletedFalse(PriceType.PURCHASE)
+            purchasePriceRepository.findByDeletedFalse()
         );
     }
 
     @Transactional(readOnly = true)
     public PurchasePriceResponse findById(Long id) {
         return purchasePriceMapper.entityToResponse(
-            priceConditionRepository.findByIdAndPriceTypeAndDeletedFalse(id, PriceType.PURCHASE)
+            purchasePriceRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("購買価格", id))
         );
     }
 
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> search(Long itemId, Long supplierId) {
-        List<PriceCondition> prices;
+        List<PurchasePrice> prices;
         
         if (itemId != null && supplierId != null) {
-            prices = priceConditionRepository.findByPriceTypeAndItemIdAndSupplierIdAndDeletedFalse(
-                PriceType.PURCHASE, itemId, supplierId);
+            prices = purchasePriceRepository.findByItemIdAndSupplierIdAndDeletedFalse(itemId, supplierId);
         } else if (itemId != null) {
-            prices = priceConditionRepository.findByPriceTypeAndItemIdAndDeletedFalse(
-                PriceType.PURCHASE, itemId);
+            prices = purchasePriceRepository.findByItemIdAndDeletedFalse(itemId);
         } else if (supplierId != null) {
-            prices = priceConditionRepository.findByPriceTypeAndSupplierIdAndDeletedFalse(
-                PriceType.PURCHASE, supplierId);
+            prices = purchasePriceRepository.findBySupplierIdAndDeletedFalse(supplierId);
         } else {
-            prices = priceConditionRepository.findByPriceTypeAndDeletedFalse(PriceType.PURCHASE);
+            prices = purchasePriceRepository.findByDeletedFalse();
         }
         
         return purchasePriceMapper.toResponseList(prices);
@@ -69,44 +67,44 @@ public class PurchasePriceService {
     public void create(PurchasePriceRequest request) {
         validateRequest(request);
         
-        PriceCondition priceCondition = purchasePriceMapper.requestToEntity(request);
-        priceCondition.setPriceType(PriceType.PURCHASE);
+        // マッパーを使用してエンティティに変換
+        PurchasePrice purchasePrice = purchasePriceMapper.requestToEntity(request);
+        
+        // マッピング後の値を確認
+        System.out.println("Service: After mapping - itemId=" + purchasePrice.getItemId() 
+            + ", supplierId=" + purchasePrice.getSupplierId());
+        
+        // 念のため重要なIDフィールドを明示的に設定
+        purchasePrice.setItemId(request.getItemId());
+        purchasePrice.setSupplierId(request.getSupplierId());
         
         // 関連エンティティの設定
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
-            priceCondition.setItem(item);
-            priceCondition.setItemCode(item.getItemCode());
-        } else if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
-            Item item = itemRepository.findByItemCode(request.getItemCode())
-                .orElseThrow(() -> new ResourceNotFoundException("品目コード", request.getItemCode()));
-            priceCondition.setItem(item);
-            priceCondition.setItemId(item.getId());
-            priceCondition.setItemCode(item.getItemCode());
+            purchasePrice.setItem(item);
+            purchasePrice.setItemCode(item.getItemCode());
         }
         
         if (request.getSupplierId() != null) {
             Supplier supplier = supplierRepository.findById(request.getSupplierId())
                 .orElseThrow(() -> new ResourceNotFoundException("仕入先", request.getSupplierId()));
-            priceCondition.setSupplier(supplier);
-            priceCondition.setSupplierCode(supplier.getSupplierCode());
-        } else if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
-            Supplier supplier = supplierRepository.findBySupplierCode(request.getSupplierCode())
-                .orElseThrow(() -> new ResourceNotFoundException("仕入先コード", request.getSupplierCode()));
-            priceCondition.setSupplier(supplier);
-            priceCondition.setSupplierId(supplier.getId());
-            priceCondition.setSupplierCode(supplier.getSupplierCode());
+            purchasePrice.setSupplier(supplier);
+            purchasePrice.setSupplierCode(supplier.getSupplierCode());
         }
         
-        priceConditionRepository.save(priceCondition);
+        // 保存前の最終確認
+        System.out.println("Service: Before save - itemId=" + purchasePrice.getItemId() 
+            + ", supplierId=" + purchasePrice.getSupplierId());
+        
+        purchasePriceRepository.save(purchasePrice);
         
         // 数量スケールの保存
         if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
             List<PriceScale> scales = request.getPriceScales().stream()
                 .map(scaleRequest -> {
                     PriceScale scale = new PriceScale();
-                    scale.setPriceCondition(priceCondition);
+                    scale.setPriceCondition(purchasePrice);
                     scale.setFromQuantity(scaleRequest.getQuantity());
                     scale.setScalePrice(scaleRequest.getPrice());
                     return scale;
@@ -121,7 +119,7 @@ public class PurchasePriceService {
     public void update(Long id, PurchasePriceRequest request) {
         validateRequest(request);
         
-        PriceCondition priceCondition = priceConditionRepository.findByIdAndPriceTypeAndDeletedFalse(id, PriceType.PURCHASE)
+        PurchasePrice priceCondition = purchasePriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
         
         purchasePriceMapper.updateEntityFromRequest(request, priceCondition);
@@ -153,7 +151,7 @@ public class PurchasePriceService {
             priceCondition.setSupplierCode(supplier.getSupplierCode());
         }
         
-        priceConditionRepository.save(priceCondition);
+        purchasePriceRepository.save(priceCondition);
         
         // 既存の数量スケールを削除
         priceScaleRepository.deleteByPriceConditionId(id);
@@ -176,11 +174,11 @@ public class PurchasePriceService {
 
     @Transactional
     public void delete(Long id) {
-        PriceCondition priceCondition = priceConditionRepository.findByIdAndPriceTypeAndDeletedFalse(id, PriceType.PURCHASE)
+        PurchasePrice priceCondition = purchasePriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
         
         priceCondition.setDeleted(true);
-        priceConditionRepository.save(priceCondition);
+        purchasePriceRepository.save(priceCondition);
     }
 
     private void validateRequest(PurchasePriceRequest request) {

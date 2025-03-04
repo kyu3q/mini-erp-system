@@ -6,6 +6,8 @@ import com.minierpapp.model.common.Status;
 import com.minierpapp.model.price.entity.PriceScale;
 import com.minierpapp.model.price.entity.PriceCondition;
 import com.minierpapp.model.price.entity.PriceType;
+import com.minierpapp.model.price.entity.PurchasePrice;
+import com.minierpapp.model.price.entity.SalesPrice;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.ItemService;
 import com.minierpapp.service.PriceService;
@@ -49,7 +51,7 @@ public class PriceExcelService {
     private final CustomerService customerService;
     private final SupplierService supplierService;
 
-    public void exportSalesPrices(List<PriceCondition> conditions, OutputStream out) throws IOException {
+    public void exportSalesPrices(List<SalesPrice> salesPrices, OutputStream out) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("販売単価");
             
@@ -69,23 +71,23 @@ public class PriceExcelService {
 
             // データ行の作成
             int rowNum = 1;
-            for (PriceCondition condition : conditions) {
+            for (SalesPrice price : salesPrices) {
                 Row row = sheet.createRow(rowNum++);
                 int colNum = 0;
 
                 // 基本情報
-                createCell(row, colNum++, condition.getItemCode());
-                createCell(row, colNum++, condition.getItem().getItemName());
-                createCell(row, colNum++, condition.getCustomerCode());
-                createCell(row, colNum++, condition.getCustomer() != null ? condition.getCustomer().getName() : "");
-                createCell(row, colNum++, condition.getBasePrice(), numberStyle);
-                createCell(row, colNum++, condition.getCurrencyCode());
-                createCell(row, colNum++, condition.getValidFromDate(), dateStyle);
-                createCell(row, colNum++, condition.getValidToDate(), dateStyle);
-                createCell(row, colNum++, condition.getStatus().name());
+                createCell(row, colNum++, price.getItemCode());
+                createCell(row, colNum++, price.getItem() != null ? price.getItem().getItemName() : "");
+                createCell(row, colNum++, price.getCustomerCode());
+                createCell(row, colNum++, price.getCustomer() != null ? price.getCustomer().getName() : "");
+                createCell(row, colNum++, price.getBasePrice(), numberStyle);
+                createCell(row, colNum++, price.getCurrencyCode());
+                createCell(row, colNum++, price.getValidFromDate(), dateStyle);
+                createCell(row, colNum++, price.getValidToDate(), dateStyle);
+                createCell(row, colNum++, price.getStatus().name());
 
                 // スケール価格
-                for (PriceScale scale : condition.getPriceScales()) {
+                for (PriceScale scale : price.getPriceScales()) {
                     createCell(row, colNum++, scale.getFromQuantity(), numberStyle);
                     createCell(row, colNum++, scale.getToQuantity(), numberStyle);
                     createCell(row, colNum++, scale.getScalePrice(), numberStyle);
@@ -96,7 +98,7 @@ public class PriceExcelService {
         }
     }
 
-    public void exportPurchasePrices(List<PriceCondition> conditions, OutputStream out) throws IOException {
+    public void exportPurchasePrices(List<PurchasePrice> purchasePrices, OutputStream out) throws IOException {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("購買単価");
             
@@ -116,25 +118,25 @@ public class PriceExcelService {
 
             // データ行の作成
             int rowNum = 1;
-            for (PriceCondition condition : conditions) {
+            for (PurchasePrice price : purchasePrices) {
                 Row row = sheet.createRow(rowNum++);
                 int colNum = 0;
 
                 // 基本情報
-                createCell(row, colNum++, condition.getItemCode());
-                createCell(row, colNum++, condition.getItem().getItemName());
-                createCell(row, colNum++, condition.getSupplierCode());
-                createCell(row, colNum++, condition.getSupplier() != null ? condition.getSupplier().getName() : "");
-                createCell(row, colNum++, condition.getCustomerCode());
-                createCell(row, colNum++, condition.getCustomer() != null ? condition.getCustomer().getName() : "");
-                createCell(row, colNum++, condition.getBasePrice(), numberStyle);
-                createCell(row, colNum++, condition.getCurrencyCode());
-                createCell(row, colNum++, condition.getValidFromDate(), dateStyle);
-                createCell(row, colNum++, condition.getValidToDate(), dateStyle);
-                createCell(row, colNum++, condition.getStatus().name());
+                createCell(row, colNum++, price.getItemCode());
+                createCell(row, colNum++, price.getItem() != null ? price.getItem().getItemName() : "");
+                createCell(row, colNum++, price.getSupplierCode());
+                createCell(row, colNum++, price.getSupplier() != null ? price.getSupplier().getName() : "");
+                createCell(row, colNum++, price.getCustomerCode());
+                createCell(row, colNum++, price.getCustomer() != null ? price.getCustomer().getName() : "");
+                createCell(row, colNum++, price.getBasePrice(), numberStyle);
+                createCell(row, colNum++, price.getCurrencyCode());
+                createCell(row, colNum++, price.getValidFromDate(), dateStyle);
+                createCell(row, colNum++, price.getValidToDate(), dateStyle);
+                createCell(row, colNum++, price.getStatus().name());
 
                 // スケール価格
-                for (PriceScale scale : condition.getPriceScales()) {
+                for (PriceScale scale : price.getPriceScales()) {
                     createCell(row, colNum++, scale.getFromQuantity(), numberStyle);
                     createCell(row, colNum++, scale.getToQuantity(), numberStyle);
                     createCell(row, colNum++, scale.getScalePrice(), numberStyle);

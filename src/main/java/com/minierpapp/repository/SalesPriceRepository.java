@@ -1,53 +1,40 @@
 package com.minierpapp.repository;
 
-import com.minierpapp.model.price.entity.PriceCondition;
+import com.minierpapp.model.price.entity.SalesPrice;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface SalesPriceRepository extends JpaRepository<PriceCondition, Long> {
+@Repository
+public interface SalesPriceRepository extends JpaRepository<SalesPrice, Long> {
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' AND pc.deleted = false")
-    List<PriceCondition> findAllSalesPrices();
+    List<SalesPrice> findByDeletedFalse();
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.id = :id AND pc.priceType = 'SALES' AND pc.deleted = false")
-    Optional<PriceCondition> findSalesPriceById(@Param("id") Long id);
+    Optional<SalesPrice> findByIdAndDeletedFalse(Long id);
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' " +
-           "AND pc.itemCode = :itemCode AND pc.customerCode = :customerCode " +
-           "AND pc.validFromDate <= :date AND pc.validToDate >= :date " +
-           "AND pc.status = 'ACTIVE' AND pc.deleted = false")
-    Optional<PriceCondition> findActiveSalesPrice(@Param("itemCode") String itemCode, 
-                                                @Param("customerCode") String customerCode,
-                                                @Param("date") LocalDate date);
+    List<SalesPrice> findByItemIdAndDeletedFalse(Long itemId);
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' " +
-           "AND pc.itemCode = :itemCode AND pc.customer IS NULL " +
-           "AND pc.validFromDate <= :date AND pc.validToDate >= :date " +
-           "AND pc.status = 'ACTIVE' AND pc.deleted = false")
-    Optional<PriceCondition> findActiveStandardSalesPrice(@Param("itemCode") String itemCode,
-                                                        @Param("date") LocalDate date);
+    List<SalesPrice> findByCustomerIdAndDeletedFalse(Long customerId);
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' " +
-           "AND (:itemCode IS NULL OR pc.itemCode LIKE %:itemCode%) " +
-           "AND (:customerCode IS NULL OR pc.customerCode LIKE %:customerCode%) " +
-           "AND (:date IS NULL OR (pc.validFromDate <= :date AND pc.validToDate >= :date)) " +
-           "AND pc.deleted = false " +
-           "ORDER BY pc.itemCode, pc.customerCode")
-    List<PriceCondition> searchSalesPrices(@Param("itemCode") String itemCode,
-                                         @Param("customerCode") String customerCode,
-                                         @Param("date") LocalDate date);
+    List<SalesPrice> findByItemIdAndCustomerIdAndDeletedFalse(Long itemId, Long customerId);
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' " +
-           "AND pc.validToDate < :date AND pc.deleted = false")
-    List<PriceCondition> findExpiredSalesPrices(@Param("date") LocalDate date);
+    List<SalesPrice> findByItemCodeContainingAndCustomerCodeContainingAndDeletedFalse(
+            String itemCode, String customerCode);
     
-    @Query("SELECT pc FROM PriceCondition pc WHERE pc.priceType = 'SALES' " +
-           "AND pc.validToDate >= :startDate AND pc.validToDate <= :endDate " +
-           "AND pc.deleted = false")
-    List<PriceCondition> findSoonExpiringPrices(@Param("startDate") LocalDate startDate,
-                                              @Param("endDate") LocalDate endDate);
+    List<SalesPrice> findByItemCodeContainingAndCustomerCodeContainingAndValidFromDateLessThanEqualAndValidToDateGreaterThanEqualAndDeletedFalse(
+            String itemCode, String customerCode, LocalDate date1, LocalDate date2);
+    
+    List<SalesPrice> findByValidToDateLessThanAndDeletedFalse(LocalDate date);
+    
+    List<SalesPrice> findByValidToDateGreaterThanEqualAndValidToDateLessThanEqualAndDeletedFalse(
+            LocalDate fromDate, LocalDate toDate);
+    
+    Optional<SalesPrice> findByItemCodeAndCustomerCodeAndValidFromDateLessThanEqualAndValidToDateGreaterThanEqualAndStatusAndDeletedFalse(
+            String itemCode, String customerCode, LocalDate date1, LocalDate date2, String status);
+    
+    Optional<SalesPrice> findByItemCodeAndCustomerCodeIsNullAndValidFromDateLessThanEqualAndValidToDateGreaterThanEqualAndStatusAndDeletedFalse(
+            String itemCode, LocalDate date1, LocalDate date2, String status);
 } 

@@ -7,6 +7,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.minierpapp.model.common.Status;
+
 @Data
 public class PurchasePriceResponse {
     private Long id;
@@ -23,7 +25,7 @@ public class PurchasePriceResponse {
     private String currencyCode;
     private LocalDate validFromDate;
     private LocalDate validToDate;
-    private String status;
+    private Status status;
     private List<PriceScaleResponse> priceScales = new ArrayList<>();
     private LocalDateTime createdAt;
     private String createdBy;

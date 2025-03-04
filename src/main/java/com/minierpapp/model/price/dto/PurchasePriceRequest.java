@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.minierpapp.model.common.Status;
+
 @Data
 public class PurchasePriceRequest {
     private Long id;
@@ -19,6 +21,6 @@ public class PurchasePriceRequest {
     private String currencyCode = "JPY";
     private LocalDate validFromDate;
     private LocalDate validToDate;
-    private String status = "ACTIVE";
+    private Status status = Status.ACTIVE;
     private List<PriceScaleRequest> priceScales = new ArrayList<>();
 } 

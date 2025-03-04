@@ -274,6 +274,33 @@
                 // バリデーションの初期化
                 const form = document.getElementById('priceForm');
                 form.addEventListener('submit', function(event) {
+                    // 必須フィールドのチェック
+                    const itemId = document.getElementById('itemId').value;
+                    if (!itemId) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        document.getElementById('itemCode').classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    // 仕入先のチェック
+                    const supplierId = document.getElementById('supplierId').value;
+                    if (!supplierId) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        document.getElementById('supplierCode').classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    // 得意先のチェック
+                    const customerId = document.getElementById('customerId').value;
+                    if (!customerId) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        document.getElementById('customerCode').classList.add('is-invalid');
+                        return false;
+                    }
+                    
                     if (!form.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();
@@ -300,7 +327,7 @@
                 const supplierCode = document.getElementById('supplierCode');
                 const customerCode = document.getElementById('customerCode');
 
-                if (!itemCode.disabled) {
+                if (itemCode && !itemCode.disabled) {
                     itemCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
@@ -316,7 +343,7 @@
                                     this.classList.add('is-invalid');
                                 }
                             } catch (error) {
-                                console.error('Error fetching item:', error);
+                                console.error('品目コードの検索に失敗しました:', error);
                                 document.getElementById('itemName').value = '';
                                 document.getElementById('itemId').value = '';
                                 this.classList.add('is-invalid');
@@ -328,7 +355,7 @@
                     });
                 }
 
-                if (!supplierCode.disabled) {
+                if (supplierCode && !supplierCode.disabled) {
                     supplierCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
@@ -344,7 +371,7 @@
                                     this.classList.add('is-invalid');
                                 }
                             } catch (error) {
-                                console.error('Error fetching supplier:', error);
+                                console.error('仕入先コードの検索に失敗しました:', error);
                                 document.getElementById('supplierName').value = '';
                                 document.getElementById('supplierId').value = '';
                                 this.classList.add('is-invalid');
@@ -356,7 +383,7 @@
                     });
                 }
 
-                if (!customerCode.disabled) {
+                if (customerCode && !customerCode.disabled) {
                     customerCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
@@ -372,7 +399,7 @@
                                     this.classList.add('is-invalid');
                                 }
                             } catch (error) {
-                                console.error('Error fetching customer:', error);
+                                console.error('得意先コードの検索に失敗しました:', error);
                                 document.getElementById('customerName').value = '';
                                 document.getElementById('customerId').value = '';
                                 this.classList.add('is-invalid');

@@ -244,6 +244,24 @@
                 // バリデーションの初期化
                 const form = document.getElementById('priceForm');
                 form.addEventListener('submit', function(event) {
+                    // 必須フィールドのチェック
+                    const itemId = document.getElementById('itemId').value;
+                    if (!itemId) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        document.getElementById('itemCode').classList.add('is-invalid');
+                        return false;
+                    }
+                    
+                    // 得意先のチェック
+                    const customerId = document.getElementById('customerId').value;
+                    if (!customerId) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        document.getElementById('customerCode').classList.add('is-invalid');
+                        return false;
+                    }
+                    
                     if (!form.checkValidity()) {
                         event.preventDefault();
                         event.stopPropagation();
@@ -269,7 +287,7 @@
                 const itemCode = document.getElementById('itemCode');
                 const customerCode = document.getElementById('customerCode');
 
-                if (!itemCode.disabled) {
+                if (itemCode && !itemCode.disabled) {
                     itemCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
@@ -278,15 +296,26 @@
                                     const item = await response.json();
                                     document.getElementById('itemName').value = item.itemName;
                                     document.getElementById('itemId').value = item.id;
+                                    this.classList.remove('is-invalid');
+                                } else {
+                                    document.getElementById('itemName').value = '';
+                                    document.getElementById('itemId').value = '';
+                                    this.classList.add('is-invalid');
                                 }
                             } catch (error) {
                                 console.error('品目コードの検索に失敗しました:', error);
+                                document.getElementById('itemName').value = '';
+                                document.getElementById('itemId').value = '';
+                                this.classList.add('is-invalid');
                             }
+                        } else {
+                            document.getElementById('itemName').value = '';
+                            document.getElementById('itemId').value = '';
                         }
                     });
                 }
 
-                if (!customerCode.disabled) {
+                if (customerCode && !customerCode.disabled) {
                     customerCode.addEventListener('blur', async function() {
                         if (this.value) {
                             try {
@@ -295,10 +324,21 @@
                                     const customer = await response.json();
                                     document.getElementById('customerName').value = customer.name;
                                     document.getElementById('customerId').value = customer.id;
+                                    this.classList.remove('is-invalid');
+                                } else {
+                                    document.getElementById('customerName').value = '';
+                                    document.getElementById('customerId').value = '';
+                                    this.classList.add('is-invalid');
                                 }
                             } catch (error) {
                                 console.error('得意先コードの検索に失敗しました:', error);
+                                document.getElementById('customerName').value = '';
+                                document.getElementById('customerId').value = '';
+                                this.classList.add('is-invalid');
                             }
+                        } else {
+                            document.getElementById('customerName').value = '';
+                            document.getElementById('customerId').value = '';
                         }
                     });
                 }

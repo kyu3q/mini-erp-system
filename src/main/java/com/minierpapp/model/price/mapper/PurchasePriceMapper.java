@@ -4,27 +4,27 @@ import com.minierpapp.model.base.BaseMapper;
 import com.minierpapp.model.price.dto.PurchasePriceDto;
 import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
-import com.minierpapp.model.price.entity.PriceCondition;
+import com.minierpapp.model.price.entity.PurchasePrice;
 import org.mapstruct.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", uses = {PriceScaleMapper.class}, imports = {LocalDate.class})
-public interface PurchasePriceMapper extends BaseMapper<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
+public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
     
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
     @Mapping(target = "priceScales", source = "priceScales")
-    PurchasePriceDto toDto(PriceCondition entity);
+    PurchasePriceDto toDto(PurchasePrice entity);
     
-    List<PurchasePriceDto> toDtoList(List<PriceCondition> entities);
+    List<PurchasePriceDto> toDtoList(List<PurchasePrice> entities);
     
     @Override
     @Mappings({
         @Mapping(target = "id", ignore = true),
-        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
@@ -34,14 +34,15 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
         @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "deleted", ignore = true),
+        @Mapping(target = "itemId", source = "itemId"),
+        @Mapping(target = "supplierId", source = "supplierId")
     })
-    PriceCondition toEntity(PurchasePriceDto dto);
+    PurchasePrice toEntity(PurchasePriceDto dto);
     
     @Override
     @Mappings({
         @Mapping(target = "id", ignore = true),
-        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
@@ -51,22 +52,25 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
         @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "deleted", ignore = true),
+        @Mapping(target = "itemId", source = "itemId"),
+        @Mapping(target = "supplierId", source = "supplierId")
     })
-    PriceCondition requestToEntity(PurchasePriceRequest request);
+    PurchasePrice requestToEntity(PurchasePriceRequest request);
     
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
+    @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "priceScales", source = "priceScales")
-    PurchasePriceResponse entityToResponse(PriceCondition entity);
+    @Mapping(target = "expiringSoon", expression = "java(isExpiringSoon(entity))")
+    PurchasePriceResponse entityToResponse(PurchasePrice entity);
     
-    List<PurchasePriceResponse> toResponseList(List<PriceCondition> entities);
+    List<PurchasePriceResponse> toResponseList(List<PurchasePrice> entities);
     
     @Override
     @Mappings({
         @Mapping(target = "id", ignore = true),
-        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
@@ -76,14 +80,15 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
         @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "deleted", ignore = true),
+        @Mapping(target = "itemId", source = "itemId"),
+        @Mapping(target = "supplierId", source = "supplierId")
     })
-    void updateEntity(PurchasePriceDto dto, @MappingTarget PriceCondition entity);
+    void updateEntity(PurchasePriceDto dto, @MappingTarget PurchasePrice entity);
     
     @Override
     @Mappings({
         @Mapping(target = "id", ignore = true),
-        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
@@ -93,9 +98,11 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
         @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "deleted", ignore = true),
+        @Mapping(target = "itemId", source = "itemId"),
+        @Mapping(target = "supplierId", source = "supplierId")
     })
-    void updateEntityFromRequest(PurchasePriceRequest request, @MappingTarget PriceCondition entity);
+    void updateEntityFromRequest(PurchasePriceRequest request, @MappingTarget PurchasePrice entity);
     
     @Override
     default PurchasePriceRequest responseToRequest(PurchasePriceResponse response) {
@@ -117,7 +124,46 @@ public interface PurchasePriceMapper extends BaseMapper<PriceCondition, Purchase
         return request;
     }
     
-    default String getValidityStatus(PriceCondition entity) {
+    default String getValidityStatus(PurchasePrice entity) {
         return "有効";
+    }
+    
+    /**
+     * レスポンスのリストからエンティティのリストに変換
+     */
+    default List<PurchasePrice> responsesToEntities(List<PurchasePriceResponse> responses) {
+        if (responses == null) {
+            return null;
+        }
+        
+        return responses.stream()
+            .map(response -> {
+                PurchasePrice entity = new PurchasePrice();
+                entity.setId(response.getId());
+                entity.setItemId(response.getItemId());
+                entity.setItemCode(response.getItemCode());
+                entity.setSupplierId(response.getSupplierId());
+                entity.setSupplierCode(response.getSupplierCode());
+                entity.setCustomerId(response.getCustomerId());
+                entity.setCustomerCode(response.getCustomerCode());
+                entity.setBasePrice(response.getBasePrice());
+                entity.setCurrencyCode(response.getCurrencyCode());
+                entity.setValidFromDate(response.getValidFromDate());
+                entity.setValidToDate(response.getValidToDate());
+                entity.setStatus(response.getStatus());
+                return entity;
+            })
+            .collect(Collectors.toList());
+    }
+
+    // expiringSoonを判定するヘルパーメソッド
+    default boolean isExpiringSoon(PurchasePrice entity) {
+        if (entity.getValidToDate() == null) {
+            return false;
+        }
+        LocalDate now = LocalDate.now();
+        LocalDate thirtyDaysLater = now.plusDays(30);
+        return entity.getValidToDate().isAfter(now) && 
+               entity.getValidToDate().isBefore(thirtyDaysLater);
     }
 } 

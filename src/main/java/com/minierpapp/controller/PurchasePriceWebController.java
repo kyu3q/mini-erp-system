@@ -2,18 +2,19 @@ package com.minierpapp.controller;
 
 import com.minierpapp.controller.base.BaseWebController;
 import com.minierpapp.dto.excel.ImportResult;
-import com.minierpapp.model.price.entity.PriceCondition;
+import com.minierpapp.model.price.entity.PurchasePrice;
+import com.minierpapp.model.customer.dto.CustomerResponse;
+import com.minierpapp.model.item.dto.ItemResponse;
 import com.minierpapp.model.price.dto.PurchasePriceDto;
 import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.service.CustomerService;
 import com.minierpapp.service.ItemService;
-import com.minierpapp.service.PriceService;
 import com.minierpapp.service.PurchasePriceService;
 import com.minierpapp.service.SupplierService;
 import com.minierpapp.service.excel.PriceExcelService;
-import com.minierpapp.model.price.mapper.PriceConditionMapper;
 import com.minierpapp.model.price.mapper.PurchasePriceMapper;
+import com.minierpapp.model.supplier.dto.SupplierResponse;
 
 import org.springframework.context.MessageSource;
 import org.springframework.core.io.ByteArrayResource;
@@ -33,33 +34,29 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/prices/purchase")
-public class PurchasePriceWebController extends BaseWebController<PriceCondition, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
+public class PurchasePriceWebController extends BaseWebController<PurchasePrice, PurchasePriceDto, PurchasePriceRequest, PurchasePriceResponse> {
     private final PurchasePriceService purchasePriceService;
-    private final PriceService priceService;
     private final ItemService itemService;
     private final SupplierService supplierService;
     private final CustomerService customerService;
     private final PriceExcelService priceExcelService;
-    private final PriceConditionMapper priceConditionMapper;
+    private final PurchasePriceMapper purchasePriceMapper;
 
     public PurchasePriceWebController(
             PurchasePriceService purchasePriceService,
-            PriceService priceService,
             ItemService itemService,
             SupplierService supplierService,
             CustomerService customerService,
             PurchasePriceMapper mapper,
             MessageSource messageSource,
-            PriceExcelService priceExcelService,
-            PriceConditionMapper priceConditionMapper) {
+            PriceExcelService priceExcelService) {
         super(mapper, messageSource, "price/purchase", "PurchasePrice");
         this.purchasePriceService = purchasePriceService;
-        this.priceService = priceService;
         this.itemService = itemService;
         this.supplierService = supplierService;
         this.customerService = customerService;
         this.priceExcelService = priceExcelService;
-        this.priceConditionMapper = priceConditionMapper;
+        this.purchasePriceMapper = mapper;
     }
 
     @Override
@@ -81,11 +78,21 @@ public class PurchasePriceWebController extends BaseWebController<PriceCondition
 
     @Override
     protected void createEntity(PurchasePriceRequest request) {
+        validateAndSetIds(request);
+        
+        // デバッグ情報を追加
+        System.out.println("Controller: After validation - itemId=" + request.getItemId() 
+            + ", itemCode=" + request.getItemCode()
+            + ", supplierId=" + request.getSupplierId()
+            + ", supplierCode=" + request.getSupplierCode());
+        
         purchasePriceService.create(request);
     }
 
     @Override
     protected void updateEntity(Long id, PurchasePriceRequest request) {
+        validateAndSetIds(request);
+        System.out.println("Updating entity with itemId: " + request.getItemId() + ", supplierId: " + request.getSupplierId());
         purchasePriceService.update(id, request);
     }
 
@@ -129,11 +136,11 @@ public class PurchasePriceWebController extends BaseWebController<PriceCondition
     @GetMapping("/excel/export")
     public ResponseEntity<ByteArrayResource> exportPurchasePrices() {
         try {
-            List<PriceCondition> prices = priceConditionMapper.responsesToEntities(
-                priceService.findAllPurchasePrices());
+            List<PurchasePrice> purchasePrices = purchasePriceMapper.responsesToEntities(
+                purchasePriceService.findAll());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            priceExcelService.exportPurchasePrices(prices, out);
+            priceExcelService.exportPurchasePrices(purchasePrices, out);
 
             String filename = "purchase_price_" + 
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
@@ -165,6 +172,51 @@ public class PurchasePriceWebController extends BaseWebController<PriceCondition
                 .body(new ByteArrayResource(out.toByteArray()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * リクエストのコード値からIDを設定する
+     */
+    private void validateAndSetIds(PurchasePriceRequest request) {
+        // 品目IDの設定
+        if (request.getItemId() == null && request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+            ItemResponse item = itemService.findByItemCode(request.getItemCode());
+            if (item != null) {
+                request.setItemId(item.getId());
+            } else {
+                throw new IllegalArgumentException("品目コード " + request.getItemCode() + " が見つかりません");
+            }
+        }
+        
+        // 必須フィールドの検証
+        if (request.getItemId() == null) {
+            throw new IllegalArgumentException("品目IDは必須です");
+        }
+        
+        // 仕入先IDの設定
+        if (request.getSupplierId() == null && request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
+            SupplierResponse supplier = supplierService.findBySupplierCode(request.getSupplierCode());
+            if (supplier != null) {
+                request.setSupplierId(supplier.getId());
+            } else {
+                throw new IllegalArgumentException("仕入先コード " + request.getSupplierCode() + " が見つかりません");
+            }
+        }
+        
+        // 必須フィールドの検証
+        if (request.getSupplierId() == null) {
+            throw new IllegalArgumentException("仕入先IDは必須です");
+        }
+        
+        // 得意先IDの設定（必要な場合）
+        if (request.getCustomerId() == null && request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+            CustomerResponse customer = customerService.findByCustomerCode(request.getCustomerCode());
+            if (customer != null) {
+                request.setCustomerId(customer.getId());
+            } else {
+                throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " が見つかりません");
+            }
         }
     }
 }

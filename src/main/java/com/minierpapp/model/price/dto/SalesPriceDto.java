@@ -22,7 +22,7 @@ public class SalesPriceDto {
     private String currencyCode;
     private LocalDate validFromDate;
     private LocalDate validToDate;
-    private Status status;
+    private Status status = Status.ACTIVE;
     private List<PriceScaleDto> priceScales = new ArrayList<>();
     private LocalDateTime createdAt;
     private String createdBy;

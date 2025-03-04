@@ -18,7 +18,7 @@ public class SalesPriceRequest {
     private String currencyCode = "JPY";
     private LocalDate validFromDate;
     private LocalDate validToDate;
-    private Status status;
+    private Status status = Status.ACTIVE;
     private List<PriceScaleRequest> priceScales = new ArrayList<>();
 
     public Status getStatus() {

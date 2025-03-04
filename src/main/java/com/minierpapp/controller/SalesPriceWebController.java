@@ -2,7 +2,6 @@ package com.minierpapp.controller;
 
 import com.minierpapp.controller.base.BaseWebController;
 import com.minierpapp.dto.excel.ImportResult;
-import com.minierpapp.model.price.entity.PriceCondition;
 import com.minierpapp.model.price.dto.SalesPriceDto;
 import com.minierpapp.model.price.dto.SalesPriceRequest;
 import com.minierpapp.model.price.dto.SalesPriceResponse;
@@ -27,31 +26,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.minierpapp.service.PriceService;
-import com.minierpapp.model.price.dto.PriceConditionResponse;
-import com.minierpapp.model.price.mapper.PriceConditionMapper;
+import com.minierpapp.model.price.entity.SalesPrice;
 
 @Controller
 @RequestMapping("/prices/sales")
-public class SalesPriceWebController extends BaseWebController<PriceCondition, SalesPriceDto, SalesPriceRequest, SalesPriceResponse> {
+public class SalesPriceWebController extends BaseWebController<SalesPrice, SalesPriceDto, SalesPriceRequest, SalesPriceResponse> {
 
     private final SalesPriceService salesPriceService;
-    private final PriceService priceService;
     private final PriceExcelService priceExcelService;
-    private final PriceConditionMapper priceConditionMapper;
+    private final SalesPriceMapper salesPriceMapper;
 
     public SalesPriceWebController(
             SalesPriceService salesPriceService,
-            PriceService priceService,
             SalesPriceMapper mapper,
             MessageSource messageSource,
             PriceExcelService priceExcelService,
-            PriceConditionMapper priceConditionMapper) {
+            SalesPriceMapper salesPriceMapper) {
         super(mapper, messageSource, "price/sales", "SalesPrice");
         this.salesPriceService = salesPriceService;
-        this.priceService = priceService;
         this.priceExcelService = priceExcelService;
-        this.priceConditionMapper = priceConditionMapper;
+        this.salesPriceMapper = salesPriceMapper;
     }
 
     @Override
@@ -89,11 +83,11 @@ public class SalesPriceWebController extends BaseWebController<PriceCondition, S
     @GetMapping("/excel/export")
     public ResponseEntity<ByteArrayResource> exportSalesPrices() {
         try {
-            List<PriceConditionResponse> responses = priceService.findAllSalesPrices();
-            List<PriceCondition> prices = priceConditionMapper.responsesToEntities(responses);
+            List<SalesPrice> salesPrices = salesPriceMapper.responsesToEntities(
+                salesPriceService.findAll());
 
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            priceExcelService.exportSalesPrices(prices, out);
+            priceExcelService.exportSalesPrices(salesPrices, out);
 
             String filename = "sales_price_" + 
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")) + ".xlsx";
