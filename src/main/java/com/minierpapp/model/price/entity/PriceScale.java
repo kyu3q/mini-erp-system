@@ -12,9 +12,9 @@ import java.math.BigDecimal;
 @Setter
 public class PriceScale extends BaseEntity {
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "price_condition_id")
-    private PriceCondition priceCondition;
+    @ManyToOne
+    @JoinColumn(name = "price_id")
+    private Price price;
     
     @Column(name = "from_quantity", nullable = false)
     private BigDecimal fromQuantity;
@@ -24,27 +24,4 @@ public class PriceScale extends BaseEntity {
     
     @Column(name = "scale_price", nullable = false)
     private BigDecimal scalePrice;
-    
-    @Column(name = "currency_code", length = 3)
-    private String currencyCode;
-    
-    // 割引率を計算（基本価格との差をパーセンテージで）
-    public BigDecimal calculateDiscountPercentage() {
-        if (priceCondition == null || priceCondition.getBasePrice().compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
-        
-        BigDecimal basePrice = priceCondition.getBasePrice();
-        BigDecimal difference = basePrice.subtract(scalePrice);
-        return difference.multiply(new BigDecimal("100")).divide(basePrice, 2, BigDecimal.ROUND_HALF_UP);
-    }
-    
-    // 割引額を計算（基本価格との差額）
-    public BigDecimal calculateDiscountAmount() {
-        if (priceCondition == null) {
-            return BigDecimal.ZERO;
-        }
-        
-        return priceCondition.getBasePrice().subtract(scalePrice);
-    }
 } 

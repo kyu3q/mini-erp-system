@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "price_conditions")
+@Table(name = "prices")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "price_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
 @Setter
-public class PriceCondition extends BaseEntity {
+public class Price extends BaseEntity {
     
     @Enumerated(EnumType.STRING)
     @Column(name = "price_type", insertable = false, updatable = false)
@@ -70,8 +70,7 @@ public class PriceCondition extends BaseEntity {
     @Column(name = "status", length = 20)
     private String status;
     
-    // 親クラスでのpriceScalesの定義を確認
-    @OneToMany(mappedBy = "priceCondition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PriceScale> priceScales = new ArrayList<>();
 
     public boolean isCurrentlyValid() {
@@ -147,7 +146,7 @@ public class PriceCondition extends BaseEntity {
      */
     public void addPriceScale(PriceScale priceScale) {
         priceScales.add(priceScale);
-        priceScale.setPriceCondition(this);
+        priceScale.setPrice(this);
     }
 
     /**
@@ -155,6 +154,6 @@ public class PriceCondition extends BaseEntity {
      */
     public void removePriceScale(PriceScale priceScale) {
         priceScales.remove(priceScale);
-        priceScale.setPriceCondition(null);
+        priceScale.setPrice(null);
     }
-}
+} 

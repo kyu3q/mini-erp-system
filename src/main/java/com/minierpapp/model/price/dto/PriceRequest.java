@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PriceConditionRequest {
+public class PriceRequest {
     private Long id;
 
     @NotNull(message = "価格タイプは必須です")

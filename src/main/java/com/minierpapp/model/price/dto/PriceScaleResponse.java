@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 @Data
 public class PriceScaleResponse {
     private Long id;
-    private Long priceConditionId;
+    private Long priceId;
     private BigDecimal fromQuantity;
     private BigDecimal toQuantity;
     private BigDecimal scalePrice;

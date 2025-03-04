@@ -8,6 +8,11 @@ import java.util.List;
 
 @Repository
 public interface PriceScaleRepository extends JpaRepository<PriceScale, Long> {
-    void deleteByPriceConditionId(Long priceConditionId);
-    List<PriceScale> findByPriceConditionId(Long priceConditionId);
+    
+    /**
+     * 特定の価格IDに関連する価格スケールを削除
+     */
+    void deleteByPriceId(Long priceId);
+    
+    List<PriceScale> findByPriceId(Long priceId);
 } 

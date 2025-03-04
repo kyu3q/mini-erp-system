@@ -10,6 +10,7 @@ import com.minierpapp.model.price.entity.SalesPrice;
 import com.minierpapp.model.price.mapper.SalesPriceMapper;
 import com.minierpapp.repository.CustomerRepository;
 import com.minierpapp.repository.ItemRepository;
+import com.minierpapp.repository.PriceScaleRepository;
 import com.minierpapp.repository.SalesPriceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SalesPriceService {
     private final SalesPriceRepository salesPriceRepository;
+    private final PriceScaleRepository priceScaleRepository;
     private final ItemRepository itemRepository;
     private final CustomerRepository customerRepository;
     private final SalesPriceMapper salesPriceMapper;
@@ -61,36 +64,95 @@ public class SalesPriceService {
 
     @Transactional
     public SalesPriceResponse create(SalesPriceRequest request) {
-        validateSalesPriceRequest(request);
+        validateRequest(request);
         
-        SalesPrice salesPrice = new SalesPrice();
+        // マッパーを使用してエンティティに変換
+        SalesPrice salesPrice = salesPriceMapper.requestToEntity(request);
         
-        // 基本情報の設定
-        setupSalesPrice(salesPrice, request);
+        // 関連エンティティの設定
+        if (request.getItemId() != null) {
+            Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
+            salesPrice.setItem(item);
+            salesPrice.setItemCode(item.getItemCode());
+        }
         
-        // 保存
-        salesPrice = salesPriceRepository.save(salesPrice);
+        if (request.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
+            salesPrice.setCustomer(customer);
+            salesPrice.setCustomerCode(customer.getCustomerCode());
+        }
+        
+        salesPriceRepository.save(salesPrice);
+        
+        // 数量スケールの保存
+        if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
+            List<PriceScale> scales = request.getPriceScales().stream()
+                .map(scaleRequest -> {
+                    PriceScale scale = new PriceScale();
+                    scale.setPrice(salesPrice);
+                    scale.setFromQuantity(scaleRequest.getFromQuantity());
+                    scale.setToQuantity(scaleRequest.getToQuantity());
+                    scale.setScalePrice(scaleRequest.getScalePrice());
+                    return scale;
+                })
+                .collect(Collectors.toList());
+            
+            priceScaleRepository.saveAll(scales);
+        }
+        
         return salesPriceMapper.entityToResponse(salesPrice);
     }
 
     @Transactional
     public SalesPriceResponse update(Long id, SalesPriceRequest request) {
-        validateSalesPriceRequest(request);
+        validateRequest(request);
         
         SalesPrice salesPrice = salesPriceRepository.findByIdAndDeletedFalse(id)
-            .orElseThrow(() -> new ResourceNotFoundException("販売価格", "ID", id));
+            .orElseThrow(() -> new ResourceNotFoundException("販売価格", id));
         
-        // 基本情報の更新
         salesPriceMapper.updateEntityFromRequest(request, salesPrice);
         
         // 関連エンティティの更新
-        updateSalesPriceRelations(salesPrice, request);
+        if (request.getItemId() != null) {
+            Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
+            salesPrice.setItem(item);
+            salesPrice.setItemCode(item.getItemCode());
+        }
         
-        // 数量スケールの更新
-        updatePriceScales(salesPrice, request);
+        if (request.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
+            salesPrice.setCustomer(customer);
+            salesPrice.setCustomerCode(customer.getCustomerCode());
+        } else {
+            salesPrice.setCustomer(null);
+            salesPrice.setCustomerCode(null);
+        }
         
-        // 保存
-        salesPrice = salesPriceRepository.save(salesPrice);
+        salesPriceRepository.save(salesPrice);
+        
+        // 既存の数量スケールを削除
+        priceScaleRepository.deleteByPriceId(id);
+        
+        // 新しい数量スケールを保存
+        if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
+            List<PriceScale> scales = request.getPriceScales().stream()
+                .map(scaleRequest -> {
+                    PriceScale scale = new PriceScale();
+                    scale.setPrice(salesPrice);
+                    scale.setFromQuantity(scaleRequest.getFromQuantity());
+                    scale.setToQuantity(scaleRequest.getToQuantity());
+                    scale.setScalePrice(scaleRequest.getScalePrice());
+                    return scale;
+                })
+                .collect(Collectors.toList());
+            
+            priceScaleRepository.saveAll(scales);
+        }
+        
         return salesPriceMapper.entityToResponse(salesPrice);
     }
 
@@ -150,78 +212,7 @@ public class SalesPriceService {
         );
     }
 
-    // プライベートヘルパーメソッド
-    private void setupSalesPrice(SalesPrice salesPrice, SalesPriceRequest request) {
-        // 品目の設定
-        Item item = itemRepository.findById(request.getItemId())
-            .orElseThrow(() -> new ResourceNotFoundException("品目", "ID", request.getItemId()));
-        salesPrice.setItem(item);
-        salesPrice.setItemCode(item.getItemCode());
-        
-        // 顧客の設定
-        if (request.getCustomerId() != null) {
-            Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("顧客", "ID", request.getCustomerId()));
-            salesPrice.setCustomer(customer);
-            salesPrice.setCustomerCode(customer.getCustomerCode());
-        }
-        
-        // 基本情報の設定
-        salesPrice.setBasePrice(request.getBasePrice());
-        salesPrice.setCurrencyCode(request.getCurrencyCode());
-        salesPrice.setValidFromDate(request.getValidFromDate());
-        salesPrice.setValidToDate(request.getValidToDate());
-        salesPrice.setStatus(request.getStatus());
-        
-        // 数量スケールの設定
-        if (request.getPriceScales() != null) {
-            request.getPriceScales().forEach(scaleRequest -> {
-                PriceScale scale = new PriceScale();
-                scale.setFromQuantity(new BigDecimal(scaleRequest.getQuantity().toString()));
-                scale.setScalePrice(scaleRequest.getPrice());
-                salesPrice.addPriceScale(scale);
-            });
-        }
-    }
-    
-    private void updateSalesPriceRelations(SalesPrice salesPrice, SalesPriceRequest request) {
-        // 品目の更新
-        if (!salesPrice.getItem().getId().equals(request.getItemId())) {
-            Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("品目", "ID", request.getItemId()));
-            salesPrice.setItem(item);
-            salesPrice.setItemCode(item.getItemCode());
-        }
-        
-        // 顧客の更新
-        if (request.getCustomerId() == null) {
-            salesPrice.setCustomer(null);
-            salesPrice.setCustomerCode(null);
-        } else if (salesPrice.getCustomer() == null || 
-                  !salesPrice.getCustomer().getId().equals(request.getCustomerId())) {
-            Customer customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new ResourceNotFoundException("顧客", "ID", request.getCustomerId()));
-            salesPrice.setCustomer(customer);
-            salesPrice.setCustomerCode(customer.getCustomerCode());
-        }
-    }
-    
-    private void updatePriceScales(SalesPrice salesPrice, SalesPriceRequest request) {
-        // 既存のスケールをクリア
-        salesPrice.getPriceScales().clear();
-        
-        // 新しいスケールを追加
-        if (request.getPriceScales() != null) {
-            request.getPriceScales().forEach(scaleRequest -> {
-                PriceScale scale = new PriceScale();
-                scale.setFromQuantity(new BigDecimal(scaleRequest.getQuantity().toString()));
-                scale.setScalePrice(scaleRequest.getPrice());
-                salesPrice.addPriceScale(scale);
-            });
-        }
-    }
-    
-    private void validateSalesPriceRequest(SalesPriceRequest request) {
+    private void validateRequest(SalesPriceRequest request) {
         if (request.getItemId() == null) {
             throw new IllegalArgumentException("品目IDは必須です。");
         }
@@ -241,11 +232,11 @@ public class SalesPriceService {
         // 数量スケールのバリデーション
         if (request.getPriceScales() != null) {
             for (var scale : request.getPriceScales()) {
-                if (scale.getQuantity() == null || scale.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new IllegalArgumentException("数量スケールの数量は0より大きい値を指定してください。");
+                if (scale.getFromQuantity() == null || scale.getFromQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("数量スケールの開始数量は0より大きい値を指定してください。");
                 }
                 
-                if (scale.getPrice() == null || scale.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                if (scale.getScalePrice() == null || scale.getScalePrice().compareTo(BigDecimal.ZERO) < 0) {
                     throw new IllegalArgumentException("数量スケールの価格は0以上の値を指定してください。");
                 }
             }

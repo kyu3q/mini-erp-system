@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS order_details (
 );
 
 -- 価格条件マスタ
-CREATE TABLE IF NOT EXISTS price_conditions (
+CREATE TABLE IF NOT EXISTS prices (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP,
@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS price_conditions (
     valid_from_date DATE NOT NULL,
     valid_to_date DATE NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-    CONSTRAINT uk_price_conditions_item_customer_supplier_date_not_deleted 
+    CONSTRAINT uk_prices_item_customer_supplier_date_not_deleted 
         UNIQUE (price_type, item_id, customer_id, supplier_id, valid_from_date, valid_to_date, deleted),
     FOREIGN KEY (item_id) REFERENCES items(id),
     FOREIGN KEY (customer_id) REFERENCES customers(id),
@@ -183,12 +183,12 @@ CREATE TABLE IF NOT EXISTS price_scales (
     created_by VARCHAR(100),
     updated_by VARCHAR(100),
     deleted BOOLEAN DEFAULT FALSE,
-    price_condition_id BIGINT NOT NULL,
+    price_id BIGINT NOT NULL,
     from_quantity DECIMAL(12,3) NOT NULL,
     to_quantity DECIMAL(12,3),
     scale_price DECIMAL(12,2) NOT NULL,
     currency_code VARCHAR(3) NOT NULL DEFAULT 'JPY',
-    CONSTRAINT uk_price_scales_condition_quantity_not_deleted 
-        UNIQUE (price_condition_id, from_quantity, deleted),
-    FOREIGN KEY (price_condition_id) REFERENCES price_conditions(id)
+    CONSTRAINT uk_price_scales_quantity_not_deleted 
+        UNIQUE (price_id, from_quantity, deleted),
+    FOREIGN KEY (price_id) REFERENCES prices(id)
 );

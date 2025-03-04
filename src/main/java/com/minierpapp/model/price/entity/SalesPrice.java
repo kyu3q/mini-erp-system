@@ -10,7 +10,7 @@ import lombok.Setter;
 @DiscriminatorValue("SALES")
 @Getter
 @Setter
-public class SalesPrice extends PriceCondition {
+public class SalesPrice extends Price {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", insertable = false, updatable = false)

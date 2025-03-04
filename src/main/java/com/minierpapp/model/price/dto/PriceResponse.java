@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class PriceConditionResponse {
+public class PriceResponse {
     private Long id;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -33,6 +33,4 @@ public class PriceConditionResponse {
     private LocalDate validToDate;
     private Status status;
     private List<PriceScaleResponse> priceScales = new ArrayList<>();
-    private boolean expired;
-    private boolean expiringSoon;
 }

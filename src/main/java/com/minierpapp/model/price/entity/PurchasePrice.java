@@ -11,7 +11,7 @@ import lombok.Setter;
 @DiscriminatorValue("PURCHASE")
 @Getter
 @Setter
-public class PurchasePrice extends PriceCondition {
+public class PurchasePrice extends Price {
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", insertable = false, updatable = false)

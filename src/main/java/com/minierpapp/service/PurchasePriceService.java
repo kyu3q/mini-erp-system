@@ -4,8 +4,6 @@ import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
-import com.minierpapp.model.price.entity.PriceCondition;
-import com.minierpapp.model.price.entity.PriceType;
 import com.minierpapp.model.price.entity.PriceScale;
 import com.minierpapp.model.price.entity.PurchasePrice;
 import com.minierpapp.model.price.mapper.PurchasePriceMapper;
@@ -70,14 +68,6 @@ public class PurchasePriceService {
         // マッパーを使用してエンティティに変換
         PurchasePrice purchasePrice = purchasePriceMapper.requestToEntity(request);
         
-        // マッピング後の値を確認
-        System.out.println("Service: After mapping - itemId=" + purchasePrice.getItemId() 
-            + ", supplierId=" + purchasePrice.getSupplierId());
-        
-        // 念のため重要なIDフィールドを明示的に設定
-        purchasePrice.setItemId(request.getItemId());
-        purchasePrice.setSupplierId(request.getSupplierId());
-        
         // 関連エンティティの設定
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
@@ -93,10 +83,6 @@ public class PurchasePriceService {
             purchasePrice.setSupplierCode(supplier.getSupplierCode());
         }
         
-        // 保存前の最終確認
-        System.out.println("Service: Before save - itemId=" + purchasePrice.getItemId() 
-            + ", supplierId=" + purchasePrice.getSupplierId());
-        
         purchasePriceRepository.save(purchasePrice);
         
         // 数量スケールの保存
@@ -104,9 +90,10 @@ public class PurchasePriceService {
             List<PriceScale> scales = request.getPriceScales().stream()
                 .map(scaleRequest -> {
                     PriceScale scale = new PriceScale();
-                    scale.setPriceCondition(purchasePrice);
-                    scale.setFromQuantity(scaleRequest.getQuantity());
-                    scale.setScalePrice(scaleRequest.getPrice());
+                    scale.setPrice(purchasePrice);
+                    scale.setFromQuantity(scaleRequest.getFromQuantity());
+                    scale.setToQuantity(scaleRequest.getToQuantity());
+                    scale.setScalePrice(scaleRequest.getScalePrice());
                     return scale;
                 })
                 .collect(Collectors.toList());
@@ -119,51 +106,52 @@ public class PurchasePriceService {
     public void update(Long id, PurchasePriceRequest request) {
         validateRequest(request);
         
-        PurchasePrice priceCondition = purchasePriceRepository.findByIdAndDeletedFalse(id)
+        PurchasePrice purchasePrice = purchasePriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
         
-        purchasePriceMapper.updateEntityFromRequest(request, priceCondition);
+        purchasePriceMapper.updateEntityFromRequest(request, purchasePrice);
         
         // 関連エンティティの更新
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
-            priceCondition.setItem(item);
-            priceCondition.setItemCode(item.getItemCode());
+            purchasePrice.setItem(item);
+            purchasePrice.setItemCode(item.getItemCode());
         } else if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
             Item item = itemRepository.findByItemCode(request.getItemCode())
                 .orElseThrow(() -> new ResourceNotFoundException("品目コード", request.getItemCode()));
-            priceCondition.setItem(item);
-            priceCondition.setItemId(item.getId());
-            priceCondition.setItemCode(item.getItemCode());
+            purchasePrice.setItem(item);
+            purchasePrice.setItemId(item.getId());
+            purchasePrice.setItemCode(item.getItemCode());
         }
         
         if (request.getSupplierId() != null) {
             Supplier supplier = supplierRepository.findById(request.getSupplierId())
                 .orElseThrow(() -> new ResourceNotFoundException("仕入先", request.getSupplierId()));
-            priceCondition.setSupplier(supplier);
-            priceCondition.setSupplierCode(supplier.getSupplierCode());
+            purchasePrice.setSupplier(supplier);
+            purchasePrice.setSupplierCode(supplier.getSupplierCode());
         } else if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
             Supplier supplier = supplierRepository.findBySupplierCode(request.getSupplierCode())
                 .orElseThrow(() -> new ResourceNotFoundException("仕入先コード", request.getSupplierCode()));
-            priceCondition.setSupplier(supplier);
-            priceCondition.setSupplierId(supplier.getId());
-            priceCondition.setSupplierCode(supplier.getSupplierCode());
+            purchasePrice.setSupplier(supplier);
+            purchasePrice.setSupplierId(supplier.getId());
+            purchasePrice.setSupplierCode(supplier.getSupplierCode());
         }
         
-        purchasePriceRepository.save(priceCondition);
+        purchasePriceRepository.save(purchasePrice);
         
         // 既存の数量スケールを削除
-        priceScaleRepository.deleteByPriceConditionId(id);
+        priceScaleRepository.deleteByPriceId(id);
         
         // 新しい数量スケールを保存
         if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
             List<PriceScale> scales = request.getPriceScales().stream()
                 .map(scaleRequest -> {
                     PriceScale scale = new PriceScale();
-                    scale.setPriceCondition(priceCondition);
-                    scale.setFromQuantity(scaleRequest.getQuantity());
-                    scale.setScalePrice(scaleRequest.getPrice());
+                    scale.setPrice(purchasePrice);
+                    scale.setFromQuantity(scaleRequest.getFromQuantity());
+                    scale.setToQuantity(scaleRequest.getToQuantity());
+                    scale.setScalePrice(scaleRequest.getScalePrice());
                     return scale;
                 })
                 .collect(Collectors.toList());
@@ -174,11 +162,11 @@ public class PurchasePriceService {
 
     @Transactional
     public void delete(Long id) {
-        PurchasePrice priceCondition = purchasePriceRepository.findByIdAndDeletedFalse(id)
+        PurchasePrice purchasePrice = purchasePriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
         
-        priceCondition.setDeleted(true);
-        purchasePriceRepository.save(priceCondition);
+        purchasePrice.setDeleted(true);
+        purchasePriceRepository.save(purchasePrice);
     }
 
     private void validateRequest(PurchasePriceRequest request) {
@@ -205,11 +193,11 @@ public class PurchasePriceService {
         // 数量スケールのバリデーション
         if (request.getPriceScales() != null) {
             for (var scale : request.getPriceScales()) {
-                if (scale.getQuantity() == null || scale.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new IllegalArgumentException("数量スケールの数量は0より大きい値を指定してください。");
+                if (scale.getFromQuantity() == null || scale.getFromQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+                    throw new IllegalArgumentException("数量スケールの開始数量は0より大きい値を指定してください。");
                 }
                 
-                if (scale.getPrice() == null || scale.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+                if (scale.getScalePrice() == null || scale.getScalePrice().compareTo(BigDecimal.ZERO) < 0) {
                     throw new IllegalArgumentException("数量スケールの価格は0以上の値を指定してください。");
                 }
             }

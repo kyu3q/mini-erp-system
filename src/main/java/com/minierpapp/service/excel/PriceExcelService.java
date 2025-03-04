@@ -4,7 +4,7 @@ import com.minierpapp.dto.excel.ImportResult;
 import com.minierpapp.dto.excel.PriceExcelRow;
 import com.minierpapp.model.common.Status;
 import com.minierpapp.model.price.entity.PriceScale;
-import com.minierpapp.model.price.entity.PriceCondition;
+import com.minierpapp.model.price.entity.Price;
 import com.minierpapp.model.price.entity.PriceType;
 import com.minierpapp.model.price.entity.PurchasePrice;
 import com.minierpapp.model.price.entity.SalesPrice;
@@ -161,8 +161,8 @@ public class PriceExcelService {
                 try {
                     PriceExcelRow priceRow = readSalesRow(row);
                     validateSalesRow(priceRow);
-                    PriceCondition condition = convertToPriceCondition(priceRow, PriceType.valueOf(PriceType.SALES.name()));
-                    priceService.save(condition);
+                    Price price = convertToPrice(priceRow, PriceType.valueOf(PriceType.SALES.name()));
+                    priceService.save(price);
                     result.addSuccess();
                 } catch (Exception e) {
                     result.addError(i + 1, e.getMessage());
@@ -189,8 +189,8 @@ public class PriceExcelService {
                 try {
                     PriceExcelRow priceRow = readPurchaseRow(row);
                     validatePurchaseRow(priceRow);
-                    PriceCondition condition = convertToPriceCondition(priceRow, PriceType.valueOf(PriceType.PURCHASE.name()));
-                    priceService.save(condition);
+                    Price price = convertToPrice(priceRow, PriceType.valueOf(PriceType.PURCHASE.name()));
+                    priceService.save(price);
                     result.addSuccess();
                 } catch (Exception e) {
                     result.addError(i + 1, e.getMessage());
@@ -385,24 +385,24 @@ public class PriceExcelService {
         }
     }
 
-    private PriceCondition convertToPriceCondition(PriceExcelRow row, PriceType priceType) {
-        PriceCondition condition = new PriceCondition();
-        condition.setPriceType(priceType);
-        condition.setItemCode(row.getItemCode());
-        condition.setItem(itemService.findByCode(row.getItemCode()));
-        condition.setCustomerCode(row.getCustomerCode());
+    private Price convertToPrice(PriceExcelRow row, PriceType priceType) {
+        Price price = new Price();
+        price.setPriceType(priceType);
+        price.setItemCode(row.getItemCode());
+        price.setItem(itemService.findByCode(row.getItemCode()));
+        price.setCustomerCode(row.getCustomerCode());
         if (!isEmpty(row.getCustomerCode())) {
-            condition.setCustomer(customerService.findByCode(row.getCustomerCode()));
+            price.setCustomer(customerService.findByCode(row.getCustomerCode()));
         }
-        condition.setSupplierCode(row.getSupplierCode());
+        price.setSupplierCode(row.getSupplierCode());
         if (!isEmpty(row.getSupplierCode())) {
-            condition.setSupplier(supplierService.findByCode(row.getSupplierCode()));
+            price.setSupplier(supplierService.findByCode(row.getSupplierCode()));
         }
-        condition.setBasePrice(row.getBasePrice());
-        condition.setCurrencyCode(row.getCurrencyCode());
-        condition.setValidFromDate(row.getValidFromDate());
-        condition.setValidToDate(row.getValidToDate());
-        condition.setStatus(row.getStatus());
+        price.setBasePrice(row.getBasePrice());
+        price.setCurrencyCode(row.getCurrencyCode());
+        price.setValidFromDate(row.getValidFromDate());
+        price.setValidToDate(row.getValidToDate());
+        price.setStatus(row.getStatus());
 
         // スケール価格の設定
         List<PriceScale> scales = new ArrayList<>();
@@ -411,12 +411,12 @@ public class PriceExcelService {
             scale.setFromQuantity(scaleRow.getFromQuantity());
             scale.setToQuantity(scaleRow.getToQuantity());
             scale.setScalePrice(scaleRow.getScalePrice());
-            scale.setPriceCondition(condition);
+            scale.setPrice(price);
             scales.add(scale);
         }
-        condition.setPriceScales(scales);
+        price.setPriceScales(scales);
 
-        return condition;
+        return price;
     }
 
     private CellStyle createHeaderStyle(Workbook workbook) {

@@ -213,8 +213,8 @@ END $$;
 -- 価格条件マスタ
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'price_conditions') THEN
-        CREATE TABLE price_conditions (
+    IF NOT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'prices') THEN
+        CREATE TABLE prices (
             id BIGSERIAL PRIMARY KEY,
             created_at TIMESTAMP NOT NULL,
             updated_at TIMESTAMP,
@@ -233,7 +233,7 @@ BEGIN
             valid_from_date DATE NOT NULL,
             valid_to_date DATE NOT NULL,
             status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-            CONSTRAINT uk_price_conditions_item_customer_supplier_date_not_deleted 
+            CONSTRAINT uk_prices_item_customer_supplier_date_not_deleted 
                 UNIQUE (price_type, item_id, customer_id, supplier_id, valid_from_date, valid_to_date, deleted)
         );
     END IF;
@@ -250,12 +250,12 @@ BEGIN
             created_by VARCHAR(100),
             updated_by VARCHAR(100),
             deleted BOOLEAN DEFAULT FALSE,
-            price_condition_id BIGINT NOT NULL REFERENCES price_conditions(id),
+            price_id BIGINT NOT NULL REFERENCES prices(id),
             from_quantity DECIMAL(12,3) NOT NULL,
             to_quantity DECIMAL(12,3),
             scale_price DECIMAL(12,2) NOT NULL,
-            CONSTRAINT uk_price_scales_condition_quantity_not_deleted 
-                UNIQUE (price_condition_id, from_quantity, deleted)
+            CONSTRAINT uk_price_scales_quantity_not_deleted 
+                UNIQUE (price_id, from_quantity, deleted)
         );
     END IF;
 END $$;
