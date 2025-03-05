@@ -33,7 +33,7 @@ public class PurchasePriceResponse {
     private String updatedBy;
     
     // 追加の便利なフィールド
-    private boolean currentlyValid;
-    private boolean expiringSoon; // 30日以内に期限切れ
-    private String validityStatus; // "有効", "期限切れ", "期限切れ間近"
+    // private boolean currentlyValid;
+    // private boolean expiringSoon; // 30日以内に期限切れ
+    // private String validityStatus; // "有効", "期限切れ", "期限切れ間近"
 } 

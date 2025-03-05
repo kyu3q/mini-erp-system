@@ -13,6 +13,9 @@ import org.mapstruct.Mappings;
  * @param <R> レスポンスの型
  */
 public interface BaseMapper<E, D, Q, R> {
+    /**
+     * DTOからエンティティへの変換
+     */
     @Mappings({
         @Mapping(target = "createdAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
@@ -30,6 +33,13 @@ public interface BaseMapper<E, D, Q, R> {
     /**
      * リクエストからエンティティへの変換
      */
+    @Mappings({
+        @Mapping(target = "createdAt", ignore = true),
+        @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
+        @Mapping(target = "updatedBy", ignore = true),
+        @Mapping(target = "deleted", ignore = true)
+    })
     E requestToEntity(Q request);
 
     /**

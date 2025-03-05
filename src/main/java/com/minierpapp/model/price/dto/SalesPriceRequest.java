@@ -20,12 +20,4 @@ public class SalesPriceRequest {
     private LocalDate validToDate;
     private Status status = Status.ACTIVE;
     private List<PriceScaleRequest> priceScales = new ArrayList<>();
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
 } 

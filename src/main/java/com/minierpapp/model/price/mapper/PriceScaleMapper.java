@@ -5,32 +5,34 @@ import com.minierpapp.model.price.dto.PriceScaleDto;
 import com.minierpapp.model.price.dto.PriceScaleRequest;
 import com.minierpapp.model.price.dto.PriceScaleResponse;
 import com.minierpapp.model.price.entity.PriceScale;
-import org.mapstruct.*;
-import java.util.List;
 
-@Mapper(componentModel = "spring")
+import java.util.List;
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
+import java.util.Collections;
+
+@Mapper(
+    componentModel = "spring",
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
+    uses = {Collections.class}
+)
 public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, PriceScaleRequest, PriceScaleResponse> {
     
-    @Mapping(target = "priceId", source = "price.id")
+    @Override
     PriceScaleDto toDto(PriceScale entity);
     
     List<PriceScaleDto> toDtoList(List<PriceScale> entities);
     
-    @Mapping(target = "price", ignore = true)
+    @Override
     PriceScale toEntity(PriceScaleDto dto);
     
     List<PriceScale> toEntityList(List<PriceScaleDto> dtos);
     
     @Override
-    @Mappings({
-        @Mapping(target = "id", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true),
-        @Mapping(target = "price", ignore = true)
-    })
+    PriceScale requestToEntity(PriceScaleRequest request);
+
+    @Override
     void updateEntity(PriceScaleDto dto, @MappingTarget PriceScale entity);
     
     @Override
@@ -51,4 +53,4 @@ public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, 
             return entity.getFromQuantity() + "～" + entity.getToQuantity();
         }
     }
-} 
+}

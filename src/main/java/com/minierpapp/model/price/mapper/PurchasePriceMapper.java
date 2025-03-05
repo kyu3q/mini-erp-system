@@ -17,44 +17,35 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "priceScales", source = "priceScales")
+    @Mapping(target = "customerName", source = "customer.name")
     PurchasePriceDto toDto(PurchasePrice entity);
     
     List<PurchasePriceDto> toDtoList(List<PurchasePrice> entities);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
+        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
-        @Mapping(target = "supplier", ignore = true),
-        @Mapping(target = "customerCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true),
-        @Mapping(target = "itemId", source = "itemId"),
-        @Mapping(target = "supplierId", source = "supplierId")
+        @Mapping(target = "supplier", ignore = true)
     })
     PurchasePrice toEntity(PurchasePriceDto dto);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
+        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "customerCode", ignore = true),
         @Mapping(target = "priceScales", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true),
         @Mapping(target = "itemId", source = "itemId"),
-        @Mapping(target = "supplierId", source = "supplierId")
+        @Mapping(target = "supplierId", source = "supplierId"),
+        @Mapping(target = "createdAt", ignore = true),
+        @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
+        @Mapping(target = "updatedBy", ignore = true),
+        @Mapping(target = "deleted", ignore = true)
     })
     PurchasePrice requestToEntity(PurchasePriceRequest request);
     
@@ -62,25 +53,18 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
     @Mapping(target = "customerName", source = "customer.name")
-    @Mapping(target = "priceScales", source = "priceScales")
-    @Mapping(target = "expiringSoon", expression = "java(isExpiringSoon(entity))")
     PurchasePriceResponse entityToResponse(PurchasePrice entity);
     
     List<PurchasePriceResponse> toResponseList(List<PurchasePrice> entities);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
+        @Mapping(target = "priceType", constant = "PURCHASE"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "customerCode", ignore = true),
         @Mapping(target = "priceScales", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true),
         @Mapping(target = "itemId", source = "itemId"),
         @Mapping(target = "supplierId", source = "supplierId")
     })
@@ -88,19 +72,15 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
+        @Mapping(target = "priceType", constant = "SALES"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
-        @Mapping(target = "customerCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
         @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true),
-        @Mapping(target = "itemId", source = "itemId"),
-        @Mapping(target = "supplierId", source = "supplierId")
+        @Mapping(target = "deleted", ignore = true)
     })
     void updateEntityFromRequest(PurchasePriceRequest request, @MappingTarget PurchasePrice entity);
     

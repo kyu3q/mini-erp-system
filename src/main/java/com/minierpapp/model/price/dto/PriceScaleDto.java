@@ -11,8 +11,10 @@ public class PriceScaleDto {
     private BigDecimal fromQuantity;
     private BigDecimal toQuantity;
     private BigDecimal scalePrice;
+    
     private LocalDateTime createdAt;
     private String createdBy;
     private LocalDateTime updatedAt;
     private String updatedBy;
+    private boolean deleted;
 } 

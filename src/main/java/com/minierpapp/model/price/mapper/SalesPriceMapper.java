@@ -15,42 +15,32 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
-    // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
-    @Mapping(target = "priceScales", source = "priceScales")
     SalesPriceDto toDto(SalesPrice entity);
     
     List<SalesPriceDto> toDtoList(List<SalesPrice> entities);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
         @Mapping(target = "priceType", constant = "SALES"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "supplierCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "supplierId", ignore = true)
     })
     SalesPrice toEntity(SalesPriceDto dto);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
         @Mapping(target = "priceType", constant = "SALES"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "supplierCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
+        @Mapping(target = "supplierId", ignore = true),
         @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
         @Mapping(target = "deleted", ignore = true)
     })
@@ -59,43 +49,32 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
-    // @Mapping(target = "currentlyValid", expression = "java(entity.isCurrentlyValid())")
-    // @Mapping(target = "expiringSoon", expression = "java(entity.getValidToDate() != null && entity.getValidToDate().minusDays(30).isBefore(LocalDate.now()) && entity.getValidToDate().isAfter(LocalDate.now()))")
-    // @Mapping(target = "validityStatus", expression = "java(getValidityStatus(entity))")
-    @Mapping(target = "priceScales", source = "priceScales")
     SalesPriceResponse entityToResponse(SalesPrice entity);
     
     List<SalesPriceResponse> toResponseList(List<SalesPrice> entities);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
         @Mapping(target = "priceType", constant = "SALES"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "supplierCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
+        @Mapping(target = "supplierId", ignore = true)
     })
     void updateEntity(SalesPriceDto dto, @MappingTarget SalesPrice entity);
     
     @Override
     @Mappings({
-        @Mapping(target = "id", ignore = true),
         @Mapping(target = "priceType", constant = "SALES"),
         @Mapping(target = "item", ignore = true),
         @Mapping(target = "customer", ignore = true),
         @Mapping(target = "supplier", ignore = true),
         @Mapping(target = "supplierCode", ignore = true),
-        @Mapping(target = "priceScales", ignore = true),
+        @Mapping(target = "supplierId", ignore = true),
         @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "createdBy", ignore = true),
+        @Mapping(target = "updatedAt", ignore = true),
         @Mapping(target = "updatedBy", ignore = true),
         @Mapping(target = "deleted", ignore = true)
     })

@@ -1,6 +1,7 @@
 package com.minierpapp.model.price.entity;
 
 import com.minierpapp.model.base.BaseEntity;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,11 +12,14 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 public class PriceScale extends BaseEntity {
-    
-    @ManyToOne
-    @JoinColumn(name = "price_id")
+ 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "price_id", insertable = false, updatable = false)
     private Price price;
-    
+
+    @Column(name = "price_id")
+    private Long priceId;
+
     @Column(name = "from_quantity", nullable = false)
     private BigDecimal fromQuantity;
     

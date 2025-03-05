@@ -29,8 +29,4 @@ public class SalesPriceDto {
     private LocalDateTime updatedAt;
     private String updatedBy;
     private boolean deleted;
-    
-    // 追加の便利なフィールド
-    // private boolean currentlyValid;
-    // private boolean expiringSoon; // 30日以内に期限切れ
 } 
