@@ -9,12 +9,10 @@ import com.minierpapp.model.customer.dto.CustomerResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.Collections;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = {Collections.class}
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface CustomerMapper extends BaseMapper<Customer, CustomerDto, CustomerRequest, CustomerResponse> {
     @Override

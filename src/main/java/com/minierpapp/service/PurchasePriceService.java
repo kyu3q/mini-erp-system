@@ -62,44 +62,32 @@ public class PurchasePriceService {
     }
 
     @Transactional
-    public void create(PurchasePriceRequest request) {
-        validateRequest(request);
+    public PurchasePriceResponse create(PurchasePriceRequest request) {
+        System.out.println("PurchasePriceService.create開始");
+        System.out.println("サービス内: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
+        System.out.println("サービス内: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
+        System.out.println("サービス内: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
         
-        // マッパーを使用してエンティティに変換
-        PurchasePrice purchasePrice = purchasePriceMapper.requestToEntity(request);
-        
-        // 関連エンティティの設定
-        if (request.getItemId() != null) {
-            Item item = itemRepository.findById(request.getItemId())
-                .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
-            purchasePrice.setItem(item);
-            purchasePrice.setItemCode(item.getItemCode());
+        // 必須フィールドの再検証
+        if (request.getItemId() == null) {
+            throw new IllegalArgumentException("品目IDは必須です（サービス内）");
+        }
+        if (request.getSupplierId() == null) {
+            throw new IllegalArgumentException("仕入先IDは必須です（サービス内）");
         }
         
-        if (request.getSupplierId() != null) {
-            Supplier supplier = supplierRepository.findById(request.getSupplierId())
-                .orElseThrow(() -> new ResourceNotFoundException("仕入先", request.getSupplierId()));
-            purchasePrice.setSupplier(supplier);
-            purchasePrice.setSupplierCode(supplier.getSupplierCode());
-        }
+        // エンティティへの変換
+        PurchasePrice entity = purchasePriceMapper.requestToEntity(request);
+        System.out.println("エンティティ変換後: itemId=" + entity.getItemId() + ", itemCode=" + entity.getItemCode());
+        System.out.println("エンティティ変換後: supplierId=" + entity.getSupplierId() + ", supplierCode=" + entity.getSupplierCode());
+        System.out.println("エンティティ変換後: customerId=" + entity.getCustomerId() + ", customerCode=" + entity.getCustomerCode());
         
-        purchasePriceRepository.save(purchasePrice);
+        // 保存
+        entity = purchasePriceRepository.save(entity);
+        System.out.println("保存後: id=" + entity.getId());
         
-        // 数量スケールの保存
-        if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
-            List<PriceScale> scales = request.getPriceScales().stream()
-                .map(scaleRequest -> {
-                    PriceScale scale = new PriceScale();
-                    scale.setPrice(purchasePrice);
-                    scale.setFromQuantity(scaleRequest.getFromQuantity());
-                    scale.setToQuantity(scaleRequest.getToQuantity());
-                    scale.setScalePrice(scaleRequest.getScalePrice());
-                    return scale;
-                })
-                .collect(Collectors.toList());
-            
-            priceScaleRepository.saveAll(scales);
-        }
+        System.out.println("PurchasePriceService.create完了");
+        return purchasePriceMapper.entityToResponse(entity);
     }
 
     @Transactional

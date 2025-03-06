@@ -87,6 +87,7 @@ public class Price extends BaseEntity {
     }
 
     public void setItemId(Long itemId) {
+        this.itemId = itemId;
         if (this.item == null) {
             Item item = new Item();
             item.setId(itemId);
@@ -95,6 +96,7 @@ public class Price extends BaseEntity {
     }
 
     public void setSupplierId(Long supplierId) {
+        this.supplierId = supplierId;
         if (this.supplier == null) {
             Supplier supplier = new Supplier();
             supplier.setId(supplierId);
@@ -103,6 +105,7 @@ public class Price extends BaseEntity {
     }
 
     public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
         if (this.customer == null) {
             Customer customer = new Customer();
             customer.setId(customerId);

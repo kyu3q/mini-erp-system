@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.minierpapp.model.price.entity.SalesPrice;
+import com.minierpapp.service.ItemService;
+import com.minierpapp.service.CustomerService;
+import com.minierpapp.model.item.dto.ItemResponse;
+import com.minierpapp.model.customer.dto.CustomerResponse;
 
 @Controller
 @RequestMapping("/prices/sales")
@@ -35,17 +39,23 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
     private final SalesPriceService salesPriceService;
     private final PriceExcelService priceExcelService;
     private final SalesPriceMapper salesPriceMapper;
+    private final ItemService itemService;
+    private final CustomerService customerService;
 
     public SalesPriceWebController(
             SalesPriceService salesPriceService,
             SalesPriceMapper mapper,
             MessageSource messageSource,
             PriceExcelService priceExcelService,
-            SalesPriceMapper salesPriceMapper) {
+            SalesPriceMapper salesPriceMapper,
+            ItemService itemService,
+            CustomerService customerService) {
         super(mapper, messageSource, "price/sales", "SalesPrice");
         this.salesPriceService = salesPriceService;
         this.priceExcelService = priceExcelService;
         this.salesPriceMapper = salesPriceMapper;
+        this.itemService = itemService;
+        this.customerService = customerService;
     }
 
     @Override
@@ -67,11 +77,20 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
 
     @Override
     protected void createEntity(SalesPriceRequest request) {
+        validateAndSetIds(request);
+        
+        System.out.println("Controller: After validation - itemId=" + request.getItemId() 
+            + ", itemCode=" + request.getItemCode()
+            + ", customerId=" + request.getCustomerId()
+            + ", customerCode=" + request.getCustomerCode());
+        
         salesPriceService.create(request);
     }
 
     @Override
     protected void updateEntity(Long id, SalesPriceRequest request) {
+        validateAndSetIds(request);
+        System.out.println("Updating entity with itemId: " + request.getItemId() + ", customerId: " + request.getCustomerId());
         salesPriceService.update(id, request);
     }
 
@@ -119,6 +138,41 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
                 .body(new ByteArrayResource(out.toByteArray()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    /**
+     * リクエストのコード値からIDを設定する
+     */
+    private void validateAndSetIds(SalesPriceRequest request) {
+        // 品目IDの設定
+        if (request.getItemId() == null && request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+            ItemResponse item = itemService.findByItemCode(request.getItemCode());
+            if (item != null) {
+                request.setItemId(item.getId());
+            } else {
+                throw new IllegalArgumentException("品目コード " + request.getItemCode() + " が見つかりません");
+            }
+        }
+        
+        // 必須フィールドの検証
+        if (request.getItemId() == null) {
+            throw new IllegalArgumentException("品目IDは必須です");
+        }
+        
+        // 得意先IDの設定
+        if (request.getCustomerId() == null && request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+            CustomerResponse customer = customerService.findByCustomerCode(request.getCustomerCode());
+            if (customer != null) {
+                request.setCustomerId(customer.getId());
+            } else {
+                throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " が見つかりません");
+            }
+        }
+        
+        // 必須フィールドの検証
+        if (request.getCustomerId() == null) {
+            throw new IllegalArgumentException("得意先IDは必須です");
         }
     }
 }

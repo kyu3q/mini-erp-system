@@ -28,4 +28,13 @@ public class PriceScale extends BaseEntity {
     
     @Column(name = "scale_price", nullable = false)
     private BigDecimal scalePrice;
+
+    public void setPriceId(Long priceId) {
+        this.priceId = priceId;
+        if (this.price == null) {
+            Price price = new Price();
+            price.setId(priceId);
+            this.price = price;
+        }
+    }
 } 

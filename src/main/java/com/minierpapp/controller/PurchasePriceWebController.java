@@ -78,15 +78,26 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
 
     @Override
     protected void createEntity(PurchasePriceRequest request) {
-        validateAndSetIds(request);
+        System.out.println("===== 購買単価登録処理開始 =====");
+        System.out.println("登録前: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
+        System.out.println("登録前: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
+        System.out.println("登録前: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
         
-        // デバッグ情報を追加
-        System.out.println("Controller: After validation - itemId=" + request.getItemId() 
-            + ", itemCode=" + request.getItemCode()
-            + ", supplierId=" + request.getSupplierId()
-            + ", supplierCode=" + request.getSupplierCode());
-        
-        purchasePriceService.create(request);
+        try {
+            // コード値からIDへの変換を確認
+            validateAndSetIds(request);
+            
+            System.out.println("変換後: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
+            System.out.println("変換後: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
+            System.out.println("変換後: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
+            
+            purchasePriceService.create(request);
+            System.out.println("===== 購買単価登録処理完了 =====");
+        } catch (Exception e) {
+            System.out.println("購買単価登録処理でエラー発生: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @Override
@@ -179,44 +190,65 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
      * リクエストのコード値からIDを設定する
      */
     private void validateAndSetIds(PurchasePriceRequest request) {
+        System.out.println("validateAndSetIds開始");
+        
         // 品目IDの設定
         if (request.getItemId() == null && request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+            System.out.println("品目コード検索: " + request.getItemCode());
             ItemResponse item = itemService.findByItemCode(request.getItemCode());
             if (item != null) {
+                System.out.println("品目が見つかりました: id=" + item.getId() + ", name=" + item.getItemName());
                 request.setItemId(item.getId());
             } else {
+                System.out.println("品目が見つかりません: code=" + request.getItemCode());
                 throw new IllegalArgumentException("品目コード " + request.getItemCode() + " が見つかりません");
             }
+        } else {
+            System.out.println("品目コード検索をスキップ: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
         }
         
         // 必須フィールドの検証
         if (request.getItemId() == null) {
+            System.out.println("品目IDが設定されていません");
             throw new IllegalArgumentException("品目IDは必須です");
         }
         
         // 仕入先IDの設定
         if (request.getSupplierId() == null && request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
+            System.out.println("仕入先コード検索: " + request.getSupplierCode());
             SupplierResponse supplier = supplierService.findBySupplierCode(request.getSupplierCode());
             if (supplier != null) {
+                System.out.println("仕入先が見つかりました: id=" + supplier.getId() + ", name=" + supplier.getName());
                 request.setSupplierId(supplier.getId());
             } else {
+                System.out.println("仕入先が見つかりません: code=" + request.getSupplierCode());
                 throw new IllegalArgumentException("仕入先コード " + request.getSupplierCode() + " が見つかりません");
             }
+        } else {
+            System.out.println("仕入先コード検索をスキップ: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
         }
         
         // 必須フィールドの検証
         if (request.getSupplierId() == null) {
+            System.out.println("仕入先IDが設定されていません");
             throw new IllegalArgumentException("仕入先IDは必須です");
         }
         
         // 得意先IDの設定（必要な場合）
         if (request.getCustomerId() == null && request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+            System.out.println("得意先コード検索: " + request.getCustomerCode());
             CustomerResponse customer = customerService.findByCustomerCode(request.getCustomerCode());
             if (customer != null) {
+                System.out.println("得意先が見つかりました: id=" + customer.getId() + ", name=" + customer.getName());
                 request.setCustomerId(customer.getId());
             } else {
+                System.out.println("得意先が見つかりません: code=" + request.getCustomerCode());
                 throw new IllegalArgumentException("得意先コード " + request.getCustomerCode() + " が見つかりません");
             }
+        } else {
+            System.out.println("得意先コード検索をスキップ: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
         }
+        
+        System.out.println("validateAndSetIds完了");
     }
 }

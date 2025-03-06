@@ -42,7 +42,7 @@
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemCode"
+                                <input type="text" class="form-control" id="itemCode" name="itemCode"
                                        th:value="${item != null ? item.itemCode : ''}"
                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
