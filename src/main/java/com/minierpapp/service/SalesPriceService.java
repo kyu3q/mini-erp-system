@@ -33,14 +33,15 @@ public class SalesPriceService {
 
     @Transactional(readOnly = true)
     public List<SalesPriceResponse> findAll() {
-        return salesPriceMapper.toResponseList(salesPriceRepository.findByDeletedFalse());
+        List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
+        return salesPriceMapper.toResponseList(entities);
     }
 
     @Transactional(readOnly = true)
     public SalesPriceResponse findById(Long id) {
-        return salesPriceRepository.findByIdAndDeletedFalse(id)
-            .map(salesPriceMapper::entityToResponse)
-            .orElseThrow(() -> new ResourceNotFoundException("販売価格", "ID", id));
+        SalesPrice entity = salesPriceRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("販売価格", "ID", id));
+        return salesPriceMapper.entityToResponse(entity);
     }
 
     @Transactional(readOnly = true)
@@ -210,6 +211,25 @@ public class SalesPriceService {
         return salesPriceMapper.toResponseList(
             salesPriceRepository.findByValidToDateGreaterThanEqualAndValidToDateLessThanEqualAndDeletedFalse(today, thresholdDate)
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<SalesPriceResponse> findAllForDisplay() {
+        List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
+        return salesPriceMapper.toResponseList(entities);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SalesPriceResponse> findWithFilters(Long itemId, Long supplierId, Long customerId) {
+        List<SalesPrice> entities = salesPriceRepository.findWithFilters(itemId, supplierId, customerId);
+        return salesPriceMapper.toResponseList(entities);
+    }
+
+    @Transactional(readOnly = true)
+    public SalesPriceResponse findByIdForDisplay(Long id) {
+        SalesPrice entity = salesPriceRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("販売価格が見つかりません: " + id));
+        return salesPriceMapper.entityToResponse(entity);
     }
 
     private void validateRequest(SalesPriceRequest request) {

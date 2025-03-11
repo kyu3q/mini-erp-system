@@ -251,4 +251,20 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
         
         System.out.println("validateAndSetIds完了");
     }
+
+    @Override
+    protected String getListAttributeName() {
+        return "prices";
+    }
+
+    @Override
+    @GetMapping
+    public String list(
+            @RequestParam(required = false) String searchParam1,
+            @RequestParam(required = false) String searchParam2,
+            Model model) {
+        List<PurchasePriceResponse> prices = findAll();
+        model.addAttribute("prices", prices);
+        return getListTemplate();
+    }
 }

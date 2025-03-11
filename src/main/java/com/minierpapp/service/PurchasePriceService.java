@@ -31,17 +31,34 @@ public class PurchasePriceService {
 
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> findAll() {
-        return purchasePriceMapper.toResponseList(
-            purchasePriceRepository.findByDeletedFalse()
-        );
+        List<PurchasePrice> entities = purchasePriceRepository.findAllWithRelations();
+        return purchasePriceMapper.toResponseList(entities);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PurchasePriceResponse> findAllForDisplay() {
+        List<PurchasePrice> entities = purchasePriceRepository.findAllWithRelations();
+        return purchasePriceMapper.toResponseList(entities);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PurchasePriceResponse> findWithFilters(Long itemId, Long supplierId, Long customerId) {
+        List<PurchasePrice> entities = purchasePriceRepository.findWithFilters(itemId, supplierId, customerId);
+        return purchasePriceMapper.toResponseList(entities);
     }
 
     @Transactional(readOnly = true)
     public PurchasePriceResponse findById(Long id) {
-        return purchasePriceMapper.entityToResponse(
-            purchasePriceRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("購買価格", id))
-        );
+        PurchasePrice entity = purchasePriceRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("購買価格が見つかりません: " + id));
+        return purchasePriceMapper.entityToResponse(entity);
+    }
+
+    @Transactional(readOnly = true)
+    public PurchasePriceResponse findByIdForDisplay(Long id) {
+        PurchasePrice entity = purchasePriceRepository.findByIdWithRelations(id)
+                .orElseThrow(() -> new ResourceNotFoundException("購買価格が見つかりません: " + id));
+        return purchasePriceMapper.entityToResponse(entity);
     }
 
     @Transactional(readOnly = true)

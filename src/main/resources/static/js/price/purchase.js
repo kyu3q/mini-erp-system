@@ -29,12 +29,12 @@ function confirmDelete(id) {
 
 // Excel出力
 function exportToExcel() {
-    window.location.href = '/prices/excel/purchase/export';
+    window.location.href = '/prices/purchase/excel/export';
 }
 
 // テンプレートダウンロード
 function downloadTemplate() {
-    window.location.href = '/prices/excel/purchase/template';
+    window.location.href = '/prices/purchase/excel/template';
 }
 
 // Excel取込
@@ -44,7 +44,7 @@ function importFromExcel(input) {
     const formData = new FormData();
     formData.append('file', input.files[0]);
 
-    fetch('/prices/excel/purchase/import', {
+    fetch('/prices/purchase/excel/import', {
         method: 'POST',
         body: formData
     })

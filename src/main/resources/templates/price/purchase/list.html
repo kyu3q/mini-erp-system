@@ -102,9 +102,7 @@
                     <td>
                         <span th:text="${#temporals.format(price.validFromDate, 'yyyy/MM/dd')}"></span>
                         ～
-                        <span th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"
-                              th:class="${price.expired ? 'price-expired' : (price.expiringSoon ? 'price-expiring-soon' : '')}">
-                        </span>
+                        <span th:text="${#temporals.format(price.validToDate, 'yyyy/MM/dd')}"></span>
                     </td>
                     <td>
                         <span th:if="${price.priceScales.isEmpty()}">なし</span>
@@ -141,8 +139,6 @@
             </table>
         </div>
     </div>
-</div>
-
 </div>
 </body>
 </html>

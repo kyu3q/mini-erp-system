@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -174,5 +175,21 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
         if (request.getCustomerId() == null) {
             throw new IllegalArgumentException("得意先IDは必須です");
         }
+    }
+
+    @Override
+    protected String getListAttributeName() {
+        return "prices";
+    }
+
+    @Override
+    @GetMapping
+    public String list(
+            @RequestParam(required = false) String searchParam1,
+            @RequestParam(required = false) String searchParam2,
+            Model model) {
+        List<SalesPriceResponse> prices = findAll();
+        model.addAttribute("prices", prices);
+        return getListTemplate();
     }
 }
