@@ -1,13 +1,16 @@
 package com.minierpapp.service;
 
 import com.minierpapp.exception.ResourceNotFoundException;
+import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
+import com.minierpapp.model.price.dto.PriceScaleRequest;
 import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.model.price.entity.PriceScale;
 import com.minierpapp.model.price.entity.PurchasePrice;
 import com.minierpapp.model.price.mapper.PurchasePriceMapper;
 import com.minierpapp.model.supplier.Supplier;
+import com.minierpapp.repository.CustomerRepository;
 import com.minierpapp.repository.ItemRepository;
 import com.minierpapp.repository.PurchasePriceRepository;
 import com.minierpapp.repository.PriceScaleRepository;
@@ -27,12 +30,20 @@ public class PurchasePriceService {
     private final PriceScaleRepository priceScaleRepository;
     private final ItemRepository itemRepository;
     private final SupplierRepository supplierRepository;
+    private final CustomerRepository customerRepository;
     private final PurchasePriceMapper purchasePriceMapper;
 
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> findAll() {
-        List<PurchasePrice> entities = purchasePriceRepository.findAllWithRelations();
-        return purchasePriceMapper.toResponseList(entities);
+        List<PurchasePrice> entities = purchasePriceRepository.findAll();
+        List<PurchasePriceResponse> responses = purchasePriceMapper.toResponseList(entities);
+        
+        // 関連エンティティの名前を設定
+        for (PurchasePriceResponse response : responses) {
+            setRelatedNames(response);
+        }
+        
+        return responses;
     }
 
     @Transactional(readOnly = true)
@@ -49,9 +60,13 @@ public class PurchasePriceService {
 
     @Transactional(readOnly = true)
     public PurchasePriceResponse findById(Long id) {
-        PurchasePrice entity = purchasePriceRepository.findByIdWithRelations(id)
-                .orElseThrow(() -> new ResourceNotFoundException("購買価格が見つかりません: " + id));
-        return purchasePriceMapper.entityToResponse(entity);
+        PurchasePrice entity = purchasePriceRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("購買単価が見つかりません: " + id));
+        
+        PurchasePriceResponse response = purchasePriceMapper.entityToResponse(entity);
+        setRelatedNames(response);
+        
+        return response;
     }
 
     @Transactional(readOnly = true)
@@ -80,31 +95,31 @@ public class PurchasePriceService {
 
     @Transactional
     public PurchasePriceResponse create(PurchasePriceRequest request) {
-        System.out.println("PurchasePriceService.create開始");
-        System.out.println("サービス内: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
-        System.out.println("サービス内: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
-        System.out.println("サービス内: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
-        
-        // 必須フィールドの再検証
-        if (request.getItemId() == null) {
-            throw new IllegalArgumentException("品目IDは必須です（サービス内）");
-        }
-        if (request.getSupplierId() == null) {
-            throw new IllegalArgumentException("仕入先IDは必須です（サービス内）");
-        }
-        
         // エンティティへの変換
-        PurchasePrice entity = purchasePriceMapper.requestToEntity(request);
-        System.out.println("エンティティ変換後: itemId=" + entity.getItemId() + ", itemCode=" + entity.getItemCode());
-        System.out.println("エンティティ変換後: supplierId=" + entity.getSupplierId() + ", supplierCode=" + entity.getSupplierCode());
-        System.out.println("エンティティ変換後: customerId=" + entity.getCustomerId() + ", customerCode=" + entity.getCustomerCode());
+        final PurchasePrice entity = purchasePriceMapper.requestToEntity(request);
         
-        // 保存
-        entity = purchasePriceRepository.save(entity);
-        System.out.println("保存後: id=" + entity.getId());
+        // 関連エンティティの設定
+        if (request.getItemId() != null) {
+            Item item = itemRepository.findById(request.getItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
+            entity.setItem(item);
+            entity.setItemCode(item.getItemCode());
+        }
         
-        System.out.println("PurchasePriceService.create完了");
-        return purchasePriceMapper.entityToResponse(entity);
+        if (request.getSupplierId() != null) {
+            Supplier supplier = supplierRepository.findById(request.getSupplierId())
+                .orElseThrow(() -> new ResourceNotFoundException("仕入先", request.getSupplierId()));
+            entity.setSupplier(supplier);
+            entity.setSupplierCode(supplier.getSupplierCode());
+        }
+        
+        // 先に価格エンティティを保存
+        final PurchasePrice savedEntity = purchasePriceRepository.save(entity);
+        
+        // スケール価格の設定
+        savePriceScales(request.getPriceScales(), savedEntity);
+        
+        return purchasePriceMapper.entityToResponse(savedEntity);
     }
 
     @Transactional
@@ -206,6 +221,64 @@ public class PurchasePriceService {
                     throw new IllegalArgumentException("数量スケールの価格は0以上の値を指定してください。");
                 }
             }
+        }
+    }
+
+    private void setRelatedNames(PurchasePriceResponse response) {
+        // 品目名の設定
+        if (response.getItemId() != null) {
+            try {
+                Item item = itemRepository.findById(response.getItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("品目", response.getItemId()));
+                if (item != null) {
+                    response.setItemName(item.getItemName());
+                }
+            } catch (Exception e) {
+                // エラーが発生しても処理を続行
+                System.out.println("品目名の取得に失敗: " + e.getMessage());
+            }
+        }
+        
+        // 仕入先名の設定
+        if (response.getSupplierId() != null) {
+            try {
+                Supplier supplier = supplierRepository.findById(response.getSupplierId())
+                    .orElseThrow(() -> new ResourceNotFoundException("仕入先", response.getSupplierId()));
+                if (supplier != null) {
+                    response.setSupplierName(supplier.getName());
+                }
+            } catch (Exception e) {
+                // エラーが発生しても処理を続行
+                System.out.println("仕入先名の取得に失敗: " + e.getMessage());
+            }
+        }
+
+        // 得意先名の設定
+        if (response.getCustomerId() != null) {
+            try {
+                Customer customer = customerRepository.findById(response.getCustomerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("得意先", response.getCustomerId()));
+                if (customer != null) {
+                    response.setCustomerName(customer.getName());
+                }
+            } catch (Exception e) {
+                // エラーが発生しても処理を続行
+                System.out.println("得意先名の取得に失敗: " + e.getMessage());
+            }
+        }
+    }
+
+    private void savePriceScales(List<PriceScaleRequest> scales, PurchasePrice price) {
+        if (scales != null && !scales.isEmpty()) {
+            scales.forEach(scale -> {
+                PriceScale priceScale = new PriceScale();
+                priceScale.setFromQuantity(scale.getFromQuantity());
+                priceScale.setToQuantity(scale.getToQuantity());
+                priceScale.setScalePrice(scale.getScalePrice());
+                priceScale.setPrice(price);
+                price.getPriceScales().add(priceScale);
+                priceScaleRepository.save(priceScale);
+            });
         }
     }
 } 

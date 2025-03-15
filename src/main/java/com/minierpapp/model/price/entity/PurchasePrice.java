@@ -6,6 +6,8 @@ import com.minierpapp.model.supplier.Supplier;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @DiscriminatorValue("PURCHASE")
@@ -24,4 +26,7 @@ public class PurchasePrice extends Price {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", insertable = false, updatable = false)
     private Item item;
+
+    @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PriceScale> priceScales = new ArrayList<>();
 } 

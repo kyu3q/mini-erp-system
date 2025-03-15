@@ -13,12 +13,9 @@ import java.math.BigDecimal;
 @Setter
 public class PriceScale extends BaseEntity {
  
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "price_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "price_id", nullable = false)
     private Price price;
-
-    @Column(name = "price_id")
-    private Long priceId;
 
     @Column(name = "from_quantity", nullable = false)
     private BigDecimal fromQuantity;
@@ -28,13 +25,4 @@ public class PriceScale extends BaseEntity {
     
     @Column(name = "scale_price", nullable = false)
     private BigDecimal scalePrice;
-
-    public void setPriceId(Long priceId) {
-        this.priceId = priceId;
-        if (this.price == null) {
-            Price price = new Price();
-            price.setId(priceId);
-            this.price = price;
-        }
-    }
 } 

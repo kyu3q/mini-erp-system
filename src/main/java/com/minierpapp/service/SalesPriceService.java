@@ -3,6 +3,7 @@ package com.minierpapp.service;
 import com.minierpapp.exception.ResourceNotFoundException;
 import com.minierpapp.model.customer.Customer;
 import com.minierpapp.model.item.Item;
+import com.minierpapp.model.price.dto.PriceScaleRequest;
 import com.minierpapp.model.price.dto.SalesPriceRequest;
 import com.minierpapp.model.price.dto.SalesPriceResponse;
 import com.minierpapp.model.price.entity.PriceScale;
@@ -13,6 +14,7 @@ import com.minierpapp.repository.ItemRepository;
 import com.minierpapp.repository.PriceScaleRepository;
 import com.minierpapp.repository.SalesPriceRepository;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +36,9 @@ public class SalesPriceService {
     @Transactional(readOnly = true)
     public List<SalesPriceResponse> findAll() {
         List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
-        return salesPriceMapper.toResponseList(entities);
+        List<SalesPriceResponse> responses = salesPriceMapper.toResponseList(entities);
+        responses.forEach(this::setRelatedNames);
+        return responses;
     }
 
     @Transactional(readOnly = true)
@@ -67,43 +71,48 @@ public class SalesPriceService {
     public SalesPriceResponse create(SalesPriceRequest request) {
         validateRequest(request);
         
-        // マッパーを使用してエンティティに変換
-        SalesPrice salesPrice = salesPriceMapper.requestToEntity(request);
+        System.out.println("リクエストのスケール数: " + 
+            (request.getPriceScales() != null ? request.getPriceScales().size() : 0));
+        
+        // エンティティへの変換
+        final SalesPrice entity = salesPriceMapper.requestToEntity(request);
         
         // 関連エンティティの設定
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
-            salesPrice.setItem(item);
-            salesPrice.setItemCode(item.getItemCode());
+            entity.setItem(item);
+            entity.setItemCode(item.getItemCode());
         }
         
         if (request.getCustomerId() != null) {
             Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
-            salesPrice.setCustomer(customer);
-            salesPrice.setCustomerCode(customer.getCustomerCode());
+            entity.setCustomer(customer);
+            entity.setCustomerCode(customer.getCustomerCode());
         }
         
-        salesPriceRepository.save(salesPrice);
+        // 先に価格エンティティを保存
+        final SalesPrice savedEntity = salesPriceRepository.save(entity);
         
-        // 数量スケールの保存
-        if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
-            List<PriceScale> scales = request.getPriceScales().stream()
-                .map(scaleRequest -> {
-                    PriceScale scale = new PriceScale();
-                    scale.setPrice(salesPrice);
-                    scale.setFromQuantity(scaleRequest.getFromQuantity());
-                    scale.setToQuantity(scaleRequest.getToQuantity());
-                    scale.setScalePrice(scaleRequest.getScalePrice());
-                    return scale;
-                })
-                .collect(Collectors.toList());
-            
-            priceScaleRepository.saveAll(scales);
+        // スケール価格の設定
+        savePriceScales(request.getPriceScales(), savedEntity);
+        
+        return salesPriceMapper.entityToResponse(savedEntity);
+    }
+
+    private void savePriceScales(List<PriceScaleRequest> scales, SalesPrice price) {
+        if (scales != null && !scales.isEmpty()) {
+            scales.forEach(scale -> {
+                PriceScale priceScale = new PriceScale();
+                priceScale.setFromQuantity(scale.getFromQuantity());
+                priceScale.setToQuantity(scale.getToQuantity());
+                priceScale.setScalePrice(scale.getScalePrice());
+                priceScale.setPrice(price);
+                price.getPriceScales().add(priceScale);
+                priceScaleRepository.save(priceScale);
+            });
         }
-        
-        return salesPriceMapper.entityToResponse(salesPrice);
     }
 
     @Transactional
@@ -259,6 +268,36 @@ public class SalesPriceService {
                 if (scale.getScalePrice() == null || scale.getScalePrice().compareTo(BigDecimal.ZERO) < 0) {
                     throw new IllegalArgumentException("数量スケールの価格は0以上の値を指定してください。");
                 }
+            }
+        }
+    }
+
+    private void setRelatedNames(SalesPriceResponse response) {
+        // 品目名の設定
+        if (response.getItemId() != null) {
+            try {
+                Item item = itemRepository.findById(response.getItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("品目", response.getItemId()));
+                if (item != null) {
+                    response.setItemName(item.getItemName());
+                }
+            } catch (Exception e) {
+                // エラーが発生しても処理を続行
+                System.out.println("品目名の取得に失敗: " + e.getMessage());
+            }
+        }
+        
+        // 得意先名の設定
+        if (response.getCustomerId() != null) {
+            try {
+                Customer customer = customerRepository.findById(response.getCustomerId())
+                    .orElseThrow(() -> new ResourceNotFoundException("得意先", response.getCustomerId()));
+                if (customer != null) {
+                    response.setCustomerName(customer.getName());
+                }
+            } catch (Exception e) {
+                // エラーが発生しても処理を続行
+                System.out.println("得意先名の取得に失敗: " + e.getMessage());
             }
         }
     }

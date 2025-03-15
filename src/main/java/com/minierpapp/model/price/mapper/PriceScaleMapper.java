@@ -9,13 +9,13 @@ import com.minierpapp.model.price.entity.PriceScale;
 import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = {Collections.class}
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, PriceScaleRequest, PriceScaleResponse> {
     
@@ -39,9 +39,8 @@ public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, 
     void updateEntityFromRequest(PriceScaleRequest request, @MappingTarget PriceScale entity);
     
     @Override
+    @Mapping(target = "priceId", source = "price.id")
     PriceScaleResponse entityToResponse(PriceScale entity);
-    
-    List<PriceScaleResponse> toResponseList(List<PriceScale> entities);
     
     @Override
     PriceScaleRequest responseToRequest(PriceScaleResponse response);
@@ -52,5 +51,11 @@ public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, 
         } else {
             return entity.getFromQuantity() + "～" + entity.getToQuantity();
         }
+    }
+
+    default List<PriceScaleResponse> toResponseList(List<PriceScale> entities) {
+        return entities.stream()
+            .map(this::entityToResponse)
+            .collect(Collectors.toList());
     }
 }

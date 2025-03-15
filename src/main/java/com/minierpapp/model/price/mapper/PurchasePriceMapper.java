@@ -32,8 +32,6 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     @Mapping(target = "customerName", source = "customer.name")
     PurchasePriceDto toDto(PurchasePrice entity);
     
-    List<PurchasePriceDto> toDtoList(List<PurchasePrice> entities);
-    
     @Override
     @Mapping(target = "priceType", constant = "PURCHASE")
     @Mapping(target = "item", ignore = true)
@@ -50,9 +48,8 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "supplierName", source = "supplier.name")
     @Mapping(target = "customerName", source = "customer.name")
+    @Mapping(target = "priceScales", expression = "java(priceScaleMapper.toResponseList(entity.getPriceScales()))")
     PurchasePriceResponse entityToResponse(PurchasePrice entity);
-    
-    List<PurchasePriceResponse> toResponseList(List<PurchasePrice> entities);
     
     @Override
     @Mapping(target = "priceType", constant = "PURCHASE")
@@ -138,5 +135,17 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
         LocalDate thirtyDaysLater = now.plusDays(30);
         return entity.getValidToDate().isAfter(now) && 
                entity.getValidToDate().isBefore(thirtyDaysLater);
+    }
+
+    default List<PurchasePriceResponse> toResponseList(List<PurchasePrice> entities) {
+        return entities.stream()
+            .map(this::entityToResponse)
+            .collect(Collectors.toList());
+    }
+
+    default List<PurchasePriceDto> toDtoList(List<PurchasePrice> entities) {
+        return entities.stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
     }
 }

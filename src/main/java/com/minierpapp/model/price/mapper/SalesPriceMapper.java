@@ -17,8 +17,6 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
     @Mapping(target = "customerName", source = "customer.name")
     SalesPriceDto toDto(SalesPrice entity);
     
-    List<SalesPriceDto> toDtoList(List<SalesPrice> entities);
-    
     @Override
     @Mappings({
         @Mapping(target = "priceType", constant = "SALES"),
@@ -49,9 +47,8 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
     @Override
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
+    @Mapping(target = "priceScales", expression = "java(priceScaleMapper.toResponseList(entity.getPriceScales()))")
     SalesPriceResponse entityToResponse(SalesPrice entity);
-    
-    List<SalesPriceResponse> toResponseList(List<SalesPrice> entities);
     
     @Override
     @Mappings({
@@ -127,6 +124,18 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
                 entity.setStatus(response.getStatus());
                 return entity;
             })
+            .collect(Collectors.toList());
+    }
+
+    default List<SalesPriceResponse> toResponseList(List<SalesPrice> entities) {
+        return entities.stream()
+            .map(this::entityToResponse)
+            .collect(Collectors.toList());
+    }
+
+    default List<SalesPriceDto> toDtoList(List<SalesPrice> entities) {
+        return entities.stream()
+            .map(this::toDto)
             .collect(Collectors.toList());
     }
 }

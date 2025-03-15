@@ -70,7 +70,7 @@ public class Price extends BaseEntity {
     @Column(name = "status", length = 20)
     private String status;
     
-    @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "price", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE}, orphanRemoval = true)
     private List<PriceScale> priceScales = new ArrayList<>();
 
     public boolean isCurrentlyValid() {
