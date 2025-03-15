@@ -9,12 +9,12 @@ import com.minierpapp.model.supplier.dto.SupplierResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring",
-    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-    uses = {Collections.class}
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
 )
 public interface SupplierMapper extends BaseMapper<Supplier, SupplierDto, SupplierRequest, SupplierResponse> {
     @Override
@@ -37,4 +37,16 @@ public interface SupplierMapper extends BaseMapper<Supplier, SupplierDto, Suppli
 
     @Override
     SupplierRequest responseToRequest(SupplierResponse response);
+
+    default List<SupplierResponse> toResponseList(List<Supplier> entities) {
+        return entities.stream()
+            .map(this::entityToResponse)
+            .collect(Collectors.toList());
+    }
+
+    default List<SupplierDto> toDtoList(List<Supplier> entities) {
+        return entities.stream()
+            .map(this::toDto)
+            .collect(Collectors.toList());
+    }
 }
