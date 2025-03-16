@@ -77,7 +77,7 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
     }
 
     @Override
-    protected void createEntity(PurchasePriceRequest request) {
+    protected Long createEntityAndGetId(PurchasePriceRequest request) {
         System.out.println("===== 購買単価登録処理開始 =====");
         System.out.println("登録前: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
         System.out.println("登録前: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
@@ -91,13 +91,20 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
             System.out.println("変換後: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
             System.out.println("変換後: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
             
-            purchasePriceService.create(request);
+            PurchasePriceResponse createdEntity = purchasePriceService.create(request);
             System.out.println("===== 購買単価登録処理完了 =====");
+            return createdEntity.getId();
         } catch (Exception e) {
             System.out.println("購買単価登録処理でエラー発生: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
+    }
+
+    @Override
+    protected void createEntity(PurchasePriceRequest request) {
+        // IDの設定処理を削除
+        createEntityAndGetId(request);
     }
 
     @Override
@@ -270,5 +277,10 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
         List<PurchasePriceResponse> prices = findAll();
         model.addAttribute("prices", prices);
         return getListTemplate();
+    }
+
+    @Override
+    protected void setRequestId(PurchasePriceRequest request, Long id) {
+        request.setId(id);
     }
 }

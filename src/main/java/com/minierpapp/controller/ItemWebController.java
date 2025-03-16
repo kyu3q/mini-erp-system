@@ -98,8 +98,14 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
     }
 
     @Override
+    protected Long createEntityAndGetId(ItemRequest request) {
+        ItemDto createdEntity = itemService.create(request);
+        return createdEntity.getId();
+    }
+
+    @Override
     protected void createEntity(ItemRequest request) {
-        itemService.create(request);
+        createEntityAndGetId(request);
     }
 
     @Override
@@ -237,5 +243,10 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
 
             workbook.write(response.getOutputStream());
         }
+    }
+
+    @Override
+    protected void setRequestId(ItemRequest request, Long id) {
+        request.setId(id);
     }
 }

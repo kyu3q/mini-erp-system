@@ -77,9 +77,24 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
     }
 
     @Override
+    protected Long createEntityAndGetId(SalesPriceRequest request) {
+        try {
+            // コード値からIDへの変換を確認（必要に応じて）
+            validateAndSetIds(request);
+            
+            // エンティティを作成し、作成されたエンティティのIDを返す
+            SalesPriceResponse createdEntity = salesPriceService.create(request);
+            return createdEntity.getId();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+    @Override
     protected void createEntity(SalesPriceRequest request) {
-        validateAndSetIds(request);
-        salesPriceService.create(request);
+        // IDの設定処理を削除
+        createEntityAndGetId(request);
     }
 
     @Override
@@ -94,7 +109,7 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
         salesPriceService.delete(id);
     }
 
-        @Override
+    @Override
     protected void prepareForm(Model model, SalesPriceRequest request) {
         super.prepareForm(model, request);
         
@@ -204,5 +219,10 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
         List<SalesPriceResponse> prices = findAll();
         model.addAttribute("prices", prices);
         return getListTemplate();
+    }
+
+    @Override
+    protected void setRequestId(SalesPriceRequest request, Long id) {
+        request.setId(id);
     }
 }

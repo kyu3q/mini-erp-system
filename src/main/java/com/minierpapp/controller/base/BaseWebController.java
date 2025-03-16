@@ -1,4 +1,3 @@
-
 package com.minierpapp.controller.base;
 
 import com.minierpapp.model.base.BaseEntity;
@@ -10,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
@@ -42,21 +42,16 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     }
 
     @PostMapping
-    public String create(@Valid @ModelAttribute(binding = true) Q request,
-                        BindingResult result,
-                        Model model,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return handleValidationError(request, result, model);
-        }
-
+    public String create(@ModelAttribute("request") Q request, Model model, RedirectAttributes redirectAttributes) {
         try {
-            createEntity(request);
+            Long createdId = createEntityAndGetId(request);
+            setRequestId(request, createdId);
             addSuccessMessage(redirectAttributes, getCreateSuccessMessage());
-            return getRedirectToList();
+            return "redirect:" + getSuccessCreateRedirectUrl(request);
         } catch (Exception e) {
-            handleError(result, e);
-            return handleValidationError(request, result, model);
+            addErrorMessage(model, e);
+            prepareForm(model, request);
+            return getFormTemplate();
         }
     }
 
@@ -122,6 +117,12 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
         redirectAttributes.addFlashAttribute("messageType", "danger");
     }
 
+    protected void addErrorMessage(Model model, Exception e) {
+        String message = e.getMessage();
+        model.addAttribute("message", message);
+        model.addAttribute("messageType", "danger");
+    }
+
     protected String handleValidationError(Q request, BindingResult result, Model model) {
         model.addAttribute(getModelAttributeName(), request);
         return getFormTemplate();
@@ -161,4 +162,34 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     protected abstract void createEntity(Q request);
     protected abstract void updateEntity(Long id, Q request);
     protected abstract void deleteEntity(Long id);
+
+    /**
+     * エンティティ作成後のリダイレクト先URLを取得する
+     * デフォルトでは作成したエンティティの編集画面に遷移する
+     */
+    protected String getSuccessCreateRedirectUrl(Q request) {
+        try {
+            java.lang.reflect.Method getIdMethod = request.getClass().getMethod("getId");
+            Long id = (Long) getIdMethod.invoke(request);
+            if (id != null) {
+                return getBaseUrl() + "/" + id + "/edit";
+            }
+        } catch (Exception e) {
+            // getId()メソッドがない場合は無視
+        }
+        return getBaseUrl();
+    }
+
+    protected String getBaseUrl() {
+        // サブクラスの@RequestMappingアノテーションを取得
+        RequestMapping requestMapping = this.getClass().getAnnotation(RequestMapping.class);
+        if (requestMapping != null && requestMapping.value().length > 0) {
+            return requestMapping.value()[0];  // アノテーションの値を返す
+        }
+        // フォールバック: viewPathを使用
+        return "/" + viewPath;
+    }
+
+    protected abstract Long createEntityAndGetId(Q request);
+    protected abstract void setRequestId(Q request, Long id);
 }

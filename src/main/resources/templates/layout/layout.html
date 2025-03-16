@@ -97,6 +97,11 @@
 
             <!-- Main content -->
             <main class="col-md-10 col-lg-10 ms-sm-auto px-md-4">
+                <!-- メッセージ表示部分 - 上部に移動 -->
+                <div th:if="${message}" class="alert mt-3" th:classappend="${messageType == 'success'} ? 'alert-success' : 'alert-danger'" role="alert">
+                    <span th:text="${message}">メッセージ</span>
+                </div>
+                
                 <div class="content" layout:fragment="content">
                     <!-- Content will be inserted here -->
                 </div>

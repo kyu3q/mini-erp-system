@@ -63,26 +63,6 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     }
 
     @Override
-    @PostMapping
-    public String create(@Valid @ModelAttribute(binding = true) CustomerRequest request,
-                        BindingResult result,
-                        Model model,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return handleValidationError(request, result, model);
-        }
-
-        try {
-            createEntity(request);
-            addSuccessMessage(redirectAttributes, getCreateSuccessMessage());
-            return getRedirectToList();
-        } catch (Exception e) {
-            handleError(result, e);
-            return handleValidationError(request, result, model);
-        }
-    }
-
-    @Override
     @PutMapping("/{id}")
     public String update(@PathVariable Long id,
                         @Valid @ModelAttribute(binding = true) CustomerRequest request,
@@ -116,8 +96,15 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     }
 
     @Override
+    protected Long createEntityAndGetId(CustomerRequest request) {
+        CustomerResponse createdEntity = customerService.create(request);
+        return createdEntity.getId();
+    }
+
+    @Override
     protected void createEntity(CustomerRequest request) {
-        customerService.create(request);
+        // IDの設定処理を削除
+        createEntityAndGetId(request);
     }
 
     @Override
@@ -128,6 +115,11 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     @Override
     protected void deleteEntity(Long id) {
         customerService.delete(id);
+    }
+
+    @Override
+    protected void setRequestId(CustomerRequest request, Long id) {
+        request.setId(id);
     }
 
     @GetMapping("/export")
