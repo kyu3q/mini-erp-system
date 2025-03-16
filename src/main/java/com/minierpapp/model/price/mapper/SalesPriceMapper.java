@@ -1,9 +1,11 @@
 package com.minierpapp.model.price.mapper;
 
 import com.minierpapp.model.base.BaseMapper;
+import com.minierpapp.model.price.dto.PriceScaleRequest;
 import com.minierpapp.model.price.dto.SalesPriceDto;
 import com.minierpapp.model.price.dto.SalesPriceRequest;
 import com.minierpapp.model.price.dto.SalesPriceResponse;
+import com.minierpapp.model.price.entity.PriceScale;
 import com.minierpapp.model.price.entity.SalesPrice;
 import org.mapstruct.*;
 import java.util.List;
@@ -94,6 +96,17 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
         request.setValidFromDate(response.getValidFromDate());
         request.setValidToDate(response.getValidToDate());
         request.setStatus(response.getStatus());
+        if (response.getPriceScales() != null) {
+            request.setPriceScales(response.getPriceScales().stream()
+                .map(scaleResponse -> {
+                    PriceScaleRequest scaleRequest = new PriceScaleRequest();
+                    scaleRequest.setFromQuantity(scaleResponse.getFromQuantity());
+                    scaleRequest.setToQuantity(scaleResponse.getToQuantity());
+                    scaleRequest.setScalePrice(scaleResponse.getScalePrice());
+                    return scaleRequest;
+                })
+                .collect(Collectors.toList()));
+        }
         return request;
     }
     
@@ -122,6 +135,19 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
                 entity.setValidFromDate(response.getValidFromDate());
                 entity.setValidToDate(response.getValidToDate());
                 entity.setStatus(response.getStatus());
+                if (response.getPriceScales() != null) {
+                    List<PriceScale> scales = response.getPriceScales().stream()
+                        .map(scaleResponse -> {
+                            PriceScale scale = new PriceScale();
+                            scale.setFromQuantity(scaleResponse.getFromQuantity());
+                            scale.setToQuantity(scaleResponse.getToQuantity());
+                            scale.setScalePrice(scaleResponse.getScalePrice());
+                            scale.setPrice(entity);
+                            return scale;
+                        })
+                        .collect(Collectors.toList());
+                    entity.setPriceScales(scales);
+                }
                 return entity;
             })
             .collect(Collectors.toList());

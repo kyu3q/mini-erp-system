@@ -119,6 +119,7 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
         // フォーム用の追加データを準備
         model.addAttribute("items", itemService.findAllActive());
         model.addAttribute("suppliers", supplierService.findAllActive());
+        model.addAttribute("customers", customerService.findAllActive());
         
         // 編集時に関連エンティティの情報を追加
         if (request.getId() != null) {
@@ -127,6 +128,9 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
             }
             if (request.getSupplierId() != null) {
                 model.addAttribute("supplier", supplierService.findById(request.getSupplierId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
             }
         }
     }

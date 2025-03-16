@@ -15,4 +15,6 @@ public interface PriceScaleRepository extends JpaRepository<PriceScale, Long> {
     void deleteByPriceId(Long priceId);
     
     List<PriceScale> findByPriceId(Long priceId);
+
+    List<PriceScale> findByPriceIdAndDeletedFalse(Long priceId);
 } 

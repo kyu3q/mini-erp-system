@@ -5,6 +5,8 @@ import com.minierpapp.model.price.dto.PurchasePriceDto;
 import com.minierpapp.model.price.dto.PurchasePriceRequest;
 import com.minierpapp.model.price.dto.PurchasePriceResponse;
 import com.minierpapp.model.price.entity.PurchasePrice;
+import com.minierpapp.model.price.entity.PriceScale;
+import com.minierpapp.model.price.dto.PriceScaleRequest;
 import org.mapstruct.*;
 
 import java.time.LocalDate;
@@ -60,6 +62,7 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
     @Mapping(target = "priceScales", ignore = true)
     @Mapping(target = "itemId", source = "itemId")
     @Mapping(target = "supplierId", source = "supplierId")
+    @Mapping(target = "customerId", source = "customerId")
     void updateEntity(PurchasePriceDto dto, @MappingTarget PurchasePrice entity);
     
     @Override
@@ -86,11 +89,24 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
         request.setItemCode(response.getItemCode());
         request.setSupplierId(response.getSupplierId());
         request.setSupplierCode(response.getSupplierCode());
+        request.setCustomerId(response.getCustomerId());
+        request.setCustomerCode(response.getCustomerCode());
         request.setBasePrice(response.getBasePrice());
         request.setCurrencyCode(response.getCurrencyCode());
         request.setValidFromDate(response.getValidFromDate());
         request.setValidToDate(response.getValidToDate());
         request.setStatus(response.getStatus());
+        if (response.getPriceScales() != null) {
+            request.setPriceScales(response.getPriceScales().stream()
+                .map(scaleResponse -> {
+                    PriceScaleRequest scaleRequest = new PriceScaleRequest();
+                    scaleRequest.setFromQuantity(scaleResponse.getFromQuantity());
+                    scaleRequest.setToQuantity(scaleResponse.getToQuantity());
+                    scaleRequest.setScalePrice(scaleResponse.getScalePrice());
+                    return scaleRequest;
+                })
+                .collect(Collectors.toList()));
+        }
         return request;
     }
     
@@ -121,6 +137,19 @@ public interface PurchasePriceMapper extends BaseMapper<PurchasePrice, PurchaseP
                 entity.setValidFromDate(response.getValidFromDate());
                 entity.setValidToDate(response.getValidToDate());
                 entity.setStatus(response.getStatus());
+                if (response.getPriceScales() != null) {
+                    List<PriceScale> scales = response.getPriceScales().stream()
+                        .map(scaleResponse -> {
+                            PriceScale scale = new PriceScale();
+                            scale.setFromQuantity(scaleResponse.getFromQuantity());
+                            scale.setToQuantity(scaleResponse.getToQuantity());
+                            scale.setScalePrice(scaleResponse.getScalePrice());
+                            scale.setPrice(entity);
+                            return scale;
+                        })
+                        .collect(Collectors.toList());
+                    entity.setPriceScales(scales);
+                }
                 return entity;
             })
             .collect(Collectors.toList());

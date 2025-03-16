@@ -79,12 +79,6 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
     @Override
     protected void createEntity(SalesPriceRequest request) {
         validateAndSetIds(request);
-        
-        System.out.println("Controller: After validation - itemId=" + request.getItemId() 
-            + ", itemCode=" + request.getItemCode()
-            + ", customerId=" + request.getCustomerId()
-            + ", customerCode=" + request.getCustomerCode());
-        
         salesPriceService.create(request);
     }
 
@@ -98,6 +92,25 @@ public class SalesPriceWebController extends BaseWebController<SalesPrice, Sales
     @Override
     protected void deleteEntity(Long id) {
         salesPriceService.delete(id);
+    }
+
+        @Override
+    protected void prepareForm(Model model, SalesPriceRequest request) {
+        super.prepareForm(model, request);
+        
+        // フォーム用の追加データを準備
+        model.addAttribute("items", itemService.findAllActive());
+        model.addAttribute("customers", customerService.findAllActive());
+        
+        // 編集時に関連エンティティの情報を追加
+        if (request.getId() != null) {
+            if (request.getItemId() != null) {
+                model.addAttribute("item", itemService.findById(request.getItemId()));
+            }
+            if (request.getCustomerId() != null) {
+                model.addAttribute("customer", customerService.findById(request.getCustomerId()));
+            }
+        }
     }
 
     @GetMapping("/excel/export")

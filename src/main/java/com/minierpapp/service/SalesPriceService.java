@@ -35,7 +35,11 @@ public class SalesPriceService {
 
     @Transactional(readOnly = true)
     public List<SalesPriceResponse> findAll() {
-        List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
+        List<SalesPrice> entities = salesPriceRepository.findAll();
+        entities.forEach(entity -> {
+            List<PriceScale> scales = priceScaleRepository.findByPriceIdAndDeletedFalse(entity.getId());
+            entity.setPriceScales(scales);
+        });
         List<SalesPriceResponse> responses = salesPriceMapper.toResponseList(entities);
         responses.forEach(this::setRelatedNames);
         return responses;
@@ -43,27 +47,30 @@ public class SalesPriceService {
 
     @Transactional(readOnly = true)
     public SalesPriceResponse findById(Long id) {
-        SalesPrice entity = salesPriceRepository.findByIdWithRelations(id)
+        SalesPrice entity = salesPriceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("販売価格", "ID", id));
+        List<PriceScale> scales = priceScaleRepository.findByPriceIdAndDeletedFalse(entity.getId());
+        entity.setPriceScales(scales);
         return salesPriceMapper.entityToResponse(entity);
     }
 
     @Transactional(readOnly = true)
     public List<SalesPriceResponse> search(String itemCode, String customerCode, LocalDate date) {
-        // 検索条件に応じたクエリを実行
         List<SalesPrice> results;
         if (date != null) {
-            // 日付指定がある場合は有効期間内の価格を検索
             results = salesPriceRepository.findByItemCodeContainingAndCustomerCodeContainingAndValidFromDateLessThanEqualAndValidToDateGreaterThanEqualAndDeletedFalse(
                 itemCode != null ? itemCode : "", 
                 customerCode != null ? customerCode : "", 
                 date, date);
         } else {
-            // 日付指定がない場合は全ての価格を検索
             results = salesPriceRepository.findByItemCodeContainingAndCustomerCodeContainingAndDeletedFalse(
                 itemCode != null ? itemCode : "", 
                 customerCode != null ? customerCode : "");
         }
+        results.forEach(entity -> {
+            List<PriceScale> scales = priceScaleRepository.findByPriceIdAndDeletedFalse(entity.getId());
+            entity.setPriceScales(scales);
+        });
         return salesPriceMapper.toResponseList(results);
     }
 
@@ -222,24 +229,24 @@ public class SalesPriceService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public List<SalesPriceResponse> findAllForDisplay() {
-        List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
-        return salesPriceMapper.toResponseList(entities);
-    }
+    // @Transactional(readOnly = true)
+    // public List<SalesPriceResponse> findAllForDisplay() {
+    //     List<SalesPrice> entities = salesPriceRepository.findAllWithRelations();
+    //     return salesPriceMapper.toResponseList(entities);
+    // }
 
-    @Transactional(readOnly = true)
-    public List<SalesPriceResponse> findWithFilters(Long itemId, Long supplierId, Long customerId) {
-        List<SalesPrice> entities = salesPriceRepository.findWithFilters(itemId, supplierId, customerId);
-        return salesPriceMapper.toResponseList(entities);
-    }
+    // @Transactional(readOnly = true)
+    // public List<SalesPriceResponse> findWithFilters(Long itemId, Long supplierId, Long customerId) {
+    //     List<SalesPrice> entities = salesPriceRepository.findWithFilters(itemId, supplierId, customerId);
+    //     return salesPriceMapper.toResponseList(entities);
+    // }
 
-    @Transactional(readOnly = true)
-    public SalesPriceResponse findByIdForDisplay(Long id) {
-        SalesPrice entity = salesPriceRepository.findByIdWithRelations(id)
-                .orElseThrow(() -> new ResourceNotFoundException("販売価格が見つかりません: " + id));
-        return salesPriceMapper.entityToResponse(entity);
-    }
+    // @Transactional(readOnly = true)
+    // public SalesPriceResponse findByIdForDisplay(Long id) {
+    //     SalesPrice entity = salesPriceRepository.findByIdWithRelations(id)
+    //             .orElseThrow(() -> new ResourceNotFoundException("販売価格が見つかりません: " + id));
+    //     return salesPriceMapper.entityToResponse(entity);
+    // }
 
     private void validateRequest(SalesPriceRequest request) {
         if (request.getItemId() == null) {

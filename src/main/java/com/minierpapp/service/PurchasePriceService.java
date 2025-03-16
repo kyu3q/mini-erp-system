@@ -36,7 +36,28 @@ public class PurchasePriceService {
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> findAll() {
         List<PurchasePrice> entities = purchasePriceRepository.findAll();
+        
+        // スケール情報のデバッグ出力
+        entities.forEach(entity -> {
+            System.out.println("Price ID: " + entity.getId());
+            // スケール情報を直接取得
+            List<PriceScale> scales = priceScaleRepository.findByPriceIdAndDeletedFalse(entity.getId());
+            entity.setPriceScales(scales);
+            System.out.println("Scale count: " + scales.size());
+            entity.getPriceScales().forEach(scale -> {
+                System.out.println("  Scale: " + scale.getFromQuantity() + 
+                    " - " + scale.getToQuantity() + " = " + scale.getScalePrice());
+            });
+        });
+        
         List<PurchasePriceResponse> responses = purchasePriceMapper.toResponseList(entities);
+        
+        // レスポンスのスケール情報も確認
+        responses.forEach(response -> {
+            System.out.println("Response ID: " + response.getId());
+            System.out.println("Response Scale count: " + 
+                (response.getPriceScales() != null ? response.getPriceScales().size() : "null"));
+        });
         
         // 関連エンティティの名前を設定
         for (PurchasePriceResponse response : responses) {
@@ -47,33 +68,18 @@ public class PurchasePriceService {
     }
 
     @Transactional(readOnly = true)
-    public List<PurchasePriceResponse> findAllForDisplay() {
-        List<PurchasePrice> entities = purchasePriceRepository.findAllWithRelations();
-        return purchasePriceMapper.toResponseList(entities);
-    }
-
-    @Transactional(readOnly = true)
-    public List<PurchasePriceResponse> findWithFilters(Long itemId, Long supplierId, Long customerId) {
-        List<PurchasePrice> entities = purchasePriceRepository.findWithFilters(itemId, supplierId, customerId);
-        return purchasePriceMapper.toResponseList(entities);
-    }
-
-    @Transactional(readOnly = true)
     public PurchasePriceResponse findById(Long id) {
         PurchasePrice entity = purchasePriceRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買単価が見つかりません: " + id));
+        
+        // スケール情報を直接取得して設定
+        List<PriceScale> scales = priceScaleRepository.findByPriceIdAndDeletedFalse(entity.getId());
+        entity.setPriceScales(scales);
         
         PurchasePriceResponse response = purchasePriceMapper.entityToResponse(entity);
         setRelatedNames(response);
         
         return response;
-    }
-
-    @Transactional(readOnly = true)
-    public PurchasePriceResponse findByIdForDisplay(Long id) {
-        PurchasePrice entity = purchasePriceRepository.findByIdWithRelations(id)
-                .orElseThrow(() -> new ResourceNotFoundException("購買価格が見つかりません: " + id));
-        return purchasePriceMapper.entityToResponse(entity);
     }
 
     @Transactional(readOnly = true)
