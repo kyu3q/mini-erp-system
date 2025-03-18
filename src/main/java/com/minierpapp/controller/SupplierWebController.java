@@ -100,6 +100,16 @@ public class SupplierWebController extends BaseWebController<Supplier, SupplierD
         request.setId(id);
     }
 
+    // @Override
+    // protected String getBaseUrl() {
+    //     return "/suppliers";
+    // }
+
+    // @Override
+    // protected String getRedirectToList() {
+    //     return "redirect:/suppliers";
+    // }
+
     @GetMapping("/export")
     public void exportToExcel(HttpServletResponse response) throws IOException {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

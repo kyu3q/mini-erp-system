@@ -41,17 +41,15 @@
                                 <div class="row mb-4">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="itemCode" class="form-label fw-bold">品目コード <span class="badge bg-danger">必須</span></label>
-                                            <!-- 新規作成時 -->
-                                            <input th:if="${itemRequest.id == null}" type="text" class="form-control" id="itemCode" 
-                                                   th:field="*{itemCode}"
-                                                   th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'"
-                                                   placeholder="半角英数字のみ入力可能です">
-                                            <!-- 編集時 -->
-                                            <div th:if="${itemRequest.id != null}" class="form-control-plaintext border rounded bg-light px-2 py-2" th:text="*{itemCode}"></div>
-                                            <input th:if="${itemRequest.id != null}" type="hidden" th:field="*{itemCode}">
+                                            <label for="itemCode" class="form-label required">品目コード</label>
+                                            <input type="text" class="form-control" id="itemCode" th:field="*{itemCode}"
+                                                   th:classappend="${#fields.hasErrors('itemCode')} ? 'is-invalid'" 
+                                                   th:readonly="${itemRequest.id != null}"
+                                                   required>
                                             <div class="invalid-feedback" th:if="${#fields.hasErrors('itemCode')}"
-                                                 th:errors="*{itemCode}"></div>
+                                                 th:errors="*{itemCode}">
+                                                品目コードは必須です
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">

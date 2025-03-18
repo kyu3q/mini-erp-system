@@ -8,14 +8,12 @@ import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.service.CustomerService;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.Valid;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -63,27 +61,6 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     }
 
     @Override
-    @PutMapping("/{id}")
-    public String update(@PathVariable Long id,
-                        @Valid @ModelAttribute(binding = true) CustomerRequest request,
-                        BindingResult result,
-                        Model model,
-                        RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) {
-            return handleValidationError(request, result, model);
-        }
-
-        try {
-            updateEntity(id, request);
-            addSuccessMessage(redirectAttributes, getUpdateSuccessMessage());
-            return getRedirectToList();
-        } catch (Exception e) {
-            handleError(result, e);
-            return handleValidationError(request, result, model);
-        }
-    }
-
-    @Override
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -121,6 +98,16 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     protected void setRequestId(CustomerRequest request, Long id) {
         request.setId(id);
     }
+
+    // @Override
+    // protected String getBaseUrl() {
+    //     return "/customers";
+    // }
+
+    // @Override
+    // protected String getRedirectToList() {
+    //     return "redirect:/customers";
+    // }
 
     @GetMapping("/export")
     public void exportToExcel(HttpServletResponse response) throws IOException {

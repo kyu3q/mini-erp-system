@@ -32,8 +32,19 @@
     <div class="container-fluid" style="max-width: 1400px;">
         <h2 th:text="${salesPriceRequest.id != null ? '販売単価編集' : '販売単価登録'}"></h2>
 
-        <form th:action="@{/prices/sales}" method="post" id="priceForm" class="needs-validation" novalidate>
-            <input type="hidden" name="id" th:value="${salesPriceRequest.id}">
+        <form th:action="${salesPriceRequest.id != null ? '/prices/sales/' + salesPriceRequest.id : '/prices/sales'}"
+              th:object="${salesPriceRequest}"
+              method="post"
+              id="priceForm"
+              class="needs-validation"
+              novalidate>
+            
+            <!-- 更新時はPUTメソッドを使用 -->
+            <input th:if="${salesPriceRequest.id != null}" type="hidden" name="_method" value="put" />
+            
+            <!-- IDを隠しフィールドとして追加 -->
+            <input type="hidden" th:field="*{id}" />
+            
             <input type="hidden" name="priceType" value="SALES">
             
             <div class="row mb-3">
@@ -234,6 +245,8 @@
     <!-- 追加のスクリプト -->
     <th:block layout:fragment="scripts">
         <div th:replace="~{fragments/search-modals :: searchModalScripts}"></div>
+        <script th:src="@{/js/sortable.min.js}"></script>
+        <script th:src="@{/js/price-form.js}"></script>
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 initializeForm();

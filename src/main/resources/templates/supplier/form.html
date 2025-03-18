@@ -3,28 +3,40 @@
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout/layout}">
 <head>
-    <title th:text="${supplierId != null ? '仕入先編集' : '仕入先登録'}">仕入先登録</title>
+    <title th:text="${supplierRequest.id != null ? '仕入先編集' : '仕入先登録'}">仕入先登録</title>
+    <style>
+        .required::after {
+            content: " *";
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div layout:fragment="content">
-        <div class="container-fluid">
-            <h1 class="mt-4" th:text="${supplierId != null ? '仕入先編集' : '仕入先登録'}">仕入先登録</h1>
+        <div class="container-fluid" style="max-width: 1400px;">
+            <h2 th:text="${supplierRequest.id != null ? '仕入先編集' : '仕入先登録'}"></h2>
 
-            <form th:action="${supplierId != null ? '/suppliers/' + supplierId : '/suppliers'}"
+            <form th:action="${supplierRequest.id != null ? '/suppliers/' + supplierRequest.id : '/suppliers'}"
                   th:object="${supplierRequest}"
                   method="post"
                   class="needs-validation"
                   novalidate>
-
+                
+                <!-- 更新時はPUTメソッドを使用 -->
+                <input th:if="${supplierRequest.id != null}" type="hidden" name="_method" value="put" />
+                
+                <!-- フォームの内容 -->
                 <div class="row mb-4">
                     <div class="col-md-8">
                         <div class="card">
                             <div class="card-body">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label for="supplierCode" class="form-label">仕入先コード <span class="text-danger">*</span></label>
+                                        <label for="supplierCode" class="form-label required">仕入先コード</label>
                                         <input type="text" class="form-control" id="supplierCode" th:field="*{supplierCode}"
-                                               th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'" required>
+                                               th:classappend="${#fields.hasErrors('supplierCode')} ? 'is-invalid'" 
+                                               th:readonly="${supplierRequest.id != null}"
+                                               required>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('supplierCode')}"
                                              th:errors="*{supplierCode}">
                                             仕入先コードは必須です
@@ -32,7 +44,7 @@
                                     </div>
 
                                     <div class="col-md-6">
-                                        <label for="name" class="form-label">仕入先名 <span class="text-danger">*</span></label>
+                                        <label for="name" class="form-label required">仕入先名</label>
                                         <input type="text" class="form-control" id="name" th:field="*{name}"
                                                th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'" required>
                                         <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}"
@@ -142,17 +154,13 @@
                     </div>
                 </div>
 
-                <div class="row mb-4">
-                    <div class="col-md-8">
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> 保存
-                            </button>
-                            <a th:href="@{/suppliers}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> キャンセル
-                            </a>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <a th:href="@{/suppliers}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> キャンセル
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
                 </div>
             </form>
         </div>

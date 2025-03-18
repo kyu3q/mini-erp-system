@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -16,5 +17,10 @@ public class WebConfig implements WebMvcConfigurer {
                 connector.setMaxParameterCount(-1);
             });
         };
+    }
+
+    @Override
+    public void configurePathMatch(PathMatchConfigurer configurer) {
+        configurer.setUseRegisteredSuffixPatternMatch(true);
     }
 }

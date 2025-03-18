@@ -78,45 +78,30 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
 
     @Override
     protected Long createEntityAndGetId(PurchasePriceRequest request) {
-        System.out.println("===== 購買単価登録処理開始 =====");
-        System.out.println("登録前: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
-        System.out.println("登録前: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
-        System.out.println("登録前: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
-        
-        try {
-            // コード値からIDへの変換を確認
-            validateAndSetIds(request);
-            
-            System.out.println("変換後: itemId=" + request.getItemId() + ", itemCode=" + request.getItemCode());
-            System.out.println("変換後: supplierId=" + request.getSupplierId() + ", supplierCode=" + request.getSupplierCode());
-            System.out.println("変換後: customerId=" + request.getCustomerId() + ", customerCode=" + request.getCustomerCode());
-            
-            PurchasePriceResponse createdEntity = purchasePriceService.create(request);
-            System.out.println("===== 購買単価登録処理完了 =====");
-            return createdEntity.getId();
-        } catch (Exception e) {
-            System.out.println("購買単価登録処理でエラー発生: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
+        validateAndSetIds(request);
+        PurchasePriceResponse createdEntity = purchasePriceService.create(request);
+        return createdEntity.getId();
     }
 
     @Override
     protected void createEntity(PurchasePriceRequest request) {
-        // IDの設定処理を削除
         createEntityAndGetId(request);
     }
 
     @Override
     protected void updateEntity(Long id, PurchasePriceRequest request) {
         validateAndSetIds(request);
-        System.out.println("Updating entity with itemId: " + request.getItemId() + ", supplierId: " + request.getSupplierId());
         purchasePriceService.update(id, request);
     }
 
     @Override
     protected void deleteEntity(Long id) {
         purchasePriceService.delete(id);
+    }
+
+    @Override
+    protected void setRequestId(PurchasePriceRequest request, Long id) {
+        request.setId(id);
     }
 
     @Override
@@ -277,10 +262,5 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
         List<PurchasePriceResponse> prices = findAll();
         model.addAttribute("prices", prices);
         return getListTemplate();
-    }
-
-    @Override
-    protected void setRequestId(PurchasePriceRequest request, Long id) {
-        request.setId(id);
     }
 }

@@ -32,21 +32,32 @@
     <div class="container-fluid" style="max-width: 1400px;">
         <h2 th:text="${purchasePriceRequest.id != null ? '購買単価編集' : '購買単価登録'}"></h2>
 
-        <form th:action="@{/prices/purchase}" method="post" id="priceForm" class="needs-validation" novalidate>
-            <input type="hidden" name="id" th:value="${purchasePriceRequest != null ? purchasePriceRequest.id : ''}">
+        <form th:action="${purchasePriceRequest.id != null ? '/prices/purchase/' + purchasePriceRequest.id : '/prices/purchase'}"
+              th:object="${purchasePriceRequest}"
+              method="post"
+              id="priceForm"
+              class="needs-validation"
+              novalidate>
+            
+            <!-- 更新時はPUTメソッドを使用 -->
+            <input th:if="${purchasePriceRequest.id != null}" type="hidden" name="_method" value="put" />
+            
+            <!-- IDを隠しフィールドとして追加 -->
+            <input type="hidden" th:field="*{id}" />
+            
             <input type="hidden" name="priceType" value="PURCHASE">
-    
+            
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label for="itemCode" class="form-label required">品目</label>
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="itemCode" name="itemCode"
+                                <input type="text" class="form-control" id="itemCode"
                                        th:value="${item != null ? item.itemCode : ''}"
-                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                       th:disabled="${purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openItemSearch()"
-                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback">品目を選択してください。</div>
@@ -54,10 +65,8 @@
                         </div>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="itemName" readonly
-                                   th:value="${item != null ? item.itemName : ''}"
-                                   th:data-original-value="${item != null ? item.itemName : ''}">
-                            <input type="hidden" id="itemId" name="itemId" 
-                                   th:value="${purchasePriceRequest != null ? purchasePriceRequest.itemId : ''}">
+                                   th:value="${item != null ? item.itemName : ''}">
+                            <input type="hidden" id="itemId" th:field="*{itemId}">
                         </div>
                     </div>
                 </div>
@@ -69,11 +78,11 @@
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="supplierCode" name="supplierCode"
+                                <input type="text" class="form-control" id="supplierCode"
                                        th:value="${supplier != null ? supplier.supplierCode : ''}"
-                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                       th:disabled="${purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openSupplierSearch()"
-                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback">仕入先を選択してください。</div>
@@ -81,10 +90,8 @@
                         </div>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="supplierName" readonly
-                                   th:value="${supplier != null ? supplier.name : ''}"
-                                   th:data-original-value="${supplier != null ? supplier.name : ''}">
-                            <input type="hidden" id="supplierId" name="supplierId" 
-                                   th:value="${purchasePriceRequest != null ? purchasePriceRequest.supplierId : ''}">
+                                   th:value="${supplier != null ? supplier.name : ''}">
+                            <input type="hidden" id="supplierId" th:field="*{supplierId}">
                         </div>
                     </div>
                 </div>
@@ -96,11 +103,11 @@
                     <div class="row g-2">
                         <div class="col-md-3">
                             <div class="input-group">
-                                <input type="text" class="form-control" id="customerCode" name="customerCode"
+                                <input type="text" class="form-control" id="customerCode"
                                        th:value="${customer != null ? customer.customerCode : ''}"
-                                       th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                       th:disabled="${purchasePriceRequest.id != null}">
                                 <button class="btn btn-outline-secondary" type="button" onclick="openCustomerSearch()"
-                                        th:disabled="${purchasePriceRequest != null and purchasePriceRequest.id != null}">
+                                        th:disabled="${purchasePriceRequest.id != null}">
                                     <i class="fas fa-search"></i>
                                 </button>
                                 <div class="invalid-feedback">得意先を選択してください。</div>
@@ -108,10 +115,8 @@
                         </div>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="customerName" readonly
-                                   th:value="${customer != null ? customer.name : ''}"
-                                   th:data-original-value="${customer != null ? customer.name : ''}">
-                            <input type="hidden" id="customerId" name="customerId" 
-                                   th:value="${customer != null ? customer.id : ''}">
+                                   th:value="${customer != null ? customer.name : ''}">
+                            <input type="hidden" id="customerId" th:field="*{customerId}">
                         </div>
                     </div>
                 </div>
@@ -264,6 +269,8 @@
     <!-- 追加のスクリプト -->
     <th:block layout:fragment="scripts">
         <div th:replace="~{fragments/search-modals :: searchModalScripts}"></div>
+        <script th:src="@{/js/sortable.min.js}"></script>
+        <script th:src="@{/js/price-form.js}"></script>
         <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', function() {
                 initializeForm();
@@ -274,38 +281,25 @@
                 // バリデーションの初期化
                 const form = document.getElementById('priceForm');
                 form.addEventListener('submit', function(event) {
-                    // 必須フィールドのチェック
-                    const itemId = document.getElementById('itemId').value;
-                    if (!itemId) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        document.getElementById('itemCode').classList.add('is-invalid');
-                        return false;
-                    }
+                    console.log('フォーム送信イベント発生');
+                    console.log('フォームアクション:', form.action);
+                    console.log('フォームメソッド:', form.method);
                     
-                    // 仕入先のチェック
-                    const supplierId = document.getElementById('supplierId').value;
-                    if (!supplierId) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        document.getElementById('supplierCode').classList.add('is-invalid');
-                        return false;
-                    }
+                    // 重要なフィールドの値を確認
+                    console.log('ID:', document.querySelector('input[name="id"]').value);
+                    console.log('品目ID:', document.getElementById('itemId').value);
+                    console.log('仕入先ID:', document.getElementById('supplierId').value);
+                    console.log('得意先ID:', document.getElementById('customerId').value);
                     
-                    // 得意先のチェック
-                    const customerId = document.getElementById('customerId').value;
-                    if (!customerId) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        document.getElementById('customerCode').classList.add('is-invalid');
-                        return false;
-                    }
-                    
+                    // バリデーションチェック
                     if (!form.checkValidity()) {
+                        console.log('バリデーションエラー発生');
                         event.preventDefault();
                         event.stopPropagation();
+                        form.classList.add('was-validated');
+                    } else {
+                        console.log('バリデーション成功、フォーム送信続行');
                     }
-                    form.classList.add('was-validated');
                 });
 
                 // 日付の初期値設定

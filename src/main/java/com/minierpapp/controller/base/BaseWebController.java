@@ -42,7 +42,15 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     }
 
     @PostMapping
-    public String create(@ModelAttribute("request") Q request, Model model, RedirectAttributes redirectAttributes) {
+    public String create(@Valid @ModelAttribute(binding = true) Q request, 
+                         BindingResult result,
+                         Model model, 
+                         RedirectAttributes redirectAttributes) {
+        // バリデーションエラーがある場合は、フォーム画面に戻る
+        if (result.hasErrors()) {
+            return handleValidationError(request, result, model);
+        }
+        
         try {
             Long createdId = createEntityAndGetId(request);
             setRequestId(request, createdId);
@@ -74,7 +82,7 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
         try {
             updateEntity(id, request);
             addSuccessMessage(redirectAttributes, getUpdateSuccessMessage());
-            return getRedirectToList();
+            return getRedirectToEdit(id);
         } catch (Exception e) {
             handleError(result, e);
             return handleValidationError(request, result, model);
@@ -101,7 +109,11 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     }
 
     protected String getRedirectToList() {
-        return "redirect:/" + viewPath;
+        return "redirect:" + getBaseUrl();
+    }
+
+    protected String getRedirectToEdit(Long id) {
+        return "redirect:" + getBaseUrl() + "/" + id + "/edit";
     }
 
     protected void addSuccessMessage(RedirectAttributes redirectAttributes, String messageKey) {
