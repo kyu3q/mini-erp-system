@@ -74,15 +74,26 @@ public class SupplierWebController extends BaseWebController<Supplier, SupplierD
         return supplierService.findById(id);
     }
 
-    @Override
-    protected Long createEntityAndGetId(SupplierRequest request) {
-        SupplierResponse createdEntity = supplierService.create(request);
-        return createdEntity.getId();
-    }
+    // @Override
+    // protected Long createEntityAndGetId(SupplierRequest request) {
+    //     SupplierResponse createdEntity = supplierService.create(request);
+    //     return createdEntity.getId();
+    // }
+
+    // @Override
+    // protected void setRequestId(SupplierRequest request, Long id) {
+    //     request.setId(id);
+    // }
+
+    // @Override
+    // protected void createEntity(SupplierRequest request) {
+    //     createEntityAndGetId(request);
+    // }
 
     @Override
     protected void createEntity(SupplierRequest request) {
-        createEntityAndGetId(request);
+        SupplierResponse createdEntity = supplierService.create(request);
+        request.setId(createdEntity.getId());
     }
 
     @Override
@@ -93,11 +104,6 @@ public class SupplierWebController extends BaseWebController<Supplier, SupplierD
     @Override
     protected void deleteEntity(Long id) {
         supplierService.delete(id);
-    }
-
-    @Override
-    protected void setRequestId(SupplierRequest request, Long id) {
-        request.setId(id);
     }
 
     // @Override

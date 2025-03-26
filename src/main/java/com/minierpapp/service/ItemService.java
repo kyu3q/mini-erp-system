@@ -70,7 +70,7 @@ public class ItemService {
     }
 
     @Transactional
-    public ItemDto create(ItemRequest request) {
+    public ItemResponse create(ItemRequest request) {
         // 品目コードの重複チェック
         if (itemRepository.existsByItemCodeAndDeletedFalse(request.getItemCode())) {
             throw new IllegalArgumentException("品目コード「" + request.getItemCode() + "」は既に使用されています");
@@ -83,7 +83,7 @@ public class ItemService {
         Item item = itemMapper.requestToEntity(request);
         item.setCreatedAt(LocalDateTime.now());
         Item savedItem = itemRepository.save(item);
-        return itemMapper.toDto(savedItem);
+        return itemMapper.entityToResponse(savedItem);
     }
 
     @Transactional

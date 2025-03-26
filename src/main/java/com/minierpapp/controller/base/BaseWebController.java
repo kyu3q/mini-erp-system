@@ -52,8 +52,9 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
         }
         
         try {
-            Long createdId = createEntityAndGetId(request);
-            setRequestId(request, createdId);
+            // Long createdId = createEntityAndGetId(request);
+            // setRequestId(request, createdId);
+            createEntity(request);
             addSuccessMessage(redirectAttributes, getCreateSuccessMessage());
             return "redirect:" + getSuccessCreateRedirectUrl(request);
         } catch (Exception e) {
@@ -202,6 +203,6 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
         return "/" + viewPath;
     }
 
-    protected abstract Long createEntityAndGetId(Q request);
-    protected abstract void setRequestId(Q request, Long id);
+    // protected abstract Long createEntityAndGetId(Q request);
+    // protected abstract void setRequestId(Q request, Long id);
 }

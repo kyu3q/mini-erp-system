@@ -72,16 +72,27 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
         return getRedirectToList();
     }
 
-    @Override
-    protected Long createEntityAndGetId(CustomerRequest request) {
-        CustomerResponse createdEntity = customerService.create(request);
-        return createdEntity.getId();
-    }
+    // @Override
+    // protected Long createEntityAndGetId(CustomerRequest request) {
+    //     CustomerResponse createdEntity = customerService.create(request);
+    //     return createdEntity.getId();
+    // }
+
+    // @Override
+    // protected void setRequestId(CustomerRequest request, Long id) {
+    //     request.setId(id);
+    // }
+
+    // @Override
+    // protected void createEntity(CustomerRequest request) {
+    //     // IDの設定処理を削除
+    //     createEntityAndGetId(request);
+    // }
 
     @Override
     protected void createEntity(CustomerRequest request) {
-        // IDの設定処理を削除
-        createEntityAndGetId(request);
+        CustomerResponse createdEntity = customerService.create(request);
+        request.setId(createdEntity.getId());
     }
 
     @Override
@@ -94,10 +105,7 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
         customerService.delete(id);
     }
 
-    @Override
-    protected void setRequestId(CustomerRequest request, Long id) {
-        request.setId(id);
-    }
+
 
     // @Override
     // protected String getBaseUrl() {

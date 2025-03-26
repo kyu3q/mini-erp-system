@@ -76,16 +76,28 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
         return purchasePriceService.findById(id);
     }
 
-    @Override
-    protected Long createEntityAndGetId(PurchasePriceRequest request) {
-        validateAndSetIds(request);
-        PurchasePriceResponse createdEntity = purchasePriceService.create(request);
-        return createdEntity.getId();
-    }
+    // @Override
+    // protected Long createEntityAndGetId(PurchasePriceRequest request) {
+    //     validateAndSetIds(request);
+    //     PurchasePriceResponse createdEntity = purchasePriceService.create(request);
+    //     return createdEntity.getId();
+    // }
+
+    // @Override
+    // protected void setRequestId(PurchasePriceRequest request, Long id) {
+    //     request.setId(id);
+    // }
+
+    // @Override
+    // protected void createEntity(PurchasePriceRequest request) {
+    //     createEntityAndGetId(request);
+    // }
 
     @Override
     protected void createEntity(PurchasePriceRequest request) {
-        createEntityAndGetId(request);
+        validateAndSetIds(request);
+        PurchasePriceResponse createdEntity = purchasePriceService.create(request);
+        request.setId(createdEntity.getId());
     }
 
     @Override
@@ -97,11 +109,6 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
     @Override
     protected void deleteEntity(Long id) {
         purchasePriceService.delete(id);
-    }
-
-    @Override
-    protected void setRequestId(PurchasePriceRequest request, Long id) {
-        request.setId(id);
     }
 
     @Override

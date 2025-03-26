@@ -119,6 +119,13 @@ public class PurchasePriceService {
             entity.setSupplierCode(supplier.getSupplierCode());
         }
         
+        if (request.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
+            entity.setCustomer(customer);
+            entity.setCustomerCode(customer.getCustomerCode());
+        }
+        
         // 先に価格エンティティを保存
         final PurchasePrice savedEntity = purchasePriceRepository.save(entity);
         
