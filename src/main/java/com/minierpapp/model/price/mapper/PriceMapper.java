@@ -17,7 +17,7 @@ public interface PriceMapper {
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "priceScales", source = "priceScales")
+    @Mapping(target = "priceScales", ignore = true)
     PriceDto toDto(Price entity);
     
     /**
@@ -26,7 +26,7 @@ public interface PriceMapper {
     @Mapping(target = "itemName", source = "item.itemName")
     @Mapping(target = "customerName", source = "customer.name")
     @Mapping(target = "supplierName", source = "supplier.name")
-    @Mapping(target = "priceScales", source = "priceScales")
+    @Mapping(target = "priceScales", ignore = true)
     PriceResponse entityToResponse(Price entity);
     
     /**

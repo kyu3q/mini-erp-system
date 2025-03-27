@@ -137,6 +137,12 @@ public class SalesPriceService {
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
             salesPrice.setItem(item);
             salesPrice.setItemCode(item.getItemCode());
+        } else if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
+            Item item = itemRepository.findByItemCode(request.getItemCode())
+                .orElseThrow(() -> new ResourceNotFoundException("品目コード", request.getItemCode()));
+            salesPrice.setItem(item);
+            salesPrice.setItemId(item.getId());
+            salesPrice.setItemCode(item.getItemCode());
         }
         
         if (request.getCustomerId() != null) {
@@ -144,12 +150,13 @@ public class SalesPriceService {
                 .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
             salesPrice.setCustomer(customer);
             salesPrice.setCustomerCode(customer.getCustomerCode());
-        } else {
-            salesPrice.setCustomer(null);
-            salesPrice.setCustomerCode(null);
+        } else if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
+            Customer customer = customerRepository.findByCustomerCode(request.getCustomerCode())
+                .orElseThrow(() -> new ResourceNotFoundException("得意先コード", request.getCustomerCode()));
+            salesPrice.setCustomer(customer);
+            salesPrice.setCustomerId(customer.getId());
+            salesPrice.setCustomerCode(customer.getCustomerCode());
         }
-        
-        salesPriceRepository.save(salesPrice);
         
         // 既存の数量スケールを削除
         priceScaleRepository.deleteByPriceId(id);
@@ -170,6 +177,7 @@ public class SalesPriceService {
             priceScaleRepository.saveAll(scales);
         }
         
+        salesPriceRepository.save(salesPrice);
         return salesPriceMapper.entityToResponse(salesPrice);
     }
 

@@ -136,7 +136,7 @@ public class PurchasePriceService {
     }
 
     @Transactional
-    public void update(Long id, PurchasePriceRequest request) {
+    public PurchasePriceResponse update(Long id, PurchasePriceRequest request) {
         validateRequest(request);
         
         PurchasePrice purchasePrice = purchasePriceRepository.findByIdAndDeletedFalse(id)
@@ -171,8 +171,6 @@ public class PurchasePriceService {
             purchasePrice.setSupplierCode(supplier.getSupplierCode());
         }
         
-        purchasePriceRepository.save(purchasePrice);
-        
         // 既存の数量スケールを削除
         priceScaleRepository.deleteByPriceId(id);
         
@@ -191,6 +189,9 @@ public class PurchasePriceService {
             
             priceScaleRepository.saveAll(scales);
         }
+        
+        purchasePriceRepository.save(purchasePrice);
+        return purchasePriceMapper.entityToResponse(purchasePrice);
     }
 
     @Transactional

@@ -6,6 +6,7 @@ import com.minierpapp.model.item.dto.ItemDto;
 import com.minierpapp.model.item.dto.ItemRequest;
 import com.minierpapp.model.item.dto.ItemResponse;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import java.util.List;
@@ -23,12 +24,22 @@ public interface ItemMapper extends BaseMapper<Item, ItemDto, ItemRequest, ItemR
     ItemDto toDto(Item entity);
 
     @Override
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     Item requestToEntity(ItemRequest request);
 
     @Override
     ItemResponse entityToResponse(Item entity);
 
     @Override
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     void updateEntityFromRequest(ItemRequest request, @MappingTarget Item entity);
 
     @Override

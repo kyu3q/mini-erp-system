@@ -64,19 +64,17 @@ public interface SalesPriceMapper extends BaseMapper<SalesPrice, SalesPriceDto, 
     void updateEntity(SalesPriceDto dto, @MappingTarget SalesPrice entity);
     
     @Override
-    @Mappings({
-        @Mapping(target = "priceType", constant = "SALES"),
-        @Mapping(target = "item", ignore = true),
-        @Mapping(target = "customer", ignore = true),
-        @Mapping(target = "supplier", ignore = true),
-        @Mapping(target = "supplierCode", ignore = true),
-        @Mapping(target = "supplierId", ignore = true),
-        @Mapping(target = "createdAt", ignore = true),
-        @Mapping(target = "createdBy", ignore = true),
-        @Mapping(target = "updatedAt", ignore = true),
-        @Mapping(target = "updatedBy", ignore = true),
-        @Mapping(target = "deleted", ignore = true)
-    })
+    @Mapping(target = "priceType", constant = "SALES")
+    @Mapping(target = "item", ignore = true)
+    @Mapping(target = "customer", ignore = true)
+    @Mapping(target = "supplier", ignore = true)
+    @Mapping(target = "supplierCode", ignore = true)
+    @Mapping(target = "supplierId", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "createdBy", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "updatedBy", ignore = true)
+    @Mapping(target = "deleted", ignore = true)
     void updateEntityFromRequest(SalesPriceRequest request, @MappingTarget SalesPrice entity);
     
     @Override
