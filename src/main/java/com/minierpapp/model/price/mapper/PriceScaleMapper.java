@@ -11,7 +11,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapping;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring",
@@ -21,8 +20,6 @@ public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, 
     
     @Override
     PriceScaleDto toDto(PriceScale entity);
-    
-    List<PriceScaleDto> toDtoList(List<PriceScale> entities);
     
     @Override
     PriceScale toEntity(PriceScaleDto dto);
@@ -51,11 +48,5 @@ public interface PriceScaleMapper extends BaseMapper<PriceScale, PriceScaleDto, 
         } else {
             return entity.getFromQuantity() + "～" + entity.getToQuantity();
         }
-    }
-
-    default List<PriceScaleResponse> toResponseList(List<PriceScale> entities) {
-        return entities.stream()
-            .map(this::entityToResponse)
-            .collect(Collectors.toList());
     }
 }

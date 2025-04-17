@@ -12,7 +12,6 @@ import com.minierpapp.model.warehouse.Warehouse;
 import org.mapstruct.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring", 
@@ -49,17 +48,17 @@ public interface OrderMapper extends BaseMapper<Order, OrderDto, OrderRequest, O
     @Mapping(target = "warehouseName", source = "warehouse.name")
     OrderResponse.OrderDetailResponse toResponse(OrderDetail orderDetail);
 
-    default List<OrderResponse> toResponseList(List<Order> entities) {
-        return entities.stream()
-            .map(this::entityToResponse)
-            .collect(Collectors.toList());
-    }
+    // default List<OrderResponse> toResponseList(List<Order> entities) {
+    //     return entities.stream()
+    //         .map(this::entityToResponse)
+    //         .collect(Collectors.toList());
+    // }
 
-    default List<OrderDto> toDtoList(List<Order> entities) {
-        return entities.stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-    }
+    // default List<OrderDto> toDtoList(List<Order> entities) {
+    //     return entities.stream()
+    //         .map(this::toDto)
+    //         .collect(Collectors.toList());
+    // }
 
     default Customer customerFromId(Long id) {
         if (id == null) {

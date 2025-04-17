@@ -9,8 +9,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring",
@@ -48,15 +46,15 @@ public interface ItemMapper extends BaseMapper<Item, ItemDto, ItemRequest, ItemR
     @Override
     ItemRequest responseToRequest(ItemResponse response);
 
-    default List<ItemResponse> toResponseList(List<Item> entities) {
-        return entities.stream()
-            .map(this::entityToResponse)
-            .collect(Collectors.toList());
-    }
+    // default List<ItemResponse> toResponseList(List<Item> entities) {
+    //     return entities.stream()
+    //         .map(this::entityToResponse)
+    //         .collect(Collectors.toList());
+    // }
 
-    default List<ItemDto> toDtoList(List<Item> entities) {
-        return entities.stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-    }
+    // default List<ItemDto> toDtoList(List<Item> entities) {
+    //     return entities.stream()
+    //         .map(this::toDto)
+    //         .collect(Collectors.toList());
+    // }
 }

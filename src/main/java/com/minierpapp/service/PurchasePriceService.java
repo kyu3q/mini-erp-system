@@ -18,10 +18,11 @@ import com.minierpapp.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class PurchasePriceService {
     private final SupplierRepository supplierRepository;
     private final CustomerRepository customerRepository;
     private final PurchasePriceMapper purchasePriceMapper;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<PurchasePriceResponse> findAll() {
@@ -142,56 +144,56 @@ public class PurchasePriceService {
         PurchasePrice purchasePrice = purchasePriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
         
+        // 基本情報の更新
         purchasePriceMapper.updateEntityFromRequest(request, purchasePrice);
         
-        // 関連エンティティの更新
+        // 関連エンティティの設定
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
             purchasePrice.setItem(item);
             purchasePrice.setItemCode(item.getItemCode());
-        } else if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
-            Item item = itemRepository.findByItemCode(request.getItemCode())
-                .orElseThrow(() -> new ResourceNotFoundException("品目コード", request.getItemCode()));
-            purchasePrice.setItem(item);
-            purchasePrice.setItemId(item.getId());
-            purchasePrice.setItemCode(item.getItemCode());
         }
         
+        // 仕入先情報の設定
         if (request.getSupplierId() != null) {
             Supplier supplier = supplierRepository.findById(request.getSupplierId())
                 .orElseThrow(() -> new ResourceNotFoundException("仕入先", request.getSupplierId()));
             purchasePrice.setSupplier(supplier);
             purchasePrice.setSupplierCode(supplier.getSupplierCode());
-        } else if (request.getSupplierCode() != null && !request.getSupplierCode().isEmpty()) {
-            Supplier supplier = supplierRepository.findBySupplierCode(request.getSupplierCode())
-                .orElseThrow(() -> new ResourceNotFoundException("仕入先コード", request.getSupplierCode()));
-            purchasePrice.setSupplier(supplier);
-            purchasePrice.setSupplierId(supplier.getId());
-            purchasePrice.setSupplierCode(supplier.getSupplierCode());
         }
         
-        // 既存の数量スケールを削除
-        priceScaleRepository.deleteByPriceId(id);
+        // 得意先情報の設定（必要な場合）
+        if (request.getCustomerId() != null) {
+            Customer customer = customerRepository.findById(request.getCustomerId())
+                .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
+            purchasePrice.setCustomer(customer);
+            purchasePrice.setCustomerCode(customer.getCustomerCode());
+        }
         
-        // 新しい数量スケールを保存
+        // 既存のスケール情報を物理削除する
+        deleteExistingPriceScales(id);
+        
+        // 購買単価を保存
+        PurchasePrice savedPrice = purchasePriceRepository.save(purchasePrice);
+        
+        // 新しいスケール情報を保存 - 新しいトランザクションで実行
         if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
-            List<PriceScale> scales = request.getPriceScales().stream()
-                .map(scaleRequest -> {
-                    PriceScale scale = new PriceScale();
-                    scale.setPrice(purchasePrice);
-                    scale.setFromQuantity(scaleRequest.getFromQuantity());
-                    scale.setToQuantity(scaleRequest.getToQuantity());
-                    scale.setScalePrice(scaleRequest.getScalePrice());
-                    return scale;
-                })
-                .collect(Collectors.toList());
-            
-            priceScaleRepository.saveAll(scales);
+            createNewPriceScales(request.getPriceScales(), savedPrice);
         }
         
-        purchasePriceRepository.save(purchasePrice);
-        return purchasePriceMapper.entityToResponse(purchasePrice);
+        // 更新後のエンティティを再取得
+        PurchasePrice updatedPrice = purchasePriceRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("購買価格", id));
+        
+        // スケール情報を明示的に取得
+        List<PriceScale> updatedScales = priceScaleRepository.findByPriceIdAndDeletedFalse(id);
+        updatedPrice.setPriceScales(updatedScales);
+        
+        // レスポンスを返す
+        PurchasePriceResponse response = purchasePriceMapper.entityToResponse(updatedPrice);
+        setRelatedNames(response);
+        return response;
     }
 
     @Transactional
@@ -293,6 +295,30 @@ public class PurchasePriceService {
                 price.getPriceScales().add(priceScale);
                 priceScaleRepository.save(priceScale);
             });
+        }
+    }
+
+    // 既存のスケール情報を物理削除するメソッド
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteExistingPriceScales(Long priceId) {
+        // ネイティブSQLを使用して物理削除を実行
+        priceScaleRepository.deleteByPriceIdNative(priceId);
+        
+        // 念のため、エンティティマネージャのキャッシュをクリア
+        entityManager.flush();
+        entityManager.clear();
+    }
+
+    // 新しいスケール情報を保存するメソッド
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createNewPriceScales(List<PriceScaleRequest> scaleRequests, PurchasePrice price) {
+        for (PriceScaleRequest scaleRequest : scaleRequests) {
+            PriceScale scale = new PriceScale();
+            scale.setPrice(price);
+            scale.setFromQuantity(scaleRequest.getFromQuantity());
+            scale.setToQuantity(scaleRequest.getToQuantity());
+            scale.setScalePrice(scaleRequest.getScalePrice());
+            priceScaleRepository.save(scale);
         }
     }
 } 

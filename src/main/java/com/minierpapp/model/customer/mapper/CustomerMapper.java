@@ -10,9 +10,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Mapper(
     componentModel = "spring",
     nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
@@ -39,15 +36,15 @@ public interface CustomerMapper extends BaseMapper<Customer, CustomerDto, Custom
     @Override
     CustomerRequest responseToRequest(CustomerResponse response);
 
-    default List<CustomerResponse> toResponseList(List<Customer> entities) {
-        return entities.stream()
-            .map(this::entityToResponse)
-            .collect(Collectors.toList());
-    }
+    // default List<CustomerResponse> toResponseList(List<Customer> entities) {
+    //     return entities.stream()
+    //         .map(this::entityToResponse)
+    //         .collect(Collectors.toList());
+    // }
 
-    default List<CustomerDto> toDtoList(List<Customer> entities) {
-        return entities.stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-    }
+    // default List<CustomerDto> toDtoList(List<Customer> entities) {
+    //     return entities.stream()
+    //         .map(this::toDto)
+    //         .collect(Collectors.toList());
+    // }
 }

@@ -17,12 +17,13 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
+import jakarta.persistence.EntityManager;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class SalesPriceService {
     private final ItemRepository itemRepository;
     private final CustomerRepository customerRepository;
     private final SalesPriceMapper salesPriceMapper;
+    private final EntityManager entityManager;
 
     @Transactional(readOnly = true)
     public List<SalesPriceResponse> findAll() {
@@ -129,56 +131,72 @@ public class SalesPriceService {
         SalesPrice salesPrice = salesPriceRepository.findByIdAndDeletedFalse(id)
             .orElseThrow(() -> new ResourceNotFoundException("販売価格", id));
         
+        // 基本情報の更新
         salesPriceMapper.updateEntityFromRequest(request, salesPrice);
         
-        // 関連エンティティの更新
+        // 関連エンティティの設定
         if (request.getItemId() != null) {
             Item item = itemRepository.findById(request.getItemId())
                 .orElseThrow(() -> new ResourceNotFoundException("品目", request.getItemId()));
             salesPrice.setItem(item);
             salesPrice.setItemCode(item.getItemCode());
-        } else if (request.getItemCode() != null && !request.getItemCode().isEmpty()) {
-            Item item = itemRepository.findByItemCode(request.getItemCode())
-                .orElseThrow(() -> new ResourceNotFoundException("品目コード", request.getItemCode()));
-            salesPrice.setItem(item);
-            salesPrice.setItemId(item.getId());
-            salesPrice.setItemCode(item.getItemCode());
         }
         
+        // 得意先情報の設定
         if (request.getCustomerId() != null) {
             Customer customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new ResourceNotFoundException("得意先", request.getCustomerId()));
             salesPrice.setCustomer(customer);
             salesPrice.setCustomerCode(customer.getCustomerCode());
-        } else if (request.getCustomerCode() != null && !request.getCustomerCode().isEmpty()) {
-            Customer customer = customerRepository.findByCustomerCode(request.getCustomerCode())
-                .orElseThrow(() -> new ResourceNotFoundException("得意先コード", request.getCustomerCode()));
-            salesPrice.setCustomer(customer);
-            salesPrice.setCustomerId(customer.getId());
-            salesPrice.setCustomerCode(customer.getCustomerCode());
         }
         
-        // 既存の数量スケールを削除
-        priceScaleRepository.deleteByPriceId(id);
+        // 既存のスケール情報を物理削除する
+        deleteExistingPriceScales(id);
         
-        // 新しい数量スケールを保存
+        // 販売単価を保存
+        SalesPrice savedPrice = salesPriceRepository.save(salesPrice);
+        
+        // 新しいスケール情報を保存
         if (request.getPriceScales() != null && !request.getPriceScales().isEmpty()) {
-            List<PriceScale> scales = request.getPriceScales().stream()
-                .map(scaleRequest -> {
-                    PriceScale scale = new PriceScale();
-                    scale.setPrice(salesPrice);
-                    scale.setFromQuantity(scaleRequest.getFromQuantity());
-                    scale.setToQuantity(scaleRequest.getToQuantity());
-                    scale.setScalePrice(scaleRequest.getScalePrice());
-                    return scale;
-                })
-                .collect(Collectors.toList());
-            
-            priceScaleRepository.saveAll(scales);
+            createNewPriceScales(request.getPriceScales(), savedPrice);
         }
         
-        salesPriceRepository.save(salesPrice);
-        return salesPriceMapper.entityToResponse(salesPrice);
+        // 更新後のエンティティを再取得
+        SalesPrice updatedPrice = salesPriceRepository.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("販売価格", id));
+        
+        // スケール情報を明示的に取得
+        List<PriceScale> updatedScales = priceScaleRepository.findByPriceIdAndDeletedFalse(id);
+        updatedPrice.setPriceScales(updatedScales);
+        
+        // レスポンスを返す
+        SalesPriceResponse response = salesPriceMapper.entityToResponse(updatedPrice);
+        setRelatedNames(response);
+        return response;
+    }
+
+    // 既存のスケール情報を物理削除するメソッド
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteExistingPriceScales(Long priceId) {
+        // ネイティブSQLを使用して物理削除を実行
+        priceScaleRepository.deleteByPriceIdNative(priceId);
+        
+        // 念のため、エンティティマネージャのキャッシュをクリア
+        entityManager.flush();
+        entityManager.clear();
+    }
+    
+    // 新しいスケール情報を保存するメソッド
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createNewPriceScales(List<PriceScaleRequest> scaleRequests, SalesPrice price) {
+        for (PriceScaleRequest scaleRequest : scaleRequests) {
+            PriceScale scale = new PriceScale();
+            scale.setPrice(price);
+            scale.setFromQuantity(scaleRequest.getFromQuantity());
+            scale.setToQuantity(scaleRequest.getToQuantity());
+            scale.setScalePrice(scaleRequest.getScalePrice());
+            priceScaleRepository.save(scale);
+        }
     }
 
     @Transactional

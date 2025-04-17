@@ -8,8 +8,6 @@ import com.minierpapp.model.warehouse.dto.WarehouseResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Mapper(
     componentModel = "spring",
@@ -37,15 +35,15 @@ public interface WarehouseMapper extends BaseMapper<Warehouse, WarehouseDto, War
     @Override
     WarehouseRequest responseToRequest(WarehouseResponse response);
 
-    default List<WarehouseResponse> toResponseList(List<Warehouse> entities) {
-        return entities.stream()
-            .map(this::entityToResponse)
-            .collect(Collectors.toList());
-    }
+    // default List<WarehouseResponse> toResponseList(List<Warehouse> entities) {
+    //     return entities.stream()
+    //         .map(this::entityToResponse)
+    //         .collect(Collectors.toList());
+    // }
 
-    default List<WarehouseDto> toDtoList(List<Warehouse> entities) {
-        return entities.stream()
-            .map(this::toDto)
-            .collect(Collectors.toList());
-    }
+    // default List<WarehouseDto> toDtoList(List<Warehouse> entities) {
+    //     return entities.stream()
+    //         .map(this::toDto)
+    //         .collect(Collectors.toList());
+    // }
 }

@@ -13,9 +13,12 @@ import java.math.BigDecimal;
 @Setter
 public class PriceScale extends BaseEntity {
  
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "price_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "price_id")
     private Price price;
+    
+    @Column(name = "price_id", insertable = false, updatable = false)
+    private Long priceId;
 
     @Column(name = "from_quantity", nullable = false)
     private BigDecimal fromQuantity;
