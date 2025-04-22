@@ -33,4 +33,12 @@ public class ImportResult {
         errorCount++;
         totalCount++;
     }
+
+    public boolean hasGlobalError() {
+        return errors.stream().anyMatch(error -> error.getRowNum() == 0);
+    }
+
+    public boolean hasErrorInRow(int rowNum) {
+        return errors.stream().anyMatch(error -> error.getRowNum() == rowNum);
+    }
 }

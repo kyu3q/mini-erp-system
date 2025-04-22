@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 @Entity
+@Table(name = "prices")
 @DiscriminatorValue("SALES")
 @Getter
 @Setter
@@ -18,8 +19,8 @@ public class SalesPrice extends Price {
     @JoinColumn(name = "customer_id", insertable = false, updatable = false)
     private Customer customer;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "item_id")
     private Item item;
 
     @OneToMany(mappedBy = "price", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -8,6 +8,7 @@ import com.minierpapp.model.customer.dto.CustomerResponse;
 import com.minierpapp.model.customer.mapper.CustomerMapper;
 import com.minierpapp.service.CustomerService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -32,17 +33,14 @@ public class CustomerWebController extends BaseWebController<Customer, CustomerD
     }
 
     @Override
-    @GetMapping
-    public String list(
-            @RequestParam(required = false) String searchParam1,
-            @RequestParam(required = false) String searchParam2,
-            Model model) {
-        String customerCode = searchParam1;
-        String name = searchParam2;
-        model.addAttribute("customers", customerService.findAll(customerCode, name));
+    protected void prepareSearchCriteria(Model model, HttpServletRequest request) {
+        String customerCode = request.getParameter("searchParam1");
+        String name = request.getParameter("searchParam2");
+        
+        // 検索条件をモデルに追加
         model.addAttribute("customerCode", customerCode);
         model.addAttribute("name", name);
-        return getListTemplate();
+        model.addAttribute("customers", customerService.findAll(customerCode, name));
     }
 
     @Override

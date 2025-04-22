@@ -29,7 +29,24 @@ function confirmDelete(id) {
 
 // Excel出力
 function exportToExcel() {
-    window.location.href = '/prices/sales/excel/export';
+    // 検索フォームから条件を取得
+    const itemCode = document.getElementById('itemCode').value;
+    const itemName = document.getElementById('itemName').value;
+    const customerCode = document.getElementById('customerCode').value;
+    const customerName = document.getElementById('customerName').value;
+    const status = document.getElementById('status').value;
+    
+    // URLパラメータを構築
+    let params = new URLSearchParams();
+    if (itemCode) params.append('itemCode', itemCode);
+    if (itemName) params.append('itemName', itemName);
+    if (customerCode) params.append('customerCode', customerCode);
+    if (customerName) params.append('customerName', customerName);
+    if (status) params.append('status', status);
+    
+    // Excel出力URLを構築して遷移
+    const exportUrl = `/prices/sales/excel/export?${params.toString()}`;
+    window.location.href = exportUrl;
 }
 
 // テンプレートダウンロード

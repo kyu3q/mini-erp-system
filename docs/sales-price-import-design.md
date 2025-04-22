@@ -181,18 +181,146 @@ class ErrorDetail {
 販売単価の一意キーは以下の組み合わせとする:
 - 品目コード
 - 得意先コード（標準価格の場合はnull）
-- 有効開始日
-- 有効終了日
 
 ### 6.2 更新条件
-- 一意キーが完全に一致する場合のみ更新を行う
-- 一意キーが部分的に一致（期間が重複）する場合はエラーとする
+- 同一品目・同一得意先の価格データが存在する場合、以下のルールで処理する:
+  1. **完全一致**: 有効期間が完全に一致する場合は既存データを更新する
+  2. **期間重複**: 有効期間が部分的に重複する場合は、重複期間のみ新しいデータで更新し、重複していない期間の既存データは維持する
+  3. **期間分割**: 既存データの期間内に新しいデータの期間が含まれる場合、既存データを分割し、重複部分を新しいデータで置き換える
+
+#### 6.2.1 期間重複パターンと処理方法
+
+| パターン | 既存データ期間 | 新規データ期間 | 処理方法 |
+|---------|--------------|--------------|---------|
+| 完全一致 | 2023/1/1 - 2023/12/31 | 2023/1/1 - 2023/12/31 | 既存データを更新 |
+| 前方重複 | 2023/1/1 - 2023/12/31 | 2023/1/1 - 2023/6/30 | 既存データの期間を2023/7/1 - 2023/12/31に変更し、新規データを登録 |
+| 後方重複 | 2023/1/1 - 2023/12/31 | 2023/7/1 - 2023/12/31 | 既存データの期間を2023/1/1 - 2023/6/30に変更し、新規データを登録 |
+| 期間内包含 | 2023/1/1 - 2023/12/31 | 2023/4/1 - 2023/9/30 | 既存データを2023/1/1 - 2023/3/31と2023/10/1 - 2023/12/31の2つに分割し、新規データを登録 |
+| 期間外包含 | 2023/4/1 - 2023/9/30 | 2023/1/1 - 2023/12/31 | 既存データを削除し、新規データを登録 |
+
+#### 6.2.2 期間調整の実装方法
+1. 既存データの検索
+   ```java
+   List<SalesPrice> existingPrices = salesPriceRepository.findByItemCodeAndCustomerCodeAndDeletedFalse(
+       itemCode, customerCode);
+   ```
+
+2. 期間重複チェックと調整
+   ```java
+   for (SalesPrice existing : existingPrices) {
+       // 期間が重複するかチェック
+       if (isOverlapping(existing.getValidFromDate(), existing.getValidToDate(), 
+                         newData.getValidFromDate(), newData.getValidToDate())) {
+           
+           // 重複パターンに応じて処理
+           if (isExactMatch(existing, newData)) {
+               // 完全一致: 既存データを更新
+               updateExistingPrice(existing, newData);
+           } else if (isPartiallyOverlapping(existing, newData)) {
+               // 部分重複: 既存データの期間を調整し、新規データを登録
+               adjustExistingPricePeriod(existing, newData);
+               createNewPrice(newData);
+           } else if (isContainedWithin(existing, newData)) {
+               // 期間内包含: 既存データを分割し、新規データを登録
+               splitExistingPrice(existing, newData);
+               createNewPrice(newData);
+           } else if (isContaining(existing, newData)) {
+               // 期間外包含: 既存データを削除し、新規データを登録
+               deleteExistingPrice(existing);
+               createNewPrice(newData);
+           }
+       }
+   }
+   ```
 
 ### 6.3 更新対象項目
 - 基本価格
 - 通貨コード
 - ステータス
 - 数量スケール情報（全て削除して再作成）
+
+### 6.4 複数既存データとの期間重複
+
+同一品目・同一得意先に対して複数の既存データ（異なる期間の価格設定）が存在し、新規データがそれらと期間重複する場合の処理方針を以下に定義する。
+
+#### 6.4.1 複数期間重複の基本方針
+1. 新規データの期間と重複する全ての既存データを特定する
+2. 各既存データに対して、6.2で定義した期間重複パターンに基づいて処理を行う
+3. 処理の順序は、既存データの有効開始日の昇順とする
+
+#### 6.4.2 複数期間重複の処理例
+
+**例**: 同一品目・同一得意先に以下の既存データが存在する場合
+- 既存データA: 2023/1/1 - 2023/3/31
+- 既存データB: 2023/4/1 - 2023/6/30
+- 既存データC: 2023/7/1 - 2023/12/31
+
+**新規データ**: 2023/2/1 - 2023/8/31 を取込む場合
+
+**処理結果**:
+1. 既存データAとの関係: 後方重複
+   - 既存データAの期間を2023/1/1 - 2023/1/31に変更
+   - 2023/2/1 - 2023/3/31の期間は新規データで置き換え
+
+2. 既存データBとの関係: 期間外包含
+   - 既存データBを削除
+   - 2023/4/1 - 2023/6/30の期間は新規データで置き換え
+
+3. 既存データCとの関係: 前方重複
+   - 既存データCの期間を2023/9/1 - 2023/12/31に変更
+   - 2023/7/1 - 2023/8/31の期間は新規データで置き換え
+
+4. 最終結果:
+   - 既存データA: 2023/1/1 - 2023/1/31（期間変更）
+   - 新規データ: 2023/2/1 - 2023/8/31（新規登録）
+   - 既存データC: 2023/9/1 - 2023/12/31（期間変更）
+   - 既存データB: 削除
+
+#### 6.4.3 複数期間重複の実装方法
+
+```java
+// 1. 同一品目・同一得意先の全ての既存データを取得
+List<SalesPrice> existingPrices = salesPriceRepository.findByItemCodeAndCustomerCodeAndDeletedFalse(
+    itemCode, customerCode);
+
+// 2. 新規データと期間が重複する既存データを特定
+List<SalesPrice> overlappingPrices = existingPrices.stream()
+    .filter(existing -> isOverlapping(existing.getValidFromDate(), existing.getValidToDate(),
+                                     newData.getValidFromDate(), newData.getValidToDate()))
+    .sorted(Comparator.comparing(SalesPrice::getValidFromDate))
+    .collect(Collectors.toList());
+
+// 3. 重複する各既存データに対して処理を実行
+for (SalesPrice existing : overlappingPrices) {
+    // 重複パターンに応じた処理（6.2.2の処理と同様）
+    if (isExactMatch(existing, newData)) {
+        updateExistingPrice(existing, newData);
+    } else if (isPartiallyOverlapping(existing, newData)) {
+        adjustExistingPricePeriod(existing, newData);
+    } else if (isContainedWithin(existing, newData)) {
+        splitExistingPrice(existing, newData);
+    } else if (isContaining(existing, newData)) {
+        deleteExistingPrice(existing);
+    }
+}
+
+// 4. 新規データを登録
+createNewPrice(newData);
+```
+
+#### 6.4.4 複数期間重複の注意点
+
+1. **整合性の確保**
+   - 処理後の期間に空白や重複がないことを確認する
+   - 処理順序によって結果が変わらないよう注意する
+
+2. **パフォーマンス考慮**
+   - 多数の既存データがある場合、処理が複雑になるため性能に注意する
+   - 必要に応じてバッチサイズを調整する
+
+3. **エラー処理**
+   - 複雑な期間調整中にエラーが発生した場合、全体をロールバックする
+   - 処理前の状態を記録し、障害発生時に復旧できるようにする
 
 ## 7. 新規登録ルール
 

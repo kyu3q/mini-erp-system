@@ -40,6 +40,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import com.minierpapp.service.ExcelExportService;
 import com.minierpapp.service.ExcelImportService;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/items")
@@ -62,22 +63,19 @@ public class ItemWebController extends BaseWebController<Item, ItemDto, ItemRequ
     }
 
     @Override
-    @GetMapping
-    public String list(
-            @RequestParam(required = false) String searchParam1,
-            @RequestParam(required = false) String searchParam2,
-            Model model) {
-        String itemCode = searchParam1;
-        String itemName = searchParam2;
+    protected void prepareSearchCriteria(Model model, HttpServletRequest request) {
+        String itemCode = request.getParameter("searchParam1");
+        String itemName = request.getParameter("searchParam2");
+        
         if ((itemCode != null && !itemCode.trim().isEmpty()) ||
             (itemName != null && !itemName.trim().isEmpty())) {
             model.addAttribute("items", itemService.search(itemCode, itemName));
-            model.addAttribute("itemCode", itemCode);
-            model.addAttribute("itemName", itemName);
         } else {
             model.addAttribute("items", findAll());
         }
-        return getListTemplate();
+        
+        model.addAttribute("itemCode", itemCode);
+        model.addAttribute("itemName", itemName);
     }
 
     @Override

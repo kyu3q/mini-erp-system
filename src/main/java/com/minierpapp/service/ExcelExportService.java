@@ -2,7 +2,10 @@ package com.minierpapp.service;
 
 import com.minierpapp.model.item.Item;
 import com.minierpapp.model.warehouse.Warehouse;
+import com.minierpapp.model.price.dto.SalesPriceSearchCriteria;
+import com.minierpapp.model.price.entity.SalesPrice;
 import com.minierpapp.repository.WarehouseRepository;
+import com.minierpapp.service.excel.PriceExcelService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,6 +21,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class ExcelExportService {
 
     private final WarehouseRepository warehouseRepository;
+    private final SalesPriceService salesPriceService;
+    private final PriceExcelService priceExcelService;
 
     public byte[] exportWarehouses() throws IOException {
         List<Warehouse> warehouses = warehouseRepository.findAll();
@@ -203,8 +208,18 @@ public class ExcelExportService {
         // テンプレートダウンロードロジックの実装
     }
 
-    public void exportSalesPrices(HttpServletResponse response, String searchParam1, String searchParam2) throws IOException {
-        // 実装
+    public byte[] exportSalesPrices(SalesPriceSearchCriteria criteria) {
+        System.out.println("販売単価出力サービス開始: 検索条件=" + criteria);
+        try {
+            List<SalesPrice> salesPrices = salesPriceService.searchSalesPricesForExport(criteria);
+            System.out.println("販売単価検索完了: 結果件数=" + (salesPrices != null ? salesPrices.size() : "null"));
+            
+            return priceExcelService.exportSalesPrices(salesPrices);
+        } catch (Exception e) {
+            System.out.println("販売単価出力サービスでエラー発生: " + e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     public void downloadSalesPriceTemplate(HttpServletResponse response) throws IOException {

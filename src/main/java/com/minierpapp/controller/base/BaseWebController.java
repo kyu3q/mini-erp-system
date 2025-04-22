@@ -2,6 +2,7 @@ package com.minierpapp.controller.base;
 
 import com.minierpapp.model.base.BaseEntity;
 import com.minierpapp.model.base.BaseMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -30,8 +31,19 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
     public String list(
             @RequestParam(required = false) String searchParam1,
             @RequestParam(required = false) String searchParam2,
-            Model model) {
-        model.addAttribute(getListAttributeName(), findAll());
+            Model model,
+            HttpServletRequest request) {
+        
+        // 検索条件の準備
+        prepareSearchCriteria(model, request);
+        
+        // 検索結果がモデルに既に追加されている場合は、findAll()を呼び出さない
+        if (!model.containsAttribute(getListAttributeName())) {
+            // 検索結果の取得
+            List<R> entities = findAll();
+            model.addAttribute(getListAttributeName(), entities);
+        }
+        
         return getListTemplate();
     }
 
@@ -205,4 +217,9 @@ public abstract class BaseWebController<E extends BaseEntity, D, Q, R> {
 
     // protected abstract Long createEntityAndGetId(Q request);
     // protected abstract void setRequestId(Q request, Long id);
+
+    protected void prepareSearchCriteria(Model model, HttpServletRequest request) {
+        // リクエストパラメータから検索条件を作成
+        // 子クラスでオーバーライドして実装
+    }
 }

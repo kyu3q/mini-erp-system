@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 @RequestMapping("/prices/purchase")
@@ -261,13 +262,9 @@ public class PurchasePriceWebController extends BaseWebController<PurchasePrice,
     }
 
     @Override
-    @GetMapping
-    public String list(
-            @RequestParam(required = false) String searchParam1,
-            @RequestParam(required = false) String searchParam2,
-            Model model) {
+    protected void prepareSearchCriteria(Model model, HttpServletRequest request) {
+        // 検索条件をモデルに追加
         List<PurchasePriceResponse> prices = findAll();
         model.addAttribute("prices", prices);
-        return getListTemplate();
     }
 }

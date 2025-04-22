@@ -2,6 +2,8 @@ package com.minierpapp.repository;
 
 import com.minierpapp.model.price.entity.SalesPrice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -38,30 +40,43 @@ public interface SalesPriceRepository extends JpaRepository<SalesPrice, Long> {
     Optional<SalesPrice> findByItemCodeAndCustomerCodeIsNullAndValidFromDateLessThanEqualAndValidToDateGreaterThanEqualAndStatusAndDeletedFalse(
             String itemCode, LocalDate date1, LocalDate date2, String status);
     
-//     @Query("SELECT p FROM SalesPrice p " +
-//            "LEFT JOIN FETCH p.item " +
-//            "LEFT JOIN FETCH p.supplier " +
-//            "LEFT JOIN FETCH p.customer " +
-//            "WHERE p.deleted = false")
-//     List<SalesPrice> findAllWithRelations();
+    List<SalesPrice> findByItemIdAndCustomerIdIsNullAndDeletedFalse(Long itemId);
     
-//     @Query("SELECT p FROM SalesPrice p " +
-//            "LEFT JOIN FETCH p.item " +
-//            "LEFT JOIN FETCH p.supplier " +
-//            "LEFT JOIN FETCH p.customer " +
-//            "WHERE p.deleted = false " +
-//            "AND (:itemId IS NULL OR p.itemId = :itemId) " +
-//            "AND (:supplierId IS NULL OR p.supplierId = :supplierId) " +
-//            "AND (:customerId IS NULL OR p.customerId = :customerId)")
-//     List<SalesPrice> findWithFilters(@Param("itemId") Long itemId, 
-//                                     @Param("supplierId") Long supplierId, 
-//                                     @Param("customerId") Long customerId);
-    
-//     @Query("SELECT p FROM SalesPrice p " +
-//            "LEFT JOIN FETCH p.item " +
-//            "LEFT JOIN FETCH p.supplier " +
-//            "LEFT JOIN FETCH p.customer " +
-//            "LEFT JOIN FETCH p.priceScales " +
-//            "WHERE p.id = :id AND p.deleted = false")
-//     Optional<SalesPrice> findByIdWithRelations(@Param("id") Long id);
+    /**
+     * 重複する販売単価を検索する
+     */
+    @Query("SELECT p FROM SalesPrice p WHERE p.item.id = :itemId " +
+           "AND (:customerId IS NULL AND p.customer IS NULL OR p.customer.id = :customerId) " +
+           "AND NOT (p.validToDate < :fromDate OR p.validFromDate > :toDate)")
+    List<SalesPrice> findOverlappingPrices(
+        @Param("itemId") Long itemId,
+        @Param("customerId") Long customerId,
+        @Param("fromDate") LocalDate fromDate,
+        @Param("toDate") LocalDate toDate);
+
+    /**
+     * 関連エンティティを含めた販売単価を検索する
+     */
+    @Query(value = "SELECT DISTINCT sp.* FROM prices sp " +
+           "LEFT JOIN items i ON i.id = sp.item_id " +
+           "LEFT JOIN customers c ON c.id = sp.customer_id " +
+           "WHERE (:itemCode IS NULL OR :itemCode = '' OR i.item_code LIKE CONCAT('%', :itemCode, '%')) " +
+           "AND (:itemName IS NULL OR :itemName = '' OR i.item_name LIKE CONCAT('%', :itemName, '%')) " +
+           "AND (:customerCode IS NULL OR :customerCode = '' OR c.customer_code LIKE CONCAT('%', :customerCode, '%')) " +
+           "AND (:customerName IS NULL OR :customerName = '' OR c.name LIKE CONCAT('%', :customerName, '%')) " +
+           "AND (:validDate IS NULL OR :validDate = '' OR " +
+           "    (sp.valid_from_date <= TO_DATE(:validDate, 'YYYY-MM-DD') AND " +
+           "     sp.valid_to_date >= TO_DATE(:validDate, 'YYYY-MM-DD'))) " +
+           "AND (:status IS NULL OR :status = '' OR sp.status = :status) " +
+           "AND sp.deleted = false " +
+           "AND sp.price_type = 'SALES'", 
+           nativeQuery = true)
+    List<SalesPrice> findAllWithItemAndCustomer(
+        @Param("itemCode") String itemCode,
+        @Param("itemName") String itemName,
+        @Param("customerCode") String customerCode,
+        @Param("customerName") String customerName,
+        @Param("validDate") String validDate,
+        @Param("status") String status
+    );
 } 

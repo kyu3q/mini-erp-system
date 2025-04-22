@@ -8,6 +8,7 @@ import com.minierpapp.model.supplier.dto.SupplierResponse;
 import com.minierpapp.model.supplier.mapper.SupplierMapper;
 import com.minierpapp.service.SupplierService;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
@@ -46,17 +47,13 @@ public class SupplierWebController extends BaseWebController<Supplier, SupplierD
     }
 
     @Override
-    @GetMapping
-    public String list(
-            @RequestParam(required = false) String searchParam1,
-            @RequestParam(required = false) String searchParam2,
-            Model model) {
-        String supplierCode = searchParam1;
-        String name = searchParam2;
+    protected void prepareSearchCriteria(Model model, HttpServletRequest request) {
+        String supplierCode = request.getParameter("searchParam1");
+        String name = request.getParameter("searchParam2");
+        
         model.addAttribute("suppliers", supplierService.findAll(supplierCode, name));
         model.addAttribute("supplierCode", supplierCode);
         model.addAttribute("name", name);
-        return getListTemplate();
     }
 
     @Override
